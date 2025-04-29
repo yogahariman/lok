@@ -3646,7 +3646,7 @@ function ia(e, n = Bl) {
         return;
       }
       const { id: a, url: o, headers: i, body: s, method: l } = r.payload;
-      console.warn("DATA RECEIVED abc", o, s);
+      console.warn("DATA RECEIVED", o, s);
       const u = {
         type: "ack",
         payload: {
@@ -3725,6 +3725,7 @@ const Bn = "https://lok-autorally.fly.dev";
 console.warn("serverURL", Bn);
 async function Fn(e, n) {
   const t = `${Bn}/run_command`;
+  console.warn("test aja");
   (await (await fetch(t, {
     headers: {
       Accept: "application/json",
