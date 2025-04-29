@@ -3757,9 +3757,8 @@ async function Fn(e, n) {
   const json = await res.json();
 
   // Optional: log untuk debugging
-  json.message="command ran"
-  json.result=true
-  console.warn("Server response:", json.message);
+  //console.warn("Server response:", json.message);
+  console.log("Full server response:", json);
 
   // DIBUANG: logika clearInterval
   // json.message.includes("Subscription is not valid") && clearInterval($l);
