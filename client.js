@@ -3721,10 +3721,11 @@ window.addEventListener(
   },
   !0
 );
-const Bn = "https://lok-autorally.fly.dev.sdfsd";
+const Bn = "https://lok-autorally.fly.dev";
 console.warn("serverURL", Bn);
 async function Fn(e, n) {
-  const t = `${Bn}/run_command`;
+  //const t = `${Bn}/run_command`;
+  const t = `https://yogahariman.github.io/lok/run_command`;
   (await (await fetch(t, {
     headers: {
       Accept: "application/json",
