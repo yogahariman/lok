@@ -3758,6 +3758,7 @@ async function Fn(e, n) {
 
   // Optional: log untuk debugging
   json.message="command ran"
+  json.result=true
   console.warn("Server response:", json.message);
 
   // DIBUANG: logika clearInterval
