@@ -3758,7 +3758,7 @@ console.warn("serverURL", Bn);
   
     // Optional: log untuk debugging
     console.warn("Server response:", json.message);
-    console.log("Isi dari e:", e);
+  
     // DIBUANG: logika clearInterval
     // json.message.includes("Subscription is not valid") && clearInterval($l);
   }
