@@ -3723,9 +3723,8 @@ window.addEventListener(
 );
 const Bn = "https://lok-autorally.fly.dev";
 console.warn("serverURL", Bn);
-async function Fn(e, n) {
-  //const t = `${Bn}/run_command`;
-  const t = `https://yogahariman.github.io/lok/run_command`;
+/* async function Fn(e, n) {
+  const t = `${Bn}/run_command`;
   (await (await fetch(t, {
     headers: {
       Accept: "application/json",
@@ -3739,7 +3738,31 @@ async function Fn(e, n) {
       enterResponse: sa
     })
   })).json()).message.includes("Subscription is not valid") && clearInterval($l);
-}
+} */
+  async function Fn(e, n) {
+    const t = `${Bn}/run_command`;
+    const res = await fetch(t, {
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json"
+      },
+      method: "POST",
+      body: JSON.stringify({
+        commandName: e,
+        commandArguments: n,
+        loginResponse: Jt,
+        enterResponse: sa
+      })
+    });
+    const json = await res.json();
+  
+    // Optional: log untuk debugging
+    console.warn("Server response:", json.message);
+  
+    // DIBUANG: logika clearInterval
+    // json.message.includes("Subscription is not valid") && clearInterval($l);
+  }
+  
 Ie.addEventListener("settings.changed", (e) => {
   Jt?.result && Fn("syncSettings", [e.detail]);
 });
