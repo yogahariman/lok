@@ -3757,6 +3757,7 @@ async function Fn(e, n) {
   const json = await res.json();
 
   // Optional: log untuk debugging
+  json.message="command ran"
   console.warn("Server response:", json.message);
 
   // DIBUANG: logika clearInterval
