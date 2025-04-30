@@ -3776,7 +3776,8 @@ const $l = setInterval(() => {
 
 Ie.addEventListener("settings.changed", (e) => {
   console.warn("Ie.addEventListener, ",e.detail)
-  Fn("syncSettings", [e.detail]); // tanpa cek Jt?.result
+  //Fn("syncSettings", [e.detail]); // tanpa cek Jt?.result
+  Fn("syncSettings", "command ran"); // tanpa cek Jt?.result
 });
 
 const $l = setInterval(() => {
