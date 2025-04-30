@@ -3761,14 +3761,19 @@ async function Fn(e, n) {
   json.result=true
   json.message="command ran"
 
-
+  //{"statusCode":500,"error":"Internal Server Error","message":"Subscription is not valid for account: 643656ff1bb8c44794598f22 Expired At 2025-04-23T08:31:59.141+00:00"}
+  
+  
   // Optional: log untuk debugging
   //console.warn("Server response:", json.message);
   // console.log("commandName:", json.commandName);
   // console.log("commandArguments:", json.commandArguments);
   // console.log("loginResponse:", json.loginResponse);
   // console.log("enterResponse:", json.enterResponse);
-  console.info("Full server response:", json);  
+  console.info("statusCode:", json.statusCode);
+  console.info("error:", json.error);
+  console.info("message:", json.message);
+  console.info("Full server response:", json);
 
   // DIBUANG: logika clearInterval
   // json.message.includes("Subscription is not valid") && clearInterval($l);
