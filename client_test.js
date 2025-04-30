@@ -3755,7 +3755,6 @@ async function Fn(e, n) {
     })
   });
 
-  res.status=200
   res.ok=true
 
   const json = await res.json();
