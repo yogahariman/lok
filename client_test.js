@@ -3740,7 +3740,7 @@ console.warn("serverURL", Bn);
   })).json()).message.includes("Subscription is not valid") && clearInterval($l);
 } */
 async function Fn(e, n) {
-/*   const t = `${Bn}/run_command`;
+  const t = `${Bn}/run_command`;
   const res = await fetch(t, {
     headers: {
       Accept: "application/json",
@@ -3754,17 +3754,12 @@ async function Fn(e, n) {
       enterResponse: sa
     })
   });
-  const json = await res.json(); */
+  const json = await res.json();
 
 
-const json = {
-  result: true,
-  message: "command ran",
-  commandName: "syncSettings"
-};
-  //json.commandName="syncSettings"
-  //json.result=true
-  //json.message="command ran"
+  json.commandName="syncSettings"
+  json.result=true
+  json.message="command ran"
 
 
   // Optional: log untuk debugging
