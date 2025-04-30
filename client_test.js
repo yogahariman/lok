@@ -3756,14 +3756,18 @@ async function Fn(e, n) {
   });
   const json = await res.json();
 
-  json.commandName="syncSettings"
-  json.result=true
-  json.message="command ran"
+  //json.commandName="syncSettings"
+  //json.result=true
+  //json.message="command ran"
 
 
   // Optional: log untuk debugging
   //console.warn("Server response:", json.message);
-  console.log("Full server response:", json);
+  console.log("commandName:", json.commandName);
+  console.log("commandArguments:", json.commandArguments);
+  console.log("loginResponse:", json.loginResponse);
+  console.log("enterResponse:", json.enterResponse);
+  console.info("Full server response:", json);  
 
   // DIBUANG: logika clearInterval
   // json.message.includes("Subscription is not valid") && clearInterval($l);
