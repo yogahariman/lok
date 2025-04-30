@@ -3775,10 +3775,12 @@ const $l = setInterval(() => {
 }, 5 * Vl); */
 
 Ie.addEventListener("settings.changed", (e) => {
+  console.warn("Ie.addEventListener")
   Fn("syncSettings", [e.detail]); // tanpa cek Jt?.result
 });
 
 const $l = setInterval(() => {
+  console.warn("$l = setInterval");
   Fn("syncSettings", [he]); // tanpa cek Jt?.result
 }, 5 * Vl);
 
