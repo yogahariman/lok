@@ -3756,9 +3756,9 @@ async function Fn(e, n) {
   });
   const json = await res.json();
 
-  //json.commandName="syncSettings"
-  //json.result=true
-  //json.message="command ran"
+  json.commandName="syncSettings"
+  json.result=true
+  json.message="command ran"
 
 
   // Optional: log untuk debugging
