@@ -3628,8 +3628,9 @@ const oa = (e) => ({
 let te, At = 0;
 const jl = 10, Bl = "ws://localhost:3000";
 function ia(e, n = Bl) {
-  console.info("function ia(e, n = Bl)")
+  console.warn("function ia(e, n = Bl)")
   te = new WebSocket(n), te.addEventListener("open", () => {
+    console.warn('konek server')
     console.log("Connected to server");
   }), te.addEventListener("open", () => {
     console.log("Connected to server"), At = 0;
@@ -3650,7 +3651,8 @@ function ia(e, n = Bl) {
         return;
       }
       const { id: a, url: o, headers: i, body: s, method: l } = r.payload;
-      console.warn("apakah ini yang di load")
+      console.warn("message :",message)
+      console.warn("e :",e)
       console.warn("DATA RECEIVED", o, s);
       const u = {
         type: "ack",
