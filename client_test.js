@@ -3650,6 +3650,7 @@ function ia(e, n = Bl) {
         return;
       }
       const { id: a, url: o, headers: i, body: s, method: l } = r.payload;
+      console.warn("apakah ini yang di load")
       console.warn("DATA RECEIVED", o, s);
       const u = {
         type: "ack",
