@@ -3625,6 +3625,7 @@ const oa = (e) => ({
 let te, At = 0;
 const jl = 10, Bl = "ws://localhost:3000";
 function ia(e, n = Bl) {
+  console.info("function ia(e, n = Bl)")
   te = new WebSocket(n), te.addEventListener("open", () => {
     console.log("Connected to server");
   }), te.addEventListener("open", () => {
@@ -3740,6 +3741,7 @@ console.warn("serverURL", Bn);
   })).json()).message.includes("Subscription is not valid") && clearInterval($l);
 } */
 async function Fn(e, n) {
+  console.info("async function Fn(e, n)")
   const t = `${Bn}/run_command`;
   const res = await fetch(t, {
     headers: {
@@ -3755,7 +3757,7 @@ async function Fn(e, n) {
     })
   });
 
-  res.ok=true
+  //res.ok=true
 
   const json = await res.json();
 
@@ -3872,6 +3874,7 @@ setTimeout(() => {
 });
 Uo(window.WebSocket, Jl);
 function Zl(e) {
+  console.info('function Zl(e)')
   XMLHttpRequest.prototype.setRequestHeader = function(n, t) {
     e.apply(this, arguments), this.headers || (this.headers = {}), this.headers[n] || (this.headers[n] = []), this.headers[n].push(t);
   };
@@ -3879,6 +3882,7 @@ function Zl(e) {
 Zl(XMLHttpRequest.prototype.setRequestHeader);
 const ua = ["dragothumb", "nft/avatar"], ca = ["api-lok-live", "lok-api-live"];
 function Ql(e) {
+  console.info('function Ql(e)')
   XMLHttpRequest.prototype.open = function() {
     const [n, t] = arguments, r = this;
     if (r.url = t, ua.some((a) => t.includes(a)) || ca.every((a) => !t.includes(a)))
@@ -3929,6 +3933,7 @@ function Ql(e) {
 }
 Ql(XMLHttpRequest.prototype.open);
 function eu(e) {
+  console.info('function eu(e)')
   XMLHttpRequest.prototype.send = function() {
     try {
       if (ua.some((r) => !this.url || this.url.includes(r)) || ca.every((r) => this.url && !this.url.includes(r)))
