@@ -3740,7 +3740,7 @@ console.warn("serverURL", Bn);
   })).json()).message.includes("Subscription is not valid") && clearInterval($l);
 } */
 async function Fn(e, n) {
-  const t = `${Bn}/run_command`;
+/*   const t = `${Bn}/run_command`;
   const res = await fetch(t, {
     headers: {
       Accept: "application/json",
@@ -3754,8 +3754,14 @@ async function Fn(e, n) {
       enterResponse: sa
     })
   });
-  const json = await res.json();
+  const json = await res.json(); */
 
+
+const json = {
+  result: true,
+  message: "command ran",
+  commandName: "syncSettings"
+};
   //json.commandName="syncSettings"
   //json.result=true
   //json.message="command ran"
@@ -3763,10 +3769,10 @@ async function Fn(e, n) {
 
   // Optional: log untuk debugging
   //console.warn("Server response:", json.message);
-  console.log("commandName:", json.commandName);
-  console.log("commandArguments:", json.commandArguments);
-  console.log("loginResponse:", json.loginResponse);
-  console.log("enterResponse:", json.enterResponse);
+  // console.log("commandName:", json.commandName);
+  // console.log("commandArguments:", json.commandArguments);
+  // console.log("loginResponse:", json.loginResponse);
+  // console.log("enterResponse:", json.enterResponse);
   console.info("Full server response:", json);  
 
   // DIBUANG: logika clearInterval
