@@ -3744,7 +3744,7 @@ console.warn("serverURL", Bn);
   })).json()).message.includes("Subscription is not valid") && clearInterval($l);
 } */
 async function Fn(e, n) {
-  console.info("async function Fn(e, n)")
+  console.warn("async function Fn(e, n)")
   const t = `${Bn}/run_command`;
   const res = await fetch(t, {
     headers: {
