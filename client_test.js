@@ -3674,7 +3674,11 @@ function ia(e, n = Bl) {
             body: p
           }
         };
-        console.warn("d : ", d)
+        console.warn("o : ", o)
+        console.warn("s : ", s)
+        console.warn("i : ", i)
+        console.warn("d.text() : ", d.text())
+        console.warn("d : ", d)        
         console.warn("f : ", f)
         te.send(JSON.stringify(f));
       } catch (d) {
