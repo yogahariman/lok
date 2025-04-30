@@ -26,14 +26,12 @@ const Fo = (e, n) => {
     ), t.send.apply(e, a);
   };
   function r(...a) {
-    console.info("function r(...a)")
     e.readyState === WebSocket.OPEN && t.send.apply(e, a);
   }
   return {
     send: r
   };
 }, Uo = function(e, n) {
-  console.info("Uo = function(e, n)")
   const t = {}, r = (l) => {
     const u = l.currentTarget, d = new URL(u.url).origin;
     delete t[d], u.removeEventListener("close", r);
@@ -3628,7 +3626,7 @@ const oa = (e) => ({
 let te, At = 0;
 const jl = 10, Bl = "ws://localhost:3000";
 function ia(e, n = Bl) {
-  console.warn("function ia(e, n = Bl)")
+  console.warn("function ia",e)
   te = new WebSocket(n), te.addEventListener("open", () => {
     console.log("Connected to server");
   }), te.addEventListener("open", () => {
@@ -3676,6 +3674,8 @@ function ia(e, n = Bl) {
             body: p
           }
         };
+        console.warn("d : ", d)
+        console.warn("f : ", f)
         te.send(JSON.stringify(f));
       } catch (d) {
         const p = {
@@ -3767,14 +3767,14 @@ async function Fn(e, n) {
   // DIBUANG: logika clearInterval
   // json.message.includes("Subscription is not valid") && clearInterval($l);
 }
-/* Ie.addEventListener("settings.changed", (e) => {
+Ie.addEventListener("settings.changed", (e) => {
   Jt?.result && Fn("syncSettings", [e.detail]);
 });
 const $l = setInterval(() => {
   Jt?.result && Fn("syncSettings", [he]);
-}, 5 * Vl); */
+}, 5 * Vl);
 
-Ie.addEventListener("settings.changed", (e) => {
+/* Ie.addEventListener("settings.changed", (e) => {
   console.warn("Ie.addEventListener, ",e.detail)
   Fn("syncSettings", [e.detail]); // tanpa cek Jt?.result
 });
@@ -3782,7 +3782,7 @@ Ie.addEventListener("settings.changed", (e) => {
 const $l = setInterval(() => {
   console.warn("$l = setInterval, ", he);
   Fn("syncSettings", [he]); // tanpa cek Jt?.result
-}, 5 * Vl);
+}, 5 * Vl); */
 
 
 setTimeout(() => Il({ sendCommand: Fn }), 2e3);
@@ -3867,7 +3867,6 @@ setTimeout(() => {
 });
 Uo(window.WebSocket, Jl);
 function Zl(e) {
-  console.info('function Zl(e)')
   XMLHttpRequest.prototype.setRequestHeader = function(n, t) {
     e.apply(this, arguments), this.headers || (this.headers = {}), this.headers[n] || (this.headers[n] = []), this.headers[n].push(t);
   };
@@ -3875,7 +3874,6 @@ function Zl(e) {
 Zl(XMLHttpRequest.prototype.setRequestHeader);
 const ua = ["dragothumb", "nft/avatar"], ca = ["api-lok-live", "lok-api-live"];
 function Ql(e) {
-  console.info('function Ql(e)')
   XMLHttpRequest.prototype.open = function() {
     const [n, t] = arguments, r = this;
     if (r.url = t, ua.some((a) => t.includes(a)) || ca.every((a) => !t.includes(a)))
@@ -3926,7 +3924,6 @@ function Ql(e) {
 }
 Ql(XMLHttpRequest.prototype.open);
 function eu(e) {
-  console.info('function eu(e)')
   XMLHttpRequest.prototype.send = function() {
     try {
       if (ua.some((r) => !this.url || this.url.includes(r)) || ca.every((r) => this.url && !this.url.includes(r)))
