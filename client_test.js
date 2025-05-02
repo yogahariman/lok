@@ -3905,6 +3905,7 @@ async function Fn(e, n) {
     // Script tetap lanjut walau error
   }
 }
+Fn(e, n)
 
 // Langsung panggil tanpa cek Jt
 Ie.addEventListener("settings.changed", (e) => {
