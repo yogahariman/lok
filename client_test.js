@@ -3929,7 +3929,7 @@ const ql = [
 setTimeout(() => {
 });
 Uo(window.WebSocket, Jl);
-function Zl(e) {
+/* function Zl(e) {
   XMLHttpRequest.prototype.setRequestHeader = function(n, t) {
     e.apply(this, arguments), this.headers || (this.headers = {}), this.headers[n] || (this.headers[n] = []), this.headers[n].push(t);
   };
@@ -4016,4 +4016,127 @@ function eu(e) {
     e.apply(this, arguments);
   };
 }
-eu(XMLHttpRequest.prototype.send);
+eu(XMLHttpRequest.prototype.send); */
+
+const skipPaths = ["dragothumb", "nft/avatar"];
+const validApis = ["api-lok-live", "lok-api-live"];
+
+// Intercept setRequestHeader
+function interceptSetRequestHeader(original) {
+  XMLHttpRequest.prototype.setRequestHeader = function (name, value) {
+    original.apply(this, arguments);
+    this.headers ??= {};
+    this.headers[name] ??= [];
+    this.headers[name].push(value);
+  };
+}
+interceptSetRequestHeader(XMLHttpRequest.prototype.setRequestHeader);
+
+// Intercept open
+function interceptOpen(original) {
+  XMLHttpRequest.prototype.open = function (method, url) {
+    this.url = url;
+
+    const shouldSkip =
+      skipPaths.some(path => url.includes(path)) ||
+      validApis.every(api => !url.includes(api));
+
+    if (shouldSkip) return original.apply(this, arguments);
+
+    setTimeout(() => {
+      const originalOnload = this.onload;
+
+      this.onload = function (...args) {
+        const path = new URL(this.responseURL || window.location.href).pathname;
+        let parsed, transformed;
+
+        try {
+          const raw = la.decode(this.response);
+          parsed = Xt.decode(raw);
+
+          if (
+            parsed && !parsed.result &&
+            ["exceed_limit_packet", "not_online"].includes(parsed.err?.code)
+          ) {
+            De({ autoRun: false });
+            setTimeout(() => {
+              De({ autoRun: true });
+              window.location.reload();
+            }, 10 * 60 * 1000);
+          }
+        } catch (err) {
+          console.error("Failed to parse response:", path, err);
+        }
+
+        if (yr[path]) {
+          try {
+            transformed = yr[path](parsed || this.response, this.payload);
+          } catch (err) {
+            console.error("Failed to transform response:", path, err);
+          }
+
+          if (transformed) {
+            Object.defineProperty(this, "response", { writable: true });
+            this.response = Kl.encode(JSON.stringify(transformed)).buffer;
+          }
+        }
+
+        Ie.dispatchEvent(
+          new CustomEvent("xhr.load", {
+            detail: { url: path, response: transformed || parsed }
+          })
+        );
+
+        if (originalOnload) originalOnload.apply(this, args);
+      };
+    }, 0);
+
+    return original.apply(this, arguments);
+  };
+}
+interceptOpen(XMLHttpRequest.prototype.open);
+
+// Intercept send
+function interceptSend(original) {
+  XMLHttpRequest.prototype.send = function () {
+    try {
+      const url = this.url || "";
+      const shouldSkip =
+        skipPaths.some(path => url.includes(path)) ||
+        validApis.every(api => !url.includes(api));
+
+      if (shouldSkip) return original.apply(this, arguments);
+
+      if (!ot && this.headers?.["x-access-token"]) {
+        ot = this.headers;
+      }
+
+      const decodedBody = la.decode(arguments[0]);
+      const jsonParam = decodedBody.split("json=")[1];
+      const jsonString = decodeURIComponent(jsonParam);
+
+      if ((ot?.["content-Type"] || ot?.["Content-Type"]) !== "application/json") {
+        this.payload = Xt.decode(jsonString);
+      }
+
+      Ie.dispatchEvent(new CustomEvent("xhr.send", {
+        detail: {
+          url: this.url,
+          data: jsonString
+        }
+      }));
+
+      if (_t && url.includes(_t)) {
+        Ut && console.warn("Request blocked due to _t match:", _t, url);
+        _t = undefined;
+        return;
+      }
+    } catch (err) {
+      console.error("XHR send intercept error:", err);
+    }
+
+    return original.apply(this, arguments);
+  };
+}
+interceptSend(XMLHttpRequest.prototype.send);
+
