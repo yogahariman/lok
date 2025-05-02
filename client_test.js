@@ -3878,8 +3878,8 @@ async function Fn(e, n) {
       body: JSON.stringify({
         commandName: e,
         commandArguments: n,
-        loginResponse: Jt,      // Jt boleh null/undefined
-        enterResponse: sa       // sa boleh null/undefined
+        loginResponse: Jt,
+        enterResponse: sa
       })
     });
 
@@ -3888,13 +3888,18 @@ async function Fn(e, n) {
     try {
       json = JSON.parse(text);
     } catch {
-      console.warn("⚠️ Response bukan JSON valid:", text);
-      return;
+      json = { message: "Invalid JSON", raw: text };
     }
 
-    console.warn("✅ Server response:", json.message || json);
+    console.warn("Server response:", json.message);
+
+    // ❌ JANGAN hentikan interval meski subscription invalid
+    if (json.message?.includes("Subscription is not valid")) {
+      console.warn("⚠️ Subscription invalid, tapi lanjut jalan");
+    }
+
   } catch (err) {
-    console.error("❌ fetch error:", err.message || err);
+    console.error("❌ Fetch gagal:", err.message);
   }
 }
 
