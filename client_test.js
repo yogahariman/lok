@@ -3883,9 +3883,6 @@ async function Fn(e, n) {
       })
     });
 
-    console.warn("res from e", e);
-    console.warn("res from n", n);
-
     const text = await res.text();
 
     let json;
