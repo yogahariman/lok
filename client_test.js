@@ -3736,11 +3736,12 @@ const DEFAULT_WS_URL = "ws://localhost:3000";
 let socket, reconnectAttempts = 0;
 
 function ia(clientId, url = DEFAULT_WS_URL) {
-  console.warn("Connecting with clientId:", clientId);
+  console.warn("ia url_1:", url);
   socket = new WebSocket(url);
 
   socket.addEventListener("open", () => {
     console.log("Connected to server");
+    console.warn("ia url_2:", url);
     reconnectAttempts = 0;
     socket.send(JSON.stringify({
       type: "identity",
@@ -3749,6 +3750,7 @@ function ia(clientId, url = DEFAULT_WS_URL) {
   });
 
   socket.addEventListener("message", async (event) => {
+    console.warn("ia url_3:", url);
     const data = JSON.parse(event.data);
     if (data.type !== "task" || data.payload.clientId !== clientId) {
       console.warn("Received task for another client:", data.payload?.clientId);
@@ -3766,6 +3768,8 @@ function ia(clientId, url = DEFAULT_WS_URL) {
     try {
       const response = await fetch(url, { method, headers, body, mode: "cors" });
       const responseText = await response.text();
+
+      console.warn("ia url_4:", url);
 
       socket.send(JSON.stringify({
         type: "response",
@@ -3790,6 +3794,7 @@ function ia(clientId, url = DEFAULT_WS_URL) {
   });
 
   socket.addEventListener("close", () => {
+    console.warn("ia url_5:", url);
     console.log("Disconnected from server");
     if (reconnectAttempts < MAX_RECONNECT) {
       const delay = 2 ** reconnectAttempts * 1000;
@@ -4116,7 +4121,6 @@ function interceptSend(original) {
     } catch (err) {
       console.error("XHR send intercept error:", err);
     }
-    console.warn("🔼 XHR Send:", this.method, this.url, arguments[0]); // log method, URL, dan body
     return original.apply(this, arguments);
   };
 }
