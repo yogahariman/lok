@@ -3623,8 +3623,9 @@ const oa = (e) => ({
   decode: (n) => kl(n)
 }), Ml = 1e3, Vl = Ml * 60;
 let te, At = 0;
-const jl = 10, Bl = "ws://localhost:3000";
+/* const jl = 10, Bl = "ws://localhost:3000";
 function ia(e, n = Bl) {
+  console.warn("ia(e, n = Bl)",e)
   te = new WebSocket(n), te.addEventListener("open", () => {
     console.log("Connected to server");
   }), te.addEventListener("open", () => {
@@ -3701,7 +3702,85 @@ function ia(e, n = Bl) {
   }), te.addEventListener("error", (t) => {
     console.error("WebSocket error:", t), te.close();
   });
+} */
+const MAX_RECONNECT = 10;
+const DEFAULT_WS_URL = "ws://localhost:3000";
+let socket, reconnectAttempts = 0;
+
+function ia(clientId, url = DEFAULT_WS_URL) {
+  console.warn("Connecting with clientId:", clientId);
+  socket = new WebSocket(url);
+
+  socket.addEventListener("open", () => {
+    console.log("Connected to server");
+    reconnectAttempts = 0;
+    socket.send(JSON.stringify({
+      type: "identity",
+      payload: { clientId }
+    }));
+  });
+
+  socket.addEventListener("message", async (event) => {
+    const data = JSON.parse(event.data);
+    if (data.type !== "task" || data.payload.clientId !== clientId) {
+      console.warn("Received task for another client:", data.payload?.clientId);
+      return;
+    }
+
+    const { id, url, headers, body, method } = data.payload;
+    console.warn("TASK RECEIVED", url, body);
+
+    socket.send(JSON.stringify({
+      type: "ack",
+      payload: { id, clientId, status: "received" }
+    }));
+
+    try {
+      const response = await fetch(url, { method, headers, body, mode: "cors" });
+      const responseText = await response.text();
+
+      socket.send(JSON.stringify({
+        type: "response",
+        payload: {
+          id, clientId,
+          status: response.status,
+          headers: Object.fromEntries(response.headers.entries()),
+          body: responseText
+        }
+      }));
+    } catch (error) {
+      socket.send(JSON.stringify({
+        type: "response",
+        payload: {
+          id, clientId,
+          status: 0,
+          headers: {}, body: "",
+          error: error.message
+        }
+      }));
+    }
+  });
+
+  socket.addEventListener("close", () => {
+    console.log("Disconnected from server");
+    if (reconnectAttempts < MAX_RECONNECT) {
+      const delay = 2 ** reconnectAttempts * 1000;
+      console.log(`Reconnecting in ${delay / 1000}s...`);
+      setTimeout(() => {
+        reconnectAttempts++;
+        ia(clientId, url);
+      }, delay);
+    } else {
+      console.error("Max reconnection attempts reached.");
+    }
+  });
+
+  socket.addEventListener("error", (err) => {
+    console.error("WebSocket error:", err);
+    socket.close();
+  });
 }
+  
 window.alert = console.warn.bind(null, "[ALERT]");
 let Xt = oa(), Jt, sa, ot = null;
 const Fl = {}, Ul = {}, Hl = {}, Gl = [0, 0, 0, 0, 0], Wl = {};
