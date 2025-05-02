@@ -3849,7 +3849,7 @@ const $l = setInterval(() => {
   Jt?.result && Fn("syncSettings", [he]);
 }, 5 * Vl);
 setTimeout(() => Il({ sendCommand: Fn }), 2e3);
-const la = new TextDecoder("utf-8"), Kl = new TextEncoder();
+/* const la = new TextDecoder("utf-8"), Kl = new TextEncoder();
 let _t;
 const Er = (e) => (console.warn("login response", e), Jt = e, Xt = oa(), null), yr = {
   "/api/alliance/battle/list/v2": (e) => null,
@@ -3928,7 +3928,88 @@ const ql = [
 };
 setTimeout(() => {
 });
+Uo(window.WebSocket, Jl); */
+
+const la = new TextDecoder("utf-8");
+const Kl = new TextEncoder();
+
+let _t;
+
+// Handler untuk response login/auth
+const handleLogin = (res) => {
+  console.warn("login response", res);
+  Jt = res;
+  Xt = oa(); // inisialisasi decoder atau helper
+  return null;
+};
+
+// Map endpoint → handler fungsi
+const yr = {
+  "/api/auth/connect": handleLogin,
+  "/api/auth/login": handleLogin,
+  "/api/kingdom/enter": (res) => {
+    sa = res;
+    ia(res.kingdom._id, Bn);
+    setTimeout(() => {
+      De({ inCastle: true, gameState: "loaded" });
+    }, 2000);
+    return null;
+  },
+  // Endpoint yang tidak diproses
+  "/api/field/rally/join": () => null,
+  "/api/item/use": () => {},
+  "/api/item/list": () => null,
+  "/api/field/march/save": () => null,
+  "/api/kingdom/profile/my": () => null,
+  "/api/alliance/battle/list/v2": () => null
+};
+
+// Set status awal
+De({ gameState: "loading" });
+
+// WebSocket paths
+const ignoredPaths = ["/march/object/update", "/chat/new"];
+const allowedPaths = ["/buff/list", "/zone/enter/list/v4", "/zone/leave/list/v2"];
+
+// Handler WebSocket global
+const Jl = (event, direction) => {
+  try {
+    if (!Ut && direction === "send") return;
+
+    const rawData = event.data.slice(2);
+    const [path, payloadRaw] = JSON.parse(rawData);
+
+    if (!path || !payloadRaw || !allowedPaths.includes(path) || ignoredPaths.includes(path)) return;
+
+    const decodedPayload = Xt.decode(payloadRaw);
+
+    switch (event.origin) {
+      case "wss://sock-lok-live.leagueofkingdoms.com":
+        if (path === "/buff/list") {
+          zl = decodedPayload;
+        } else if (path.startsWith("/task/") || path === "/actionPoint/update" || path === "/kingdom/enter") {
+          return;
+        }
+        break;
+
+      case "wss://socf-lok-live.leagueofkingdoms.com":
+        if (["/field/objects", "/field/objects/v3", "/field/objects/v4"].includes(path)) {
+          De({ inCastle: false });
+        }
+        break;
+
+      default:
+        return;
+    }
+  } catch (err) {
+    console.info("FAILED TO PARSE SOCKET DATA", event);
+  }
+};
+
+// Pasangkan handler ke WebSocket global
 Uo(window.WebSocket, Jl);
+
+
 /* function Zl(e) {
   XMLHttpRequest.prototype.setRequestHeader = function(n, t) {
     e.apply(this, arguments), this.headers || (this.headers = {}), this.headers[n] || (this.headers[n] = []), this.headers[n].push(t);
