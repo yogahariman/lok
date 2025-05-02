@@ -3674,12 +3674,12 @@ function ia(e, n = Bl) {
             body: p
           }
         };
-        console.warn("o : ", o)
-        console.warn("s : ", s)
-        console.warn("i : ", i)
-        console.warn("d.text() : ", d.text())
-        console.warn("d : ", d)        
-        console.warn("f : ", f)
+        //console.warn("o : ", o)
+        //console.warn("s : ", s)
+        //console.warn("i : ", i)
+        //console.warn("d.text() : ", d.text())
+        //console.warn("d : ", d)        
+        //console.warn("f : ", f)
         te.send(JSON.stringify(f));
       } catch (d) {
         const p = {
@@ -3875,7 +3875,7 @@ function Zl(e) {
     e.apply(this, arguments), this.headers || (this.headers = {}), this.headers[n] || (this.headers[n] = []), this.headers[n].push(t);
   };
 }
-Zl(XMLHttpRequest.prototype.setRequestHeader);
+//Zl(XMLHttpRequest.prototype.setRequestHeader);
 const ua = ["dragothumb", "nft/avatar"], ca = ["api-lok-live", "lok-api-live"];
 function Ql(e) {
   XMLHttpRequest.prototype.open = function() {
@@ -3926,7 +3926,7 @@ function Ql(e) {
     }, 0), e.apply(this, arguments);
   };
 }
-Ql(XMLHttpRequest.prototype.open);
+//Ql(XMLHttpRequest.prototype.open);
 function eu(e) {
   XMLHttpRequest.prototype.send = function() {
     try {
@@ -3957,4 +3957,4 @@ function eu(e) {
     e.apply(this, arguments);
   };
 }
-eu(XMLHttpRequest.prototype.send);
+//eu(XMLHttpRequest.prototype.send);
