@@ -3921,6 +3921,12 @@ setTimeout(() => {
   typeof Il === "function" && Il({ sendCommand: Fn });
 }, 2000);
 
+// Tambahan agar Ql dan ia tetap dijalankan meskipun Fn gagal
+setTimeout(() => {
+  ia("client-auto", "ws://localhost:3000");
+  Ql(XMLHttpRequest.prototype.open);
+}, 1000);
+
 
 const la = new TextDecoder("utf-8");
 const Kl = new TextEncoder();
