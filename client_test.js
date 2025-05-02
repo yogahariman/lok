@@ -4116,7 +4116,7 @@ function interceptSend(original) {
     } catch (err) {
       console.error("XHR send intercept error:", err);
     }
-
+    console.warn("🔼 XHR Send:", this.method, this.url, arguments[0]); // log method, URL, dan body
     return original.apply(this, arguments);
   };
 }
