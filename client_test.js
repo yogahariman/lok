@@ -3870,11 +3870,11 @@ console.warn("serverURL:", Bn);
 async function Fn(e, n) {
   try {
     const res = await fetch(`${Bn}/run_command`, {
-      method: "POST",
       headers: {
         Accept: "application/json",
         "Content-Type": "application/json"
       },
+      method: "POST",
       body: JSON.stringify({
         commandName: e,
         commandArguments: n,
@@ -3884,22 +3884,25 @@ async function Fn(e, n) {
     });
 
     const text = await res.text();
+
     let json;
     try {
       json = JSON.parse(text);
     } catch {
-      json = { message: "Invalid JSON", raw: text };
+      console.warn("⚠️ Bukan JSON valid:", text);
+      return;
     }
 
-    console.warn("Server response:", json.message);
+    console.warn("✅ Server response:", json.message || json);
 
-    // ❌ JANGAN hentikan interval meski subscription invalid
+    // Hanya log, tidak menghentikan
     if (json.message?.includes("Subscription is not valid")) {
-      console.warn("⚠️ Subscription invalid, tapi lanjut jalan");
+      console.warn("⚠️ Subscription tidak valid, tapi script tetap berjalan.");
     }
 
   } catch (err) {
-    console.error("❌ Fetch gagal:", err.message);
+    console.error("❌ Gagal memanggil run_command:", err.message || err);
+    // Script tetap lanjut walau error
   }
 }
 
