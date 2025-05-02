@@ -3869,7 +3869,7 @@ console.warn("serverURL:", Bn);
 
 async function Fn(e, n) {
   try {
-    /* const res = await fetch(`${Bn}/run_command`, {
+    const res = await fetch(`${Bn}/run_command`, {
       headers: {
         Accept: "application/json",
         "Content-Type": "application/json"
@@ -3881,7 +3881,7 @@ async function Fn(e, n) {
         loginResponse: Jt,
         enterResponse: sa
       })
-    }); */
+    });
 
     const text = await res.text();
 
