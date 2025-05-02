@@ -1314,6 +1314,10 @@ function ir(e) {
   }
   return Object.assign({}, A, (n = {}, n[y] = b ? g + "px" : "", n[N] = R ? v + "px" : "", n.transform = "", n));
 }
+var Tt = {
+  passive: !0
+};
+*/
 function Ji(e) {
   var n = e.state, t = e.options, r = t.gpuAcceleration, a = r === void 0 ? !0 : r, o = t.adaptive, i = o === void 0 ? !0 : o, s = t.roundOffsets, l = s === void 0 ? !0 : s, u = {
     placement: le(n.placement),
@@ -1337,10 +1341,6 @@ function Ji(e) {
     "data-popper-placement": n.placement
   });
 }
-var Tt = {
-  passive: !0
-};
-*/
 const Zi = {
   name: "computeStyles",
   enabled: !0,
