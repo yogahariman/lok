@@ -1347,6 +1347,7 @@ const Zi = {
 var Tt = {
   passive: !0
 };
+*/
 function Qi(e) {
   var n = e.state, t = e.instance, r = e.options, a = r.scroll, o = a === void 0 ? !0 : a, i = r.resize, s = i === void 0 ? !0 : i, l = $(n.elements.popper), u = [].concat(n.scrollParents.reference, n.scrollParents.popper);
   return o && u.forEach(function(d) {
@@ -1357,7 +1358,6 @@ function Qi(e) {
     }), s && l.removeEventListener("resize", t.update, Tt);
   };
 }
-*/
 const es = {
   name: "eventListeners",
   enabled: !0,
