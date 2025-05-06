@@ -3651,91 +3651,13 @@ const oa = (e) => ({
   decode: (n) => kl(n)
 }), Ml = 1e3, Vl = Ml * 60;
 let te, At = 0;
-/* const jl = 10, Bl = "ws://localhost:3000";
-function ia(e, n = Bl) {
-  console.warn("ia(e, n = Bl)",e)
-  te = new WebSocket(n), te.addEventListener("open", () => {
-    console.log("Connected to server");
-  }), te.addEventListener("open", () => {
-    console.log("Connected to server"), At = 0;
-    const t = {
-      type: "identity",
-      payload: {
-        clientId: e
-      }
-    };
-    te.send(JSON.stringify(t));
-  }), te.addEventListener("message", async (t) => {
-    const r = JSON.parse(t.data);
-    if (r.type === "task") {
-      if (r.payload.clientId !== e) {
-        console.warn(
-          `Received task intended for client ${r.payload.clientId}`
-        );
-        return;
-      }
-      const { id: a, url: o, headers: i, body: s, method: l } = r.payload;
-      console.warn("DATA RECEIVED", o, s);
-      const u = {
-        type: "ack",
-        payload: {
-          id: a,
-          clientId: e,
-          status: "received"
-        }
-      };
-      te.send(JSON.stringify(u));
-      try {
-        const d = await fetch(o, {
-          method: l,
-          headers: i,
-          body: s,
-          mode: "cors"
-        }), p = await d.text(), f = {
-          type: "response",
-          payload: {
-            id: a,
-            clientId: e,
-            status: d.status,
-            headers: Object.fromEntries(d.headers.entries()),
-            body: p
-          }
-        };
-        te.send(JSON.stringify(f));
-      } catch (d) {
-        const p = {
-          type: "response",
-          payload: {
-            id: a,
-            clientId: e,
-            status: 0,
-            headers: {},
-            body: "",
-            error: d.message
-          }
-        };
-        te.send(JSON.stringify(p));
-      }
-    }
-  }), te.addEventListener("close", () => {
-    if (console.log("Disconnected from server"), At < jl) {
-      const t = Math.pow(2, At) * 1e3;
-      console.log(`Attempting to reconnect in ${t / 1e3} seconds...`), setTimeout(() => {
-        At++, ia(e, n);
-      }, t);
-    } else
-      console.error(
-        "Max reconnection attempts reached. Could not reconnect to server."
-      );
-  }), te.addEventListener("error", (t) => {
-    console.error("WebSocket error:", t), te.close();
-  });
-} */
+
 const MAX_RECONNECT = 10;
 const DEFAULT_WS_URL = "ws://localhost:3000";
 let socket, reconnectAttempts = 0;
 
 function ia(clientId, url = DEFAULT_WS_URL) {
+  //console.warn("Connecting with clientId:", clientId);
   socket = new WebSocket(url);
 
   socket.addEventListener("open", () => {
@@ -3748,7 +3670,7 @@ function ia(clientId, url = DEFAULT_WS_URL) {
   });
 
   socket.addEventListener("message", async (event) => {
-    console.warn("event:", event);
+    //console.warn("event:", event);
     const data = JSON.parse(event.data);
     if (data.type !== "task" || data.payload.clientId !== clientId) {
       console.warn("Received task for another client:", data.payload?.clientId);
@@ -3766,8 +3688,6 @@ function ia(clientId, url = DEFAULT_WS_URL) {
     try {
       const response = await fetch(url, { method, headers, body, mode: "cors" });
       const responseText = await response.text();
-
-      console.warn("ia response:", response);
 
       socket.send(JSON.stringify({
         type: "response",
@@ -3831,41 +3751,6 @@ window.addEventListener(
   !0
 );
 
-/* const Bn = "https://lok-autorally.fly.dev";
-console.warn("serverURL", Bn);
-
-async function Fn(e, n) {
-  const t = `${Bn}/run_command`;
-  const res = await fetch(t, {
-    headers: {
-      Accept: "application/json",
-      "Content-Type": "application/json"
-    },
-    method: "POST",
-    body: JSON.stringify({
-      commandName: e,
-      commandArguments: n,
-      loginResponse: Jt,
-      enterResponse: sa
-    })
-  });
-  const json = await res.json();
-
-  // Optional: log untuk debugging
-  console.warn("Server response:", json.message);
-
-  // DIBUANG: logika clearInterval
-  // json.message.includes("Subscription is not valid") && clearInterval($l);
-}
-
-Ie.addEventListener("settings.changed", (e) => {
-  Jt?.result && Fn("syncSettings", [e.detail]);
-});
-const $l = setInterval(() => {
-  Jt?.result && Fn("syncSettings", [he]);
-}, 5 * Vl);
-setTimeout(() => Il({ sendCommand: Fn }), 2e3); */
-
 const Bn = "https://lok-autorally.fly.dev";
 console.warn("serverURL:", Bn);
 
@@ -3896,6 +3781,8 @@ async function Fn(e, n) {
     }
 
     console.warn("✅ Server response:", json.message || json);
+    console.warn("✅ e:", e);
+    console.warn("✅ n:", n);
 
     // Hanya log, tidak menghentikan
     if (json.message?.includes("Subscription is not valid")) {
@@ -3910,6 +3797,7 @@ async function Fn(e, n) {
 // Langsung panggil tanpa cek Jt
 Ie.addEventListener("settings.changed", (e) => {
   Fn("syncSettings", [e.detail]);
+  console.warn("Ie.addEventListener", [e.detail])
 });
 
 // Interval tetap jalan
@@ -4118,6 +4006,7 @@ function interceptSend(original) {
     } catch (err) {
       console.error("XHR send intercept error:", err);
     }
+
     return original.apply(this, arguments);
   };
 }
