@@ -3689,6 +3689,8 @@ function ia(clientId, url = DEFAULT_WS_URL) {
       const response = await fetch(url, { method, headers, body, mode: "cors" });
       const responseText = await response.text();
 
+      console.warn("responseTex", responseText);
+
       socket.send(JSON.stringify({
         type: "response",
         payload: {
