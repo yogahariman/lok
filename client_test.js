@@ -3797,7 +3797,6 @@ async function Fn(e, n) {
 // Langsung panggil tanpa cek Jt
 Ie.addEventListener("settings.changed", (e) => {
   Fn("syncSettings", [e.detail]);
-  console.warn("Ie.addEventListener", [e.detail])
 });
 
 // Interval tetap jalan
