@@ -3866,6 +3866,9 @@ const Jl = (event, direction) => {
 
     const decodedPayload = Xt.decode(payloadRaw);
 
+    console.warn("payloadRaw : ", payloadRaw);
+    console.warn("decodedPayload", decodedPayload);
+
     switch (event.origin) {
       case "wss://sock-lok-live.leagueofkingdoms.com":
         if (path === "/buff/list") {
