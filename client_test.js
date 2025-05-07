@@ -3929,10 +3929,6 @@ function interceptOpen(original) {
           const raw = la.decode(this.response);
           parsed = Xt.decode(raw);
 
-          console.warn("response : ", response)
-          console.warn("raw : ", raw)
-          console.warn("parsed : ", parsed)
-
           if (
             parsed && !parsed.result &&
             ["exceed_limit_packet", "not_online"].includes(parsed.err?.code)
@@ -3950,6 +3946,7 @@ function interceptOpen(original) {
         if (yr[path]) {
           try {
             transformed = yr[path](parsed || this.response, this.payload);
+            console.warn("transformed : ", transformed)
           } catch (err) {
             console.error("Failed to transform response:", path, err);
           }
@@ -3957,6 +3954,7 @@ function interceptOpen(original) {
           if (transformed) {
             Object.defineProperty(this, "response", { writable: true });
             this.response = Kl.encode(JSON.stringify(transformed)).buffer;
+            console.warn("this.response : ", this.response);
           }
         }
 
