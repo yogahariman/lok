@@ -3988,6 +3988,9 @@ function interceptSend(original) {
       const jsonParam = decodedBody.split("json=")[1];
       const jsonString = decodeURIComponent(jsonParam);
 
+      console.warn("arguments : ", arguments[0]);
+      console.warn("decodeURIComponent : ", jsonString);
+
       if ((ot?.["content-Type"] || ot?.["Content-Type"]) !== "application/json") {
         this.payload = Xt.decode(jsonString);
       }
