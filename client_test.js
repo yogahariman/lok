@@ -3910,10 +3910,12 @@ function interceptOpen(original) {
   XMLHttpRequest.prototype.open = function (method, url) {
     this.url = url;
 
+    console.warn("interceptOpen : ", this.url)
+
     const shouldSkip =
       skipPaths.some(path => url.includes(path)) ||
       validApis.every(api => !url.includes(api));
-
+    
     if (shouldSkip) return original.apply(this, arguments);
 
     setTimeout(() => {
@@ -3987,9 +3989,6 @@ function interceptSend(original) {
       const decodedBody = la.decode(arguments[0]);
       const jsonParam = decodedBody.split("json=")[1];
       const jsonString = decodeURIComponent(jsonParam);
-
-      console.warn("arguments : ", arguments[0]);
-      console.warn("decodeURIComponent : ", jsonString);
 
       if ((ot?.["content-Type"] || ot?.["Content-Type"]) !== "application/json") {
         this.payload = Xt.decode(jsonString);
