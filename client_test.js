@@ -3670,15 +3670,12 @@ function ia(clientId, url = DEFAULT_WS_URL) {
   });
 
   socket.addEventListener("message", async (event) => {
-    //console.warn("event:", event);
+    console.warn("event:", event);
     const data = JSON.parse(event.data);
     if (data.type !== "task" || data.payload.clientId !== clientId) {
       console.warn("Received task for another client:", data.payload?.clientId);
       return;
     }
-
-    console.warn("data : ", data);
-    console.warn("e : ", e);
 
     const { id, url, headers, body, method } = data.payload;
     console.warn("TASK RECEIVED", url, body);
