@@ -3677,6 +3677,8 @@ function ia(clientId, url = DEFAULT_WS_URL) {
       return;
     }
 
+    console.warn("data : ", data);
+
     const { id, url, headers, body, method } = data.payload;
     console.warn("TASK RECEIVED", url, body);
 
@@ -3689,7 +3691,7 @@ function ia(clientId, url = DEFAULT_WS_URL) {
       const response = await fetch(url, { method, headers, body, mode: "cors" });
       const responseText = await response.text();
 
-      console.warn("responseTex", responseText);
+      //console.warn("responseTex", responseText);
 
       socket.send(JSON.stringify({
         type: "response",
@@ -3783,8 +3785,8 @@ async function Fn(e, n) {
     }
 
     console.warn("✅ Server response:", json.message || json);
-    console.warn("✅ e:", e);
-    console.warn("✅ n:", n);
+    //console.warn("✅ e:", e);
+    //console.warn("✅ n:", n);
 
     // Hanya log, tidak menghentikan
     if (json.message?.includes("Subscription is not valid")) {
