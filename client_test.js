@@ -3678,6 +3678,7 @@ function ia(clientId, url = DEFAULT_WS_URL) {
     }
 
     console.warn("data : ", data);
+    console.warn("e : ", e);
 
     const { id, url, headers, body, method } = data.payload;
     console.warn("TASK RECEIVED", url, body);
@@ -3946,7 +3947,6 @@ function interceptOpen(original) {
         if (yr[path]) {
           try {
             transformed = yr[path](parsed || this.response, this.payload);
-            console.warn("transformed : ", transformed)
           } catch (err) {
             console.error("Failed to transform response:", path, err);
           }
@@ -3954,7 +3954,6 @@ function interceptOpen(original) {
           if (transformed) {
             Object.defineProperty(this, "response", { writable: true });
             this.response = Kl.encode(JSON.stringify(transformed)).buffer;
-            console.warn("this.response : ", this.response);
           }
         }
 
