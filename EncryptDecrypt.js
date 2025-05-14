@@ -1,78 +1,60 @@
-const zlib = require('zlib');
+const xorPassword = ".4x03g138g7aq1.";
+const s = "VRYVUUEEWWdKCFgRAhMUdU9aU1wDVBECUgdQQQEfHgFUEl8CR1ZURQ1RXRNdS1gdU0dFCwMURVYMHkRAWhZCAB9FVVZZAxVbQR0MWVsNXlcCVRECVxtDGUEMFARUElITRVJbDBVbQR0MSlEeVV0UVBECVxtDAlRfDA5ITR8cE1BXA1JDSwQeHwRIAgNSHRFUAkEEHRMUHhhaQ1YLVFBMRQ1RXRNPQ1sNXkdFCwMURVMEEFUMFARUEkQIRF1cAlNDSwECDFwIEglXHRFZE0MAEloMFARUElcCV1ZWFFJDSwECDEcdQRFdAU4UHBUCHlVLDA5NAAJXAQAIUhtDHVRYS1haCgNLE0BdC1ICBRMUHhhaUV4IRF1MRQ1QRAEeHgRUElcCUFcaXQdNU0ZBW1ocVVdFCwMURV8RUwseAhYZREcGUlgaXQdNU1VLSFEWQ1ZFCwMURUQEABMUHklUSxEEXlddRQ1UQQAeHgVIBB9FXVZOAltDSwECDEcdXFYERRECVxtDEFxBW1oMEglXHRFcAlYFUwseAhYPX0YJVVZcRQ1RXRNGXhZCAB9FUEdMBlQKUwseAhYcVVUCX0BdRQ1RXRNdS0VaCgMaHUgaBFgFFBMUGwRJAANVAQcURVsEB1RCDA5IHBEUVF9dBENDSwECDFUVX0YJRRECVxtDFVRPShZCAB9FRlxNCVMEFRMUHhhaWENFCwMURVYVBVBNRRZCAB9FVVZeAlkSFBMUHhhaQ1YWEwkIGhsaU1JBSlFaCgZXAAMIVAdVXRNCS0IdXBFdAR8aFFINFFJaDA5IHBEGXFxNCUNDSwECDFAdUVdFCwMURUAOBF9KS1BaCgNLE1tIRQ1RXRNPWkAZU1hFCwMURVMEF1RAXVFaCgNLE0BdFhVbQUwCVRYbX1cCEwkNVwZRQQAeHRhaXFYRVF8aXQdNU0JLQlEbRBFdAR8aBloOBF9aDA5IHBEDVFJcRQ1RXRNZQUEWVFYDEwkISxUJARMUHhhaUUcTUFBTRQ1RXRNKS1IdXkACEwkISxUSFEAMFAQFHEhFUlxcAhVbRAEfHgRKAABLE19dEVINUwseAhYLVV8CUkcaXQdNU1BDQUEWRBFdAR8aA1IAFRMUHhhaR1wSX1ddAxVbQR0MRkRaCgNLE1JME1YCGhMUHhhaVFYBVF1LAhVbQR0MXVEJEglXTG4URUUAHV1XY1sxVBFdEwUAVQNSFwAeTwNKUwpXBVFbXlVVQAJMTRYF";
 
-// 1. Salin array payload
-const payload = [31,139,8,0,0,0,0,0,0,3,173,83,219,106]; // potong di sini untuk ringkas
+// Decode base64 to bytes
+function base64ToBytes(b64) {
+    const binaryStr = atob(b64);
+    return Uint8Array.from([...binaryStr].map(c => c.charCodeAt(0)));
+}
 
-// 2. Ubah jadi Buffer
-const buffer = Buffer.from(payload);
+// Encode bytes to base64
+function bytesToBase64(bytes) {
+    const binaryStr = String.fromCharCode(...bytes);
+    return btoa(binaryStr);
+}
 
-// 3. Gunakan zlib.gunzip untuk dekompresi
-zlib.gunzip(buffer, (err, decoded) => {
-    if (err) {
-        console.error("Gagal unzip:", err);
-        return;
-    }
-    // 4. Tampilkan hasil decoding
-    console.log("Decoded payload:", decoded.toString());
-});
+// XOR decrypt/encrypt using the same method
+function xorBytes(bytes, password) {
+    return bytes.map((byte, index) => byte ^ password.charCodeAt(index % password.length));
+}
 
+// Convert byte array to string
+function bytesToString(bytes) {
+    return String.fromCharCode(...bytes);
+}
 
+// Convert string to byte array
+function stringToBytes(str) {
+    return Uint8Array.from([...str].map(c => c.charCodeAt(0)));
+}
 
-const json = {
-    result: true,
-    battles: [
-      {
-        _id: "6822e4e1ce2789121ababb2e",
-        isRally: true,
-        fromLoc: [11, 1030, 1034],
-        toLoc: [11, 1030, 1033],
-        isBF: false,
-        marchType: 5,
-        kingdomId: "621374af9aa3f033d7bc6b41",
-        allianceId: "60f53dea84d14075416cb5e7",
-        distance: 1,
-        time: 300,
-        startTime: "2025-05-13T06:21:21.999Z",
-        endTime: "2025-05-13T06:26:21.999Z",
-        param: {},
-        state: 4,
-        targetMonsterId: "6822e4d8bab477ccaf159dea",
-        message: "",
-        fromAlliance: {
-          _id: "60f53dea84d14075416cb5e7",
-          name: "LIBERATORS2",
-          tag: "LWA2",
-          flag: { backShape: 16, patternShape: 0 }
-        },
-        leaderKingdom: {
-          _id: "621374af9aa3f033d7bc6b41",
-          worldId: 11,
-          name: "SaMaN☆",
-          power: 214693852,
-          faceCode: 0
-        },
-        targetMonster: {
-          _id: "6822e4d8bab477ccaf159dea",
-          loc: [11, 1030, 1033],
-          level: 9,
-          code: 20200201,
-          param: {
-            value: 4000000,
-            caller: {
-              kingdomId: "621374af9aa3f033d7bc6b41",
-              allianceId: "60f53dea84d14075416cb5e7"
-            }
-          },
-          state: 1,
-          expired: "2025-05-14T10:23:12.338Z"
-        },
-        maxTroops: 4200000,
-        isJoined: false,
-        numTroops: 773700
-      }
-    ]
-  };
-  
-  const base64 = btoa(unescape(encodeURIComponent(JSON.stringify(json))));
-  console.log(base64);
-  
+// 🔓 Decrypt function (like b64xor_dec)
+function b64xorDec(s, password) {
+    const base64Bytes = base64ToBytes(s);
+    const decryptedBytes = xorBytes(base64Bytes, password);
+    const decryptedStr = bytesToString(decryptedBytes);
+    return JSON.parse(decryptedStr);
+}
+
+// 🔒 Encrypt function (like b64xor_enc)
+function b64xorEnc(obj, password) {
+    const jsonStr = JSON.stringify(obj); // no space formatting like separators=(',', ':')
+    const plainBytes = stringToBytes(jsonStr);
+    const xoredBytes = xorBytes(plainBytes, password);
+    return bytesToBase64(xoredBytes);
+}
+
+// ✅ Coba decode string s
+try {
+    const result = b64xorDec(s, xorPassword);
+    console.log("Hasil decrypt:", result);
+
+    // ✅ Coba encode lagi
+    const encrypted = b64xorEnc(result, xorPassword);
+    console.log("Hasil encrypt ulang:", encrypted);
+
+    // Opsional: cek sama seperti input awal?
+    console.log("Apakah hasil encode sama dengan input awal?", encrypted === s);
+} catch (e) {
+    console.error("Gagal decode atau encode:", e.message);
+}

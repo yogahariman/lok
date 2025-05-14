@@ -1,5 +1,5 @@
 // ==UserScript==
-// @name         Capture LOK Token and RegionHash
+// @name         AutoJoinRallyLOK
 // @namespace    http://tampermonkey.net/
 // @version      1.2
 // @description  Intercept login and capture token + regionHash
