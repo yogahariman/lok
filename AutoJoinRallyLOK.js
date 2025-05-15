@@ -15,7 +15,7 @@
   let token = null;
   let regionHash = null;
   let xor_password = null;
-  const delayJoin = 3000; // 3 detik delay sebelum join rally
+  const delayJoin = 5000; // 3 detik delay sebelum join rally
 
   // Step 1: Intercept login and capture token + regionHash
   const originalOpen = XMLHttpRequest.prototype.open;
@@ -89,7 +89,7 @@
   setTimeout(() => {
     autoJoinRally();
     // Lalu jalankan tiap 60 detik
-    setInterval(autoJoinRally, 60000);
+    setInterval(autoJoinRally, 60000*2);
   }, delayJoin);
 
   async function fetchRallyList(token, url, body) {
@@ -126,7 +126,7 @@
   async function sendJoinRallyRequest(url, token, body) {
     try {
       // Tambahkan delay 5 detik (5000 ms)
-      await new Promise(resolve => setTimeout(resolve, 5000));
+      await new Promise(resolve => setTimeout(resolve, delayJoin));
       await fetch(url, {
         method: "POST",
         mode: "cors",
@@ -315,9 +315,8 @@
 
           const payload_encrypted = b64xorEnc(payload, xor_password);
 
-          url = "https://api-lok-live.leagueofkingdoms.com/api/field/rally/join";
           //await delay(5000);
-          await sendJoinRallyRequest(url, token, payload_encrypted);
+          await sendJoinRallyRequest("https://api-lok-live.leagueofkingdoms.com/api/field/rally/join", token, payload_encrypted);
           //const responseJoinRally = await fetchRallyList(token, "https://api-lok-live.leagueofkingdoms.com/api/field/rally/join", payload_encrypted);
           //console.log('🚀 Bergabung ke rally: ', responseJoinRally);
 
