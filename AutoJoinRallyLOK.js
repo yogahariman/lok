@@ -123,6 +123,33 @@
     }
   }
 
+  async function sendJoinRallyRequest(url, token, body) {
+    try {
+      // Tambahkan delay 5 detik (5000 ms)
+      await new Promise(resolve => setTimeout(resolve, 5000));
+      await fetch(url, {
+        method: "POST",
+        mode: "cors",
+        credentials: "omit",
+        referrer: "https://play.leagueofkingdoms.com/",
+        headers: {
+          "User-Agent": navigator.userAgent,
+          "Accept": "*/*",
+          "Accept-Language": "en-US,en;q=0.5",
+          "x-access-token": token,
+          "Content-Type": "application/x-www-form-urlencoded",
+          "Sec-Fetch-Dest": "empty",
+          "Sec-Fetch-Mode": "cors",
+          "Sec-Fetch-Site": "same-site"
+        },
+        body: `json=${encodeURIComponent(JSON.stringify(body))}`
+      });
+    } catch (err) {
+      console.error("❌ Gagal mengirim join rally:", err);
+    }
+  }
+
+
   /*
   function decodePayload(rallyData) {
     if (!rallyData || !rallyData.isPacked || !Array.isArray(rallyData.payload)) {
@@ -246,7 +273,11 @@
   } catch (e) {
     console.error("Gagal decode atau encode:", e.message);
   }
-  */  
+  */
+
+  function delay(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+  }
 
   // Step 3: Function to fetch and join rally
   async function autoJoinRally() {
@@ -284,9 +315,12 @@
 
           const payload_encrypted = b64xorEnc(payload, xor_password);
 
-          cont
-          const responseJoinRally = await fetchRallyList(token, "https://api-lok-live.leagueofkingdoms.com/api/field/rally/join", payload_encrypted);
-          console.log('🚀 Bergabung ke rally: ', responseJoinRally);
+          url = "https://api-lok-live.leagueofkingdoms.com/api/field/rally/join";
+          //await delay(5000);
+          await sendJoinRallyRequest(url, token, payload_encrypted);
+          //const responseJoinRally = await fetchRallyList(token, "https://api-lok-live.leagueofkingdoms.com/api/field/rally/join", payload_encrypted);
+          //console.log('🚀 Bergabung ke rally: ', responseJoinRally);
+
 
           /*
           const joinResponse = await fetch("https://api-lok-live.leagueofkingdoms.com/api/field/rally/join", {
