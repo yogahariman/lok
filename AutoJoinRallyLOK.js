@@ -276,7 +276,7 @@
           //console.log(`🚀 Bergabung ke rally: ${battleId} (Monster: ${monsterCode}, HP: ${monsterHP})`);
 
           const troopCodes = [50100306, 50100305, 50100204];
-          const troopAmounts = [10000, 0, 0];
+          const troopAmounts = [0, 100000, 0];
           const rallyId = battleId;
 
           const payload = createJoinRallyPayload(troopCodes, troopAmounts, rallyId);
