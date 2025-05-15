@@ -284,7 +284,9 @@
 
           const payload_encrypted = b64xorEnc(payload, xor_password);
 
-          console.log('🚀 Bergabung ke rally: ', payload_encrypted);
+          cont
+          const responseJoinRally = await fetchRallyList(token, "https://api-lok-live.leagueofkingdoms.com/api/field/rally/join", payload_encrypted);
+          console.log('🚀 Bergabung ke rally: ', responseJoinRally);
 
           /*
           const joinResponse = await fetch("https://api-lok-live.leagueofkingdoms.com/api/field/rally/join", {
