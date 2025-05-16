@@ -17,6 +17,8 @@
   let xor_password = null;
   const delayJoin = 5000; // 5 detik delay sebelum join rally
   const delayCheckList = 60000; // 60 detik delay untuk check list rally
+  const troopCodes = [50100306, 50100305, 50100304];
+  const troopAmounts = [0, 100000, 0];
 
   // Step 1: Intercept login and capture token + regionHash
   const originalOpen = XMLHttpRequest.prototype.open;
@@ -112,10 +114,10 @@
         },
         body: `json=${encodeURIComponent(body)}`
       });
-  
+
       if (returnResponse) {
         const text = await response.text();
-  
+
         try {
           const json = JSON.parse(text);
           return json;
@@ -132,7 +134,7 @@
       return null;
     }
   }
-  
+
 
   async function fetchRallyList(token, url, body) {
     try {
@@ -192,28 +194,6 @@
   }
 
 
-  /*
-  function decodePayloadArray(rallyData) {
-    if (!rallyData || !rallyData.isPacked || !Array.isArray(rallyData.payload)) {
-      console.error("❌ Data rally tidak valid.");
-      return null;
-    }
-
-    const compressedPayload = Buffer.from(rallyData.payload);
-
-    const zlib = require('zlib');
-    try {
-      const decompressedData = zlib.gunzipSync(compressedPayload);
-      const jsonData = JSON.parse(decompressedData.toString());
-      console.log("✅ Decoded Rally JSON:", jsonData);
-      return jsonData;
-    } catch (err) {
-      console.error("❌ Gagal mendekode payload:", err);
-      return null;
-    }
-  }
-  */
-
   function decodePayloadArray(rallyData) {
     if (!rallyData || !rallyData.isPacked || !Array.isArray(rallyData.payload)) {
       console.error("❌ Data rally tidak valid.");
@@ -256,6 +236,11 @@
       rallyMoId
     };
   }
+
+  function useActionPointPayload(code, amount) {
+    return { code, amount };
+  }  
+
 
   // Decode base64 to bytes
   function base64ToBytes(b64) {
@@ -326,6 +311,7 @@
     try {
 
       let inputRaw;
+
       /*
       const url = "https://api-lok-live.leagueofkingdoms.com/api/alliance/battle/list/v2";
       const body = {};
@@ -337,9 +323,9 @@
         body: "{}",
         returnResponse: true
       };
-      
+
       const rallyList = await sendRequest(inputRaw);
-      
+
       console.log("📥 Rally list response:", rallyList);
       const rallyJson = decodePayloadArray(rallyList);
 
@@ -348,16 +334,32 @@
         return;
       }
 
-      const rallies = rallyJson.battles;
-
       inputRaw = {
         url: "https://api-lok-live.leagueofkingdoms.com/api/kingdom/profile/my",
         token: token,
         body: b64xorEnc({}, xor_password),
         returnResponse: true
       };
-      const infoProfile = await sendRequest(inputRaw);
-      //console.log("📥 Data Profiles:", infoProfile);
+      const infoProfileEnc = await sendRequest(inputRaw);
+      const infoProfile = b64xorDec(infoProfileEnc, xor_password);
+      const actionPoint = infoProfile?.profile?.actionPoint?.value;
+      //console.log("📥 Action Points:", infoProfile?.profile?.actionPoint?.value);
+
+      if (actionPoint < 50) {
+        //10101049 ->10
+        //10101050 ->20
+        //10101051 ->50
+        //10101052 ->100
+        inputRaw = {
+          url: "https://api-lok-live.leagueofkingdoms.com/api/item/use",
+          token: token,
+          body: b64xorEnc(useActionPointPayload(10101050, 10), xor_password),
+          returnResponse: false
+        };
+        await sendRequest(inputRaw);
+      }
+
+      const rallies = rallyJson.battles;
 
       for (const battle of rallies) {
         const battleId = battle._id;
@@ -370,10 +372,7 @@
         if (!isJoined) {
           //console.log(`🚀 Bergabung ke rally: ${battleId} (Monster: ${monsterCode}, HP: ${monsterHP})`);
 
-          const troopCodes = [50100306, 50100305, 50100204];
-          const troopAmounts = [0, 100000, 0];
           const rallyId = battleId;
-
           const payload = createJoinRallyPayload(troopCodes, troopAmounts, rallyId);
           //console.log(JSON.stringify(payload, null, 2));
 
@@ -386,31 +385,8 @@
             token: token,
             body: payload_encrypted,
             returnResponse: false
-          };          
+          };
           await sendRequest(inputRaw);
-
-          //await delay(5000);
-          //await sendJoinRallyRequest("https://api-lok-live.leagueofkingdoms.com/api/field/rally/join", token, payload_encrypted);
-          //const responseJoinRally = await fetchRallyList(token, "https://api-lok-live.leagueofkingdoms.com/api/field/rally/join", payload_encrypted);
-          //console.log('🚀 Bergabung ke rally: ', responseJoinRally);
-
-
-          /*
-          const joinResponse = await fetch("https://api-lok-live.leagueofkingdoms.com/api/field/rally/join", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/x-www-form-urlencoded",
-              "x-access-token": token,
-            },
-            body: `json=${encodeURIComponent(JSON.stringify({ rallyMoId: battleId }))}`
-          });
-          
-          const joinResult = await joinResponse.json();
-          console.log("✅ Hasil Join:", joinResult);
-
-          // Delay antar join untuk menghindari spam
-          await new Promise(resolve => setTimeout(resolve, 1500));
-          */
         }
 
       }
