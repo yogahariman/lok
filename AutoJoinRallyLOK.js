@@ -18,7 +18,17 @@
   const delayJoin = 5000; // 5 detik delay sebelum join rally
   const delayCheckList = 60000; // 60 detik delay untuk check list rally
   const troopCodes = [50100306, 50100305, 50100304];
-  const troopAmounts = [0, 100000, 0];
+  const troopAmounts = [90000, 0, 0];
+  const allowedMonsters = {
+    "20200201": { name: "DeathKar", minLevel: 4 },
+    "20200202": { name: "Green Dragon", minLevel: 99 },
+    "20200203": { name: "Red Dragon", minLevel: 1 },
+    "20200204": { name: "Yellow Dragon", minLevel: 99 },
+    "20200206": { name: "Panta", minLevel: 1 },
+    "20200207": { name: "Gargantua", minLevel: 1 },
+    "20700505": { name: "Magdar", minLevel: 1 },
+    "20700506": { name: "Spartoi", minLevel: 4 }
+  };
 
 
   // Decode base64 to bytes
@@ -355,8 +365,19 @@
       for (const battle of rallies) {
         const battleId = battle._id;
         const isJoined = battle.isJoined;
-        //const monsterCode = battle.targetMonster?.code || "UNKNOWN";
-        //const monsterHP = battle.targetMonster?.param?.value || "UNKNOWN";
+        const monsterCode = battle.targetMonster?.code;
+        const monsterLevel = battle.targetMonster?.level;
+        const monsterHP = battle.targetMonster?.param?.value ?? 0;  // default 0 kalau null
+
+        const monsterInfo = allowedMonsters[monsterCode];
+        const isAllowed = monsterInfo && monsterLevel >= monsterInfo.minLevel;
+        if (!isAllowed) {
+          console.log("❌ Tidak join rally:", monsterInfo?.name || "Unknown", "(Level:", monsterLevel, ")");
+          return; // atau continue; jika di dalam loop
+        } else {
+          console.log("✅ Join rally:", monsterInfo.name, "(Level:", monsterLevel, ")");
+          // lanjut join rally
+        }
 
         //console.log(`🔍 Memeriksa rally: ${battleId}, isJoined: ${isJoined}, monster: ${monsterCode}, HP: ${monsterHP}`);
 
