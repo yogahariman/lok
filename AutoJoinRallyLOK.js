@@ -328,12 +328,16 @@
         returnResponse: true
       };
       const rallyList = await sendRequest(inputRaw);
-      console.log("📥 Rally list response:", rallyList);
+      console.log("📥 Rally list response:", rallyList);      
       const rallyListJson = decodePayloadArray(rallyList.payload);
-
+      
+      if (!rallyListJson.result){
+        console.log("⚠️ Rally list payload tidak ada.");
+        return;
+      }
 
       if (!Array.isArray(rallyListJson.battles) || rallyListJson.battles.length === 0) {
-        console.warn("⚠️ Rally list kosong atau tidak valid.");
+        console.log("⚠️ Rally list kosong atau tidak valid.");
         return;
       }
 
