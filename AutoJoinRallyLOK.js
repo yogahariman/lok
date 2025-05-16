@@ -341,16 +341,22 @@
         return;
       }
 
+      const rallies = rallyListJson.battles;
+
+      if (rallies.every(battle => battle.isJoined)) {
+        console.log("Sudah Join semua rally")
+        return;
+      }      
+
       //Use Action Point if less than 50
       await useActionPoint();
 
-      const rallies = rallyListJson.battles;
 
       for (const battle of rallies) {
         const battleId = battle._id;
         const isJoined = battle.isJoined;
-        const monsterCode = battle.targetMonster?.code || "UNKNOWN";
-        const monsterHP = battle.targetMonster?.param?.value || "UNKNOWN";
+        //const monsterCode = battle.targetMonster?.code || "UNKNOWN";
+        //const monsterHP = battle.targetMonster?.param?.value || "UNKNOWN";
 
         //console.log(`🔍 Memeriksa rally: ${battleId}, isJoined: ${isJoined}, monster: ${monsterCode}, HP: ${monsterHP}`);
 
