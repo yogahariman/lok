@@ -17,6 +17,7 @@
   let xor_password = null;
   const delayJoin = 5000; // 5 detik delay sebelum join rally
   const delayCheckList = 60000; // 60 detik delay untuk check list rally
+  let autoJoinIntervalId = null;
   const troopCodes = [50100306, 50100305, 50100304];
   const troopAmounts = [90000, 0, 0];
   const allowedMonsters = {
@@ -145,26 +146,6 @@
     return originalSend.apply(this, arguments);
   };
 
-
-  // Step 2: Intercept WebSocket message to detect rally
-  /*const wsSend = WebSocket.prototype.send;
-  WebSocket.prototype.send = function (...args) {
-    this.addEventListener("message", (event) => {
-      const data = event.data;
-      if (typeof data === "string" && data.includes("/alliance/rally/new")) {
-        console.warn("[🎯 RALLY DETECTED]", data);
-        setTimeout(autoJoinRally, delayJoin); // add delay before joining
-      }
-    });
-    return wsSend.apply(this, args);
-  };
-*/
-  // Jalankan autoJoinRally pertama kali setelah delayJoin (3 detik)
-  setTimeout(() => {
-    autoJoinRally();
-    // Lalu jalankan tiap 60 detik
-    setInterval(autoJoinRally, delayCheckList);
-  }, delayJoin);
 
   async function sendRequest({ url, token, body, returnResponse = false }) {
     try {
@@ -338,10 +319,10 @@
         returnResponse: true
       };
       const rallyList = await sendRequest(inputRaw);
-      console.log("📥 Rally list response:", rallyList);      
+      console.log("📥 Rally list response:", rallyList);
       const rallyListJson = decodePayloadArray(rallyList.payload);
-      
-      if (!rallyListJson.result){
+
+      if (!rallyListJson.result) {
         console.log("⚠️ Rally list payload tidak ada.");
         return;
       }
@@ -356,7 +337,7 @@
       if (rallies.every(battle => battle.isJoined)) {
         console.log("Sudah Join semua rally")
         return;
-      }      
+      }
 
       //Use Action Point if less than 50
       await useActionPoint();
@@ -406,6 +387,93 @@
       console.error("❌ Error saat auto join:", err);
     }
   }
+
+  // Step 2: Intercept WebSocket message to detect rally
+  /*const wsSend = WebSocket.prototype.send;
+  WebSocket.prototype.send = function (...args) {
+    this.addEventListener("message", (event) => {
+      const data = event.data;
+      if (typeof data === "string" && data.includes("/alliance/rally/new")) {
+        console.warn("[🎯 RALLY DETECTED]", data);
+        setTimeout(autoJoinRally, delayJoin); // add delay before joining
+      }
+    });
+    return wsSend.apply(this, args);
+  };
+*/
+  // // Jalankan autoJoinRally pertama kali setelah delayJoin (3 detik)
+  // setTimeout(() => {
+  //   autoJoinRally();
+  //   // Lalu jalankan tiap 60 detik
+  //   setInterval(autoJoinRally, delayCheckList);
+  // }, delayJoin);
+
+
+  // Fungsi menyimpan status ON/OFF
+  function getAutoJoinStatus() {
+    return localStorage.getItem('autojoin_enabled') === 'true';
+  }
+
+  function updateAutoJoinButton() {
+    const btn = document.getElementById('autoJoinToggleBtn');
+    if (!btn) return;
+    btn.textContent = getAutoJoinStatus() ? '⛔ AutoJoin: ON (Click to OFF)' : '▶️ AutoJoin: OFF (Click to ON)';
+  }
+
+  function toggleAutoJoin() {
+    const current = getAutoJoinStatus();
+    const newStatus = !current;
+    localStorage.setItem('autojoin_enabled', newStatus);
+    updateAutoJoinButton();
+
+    if (newStatus) {
+      console.log("✅ AutoJoin ENABLED");
+      autoJoinRally(); // Jalankan pertama
+      autoJoinIntervalId = setInterval(autoJoinRally, delayCheckList);
+    } else {
+      console.log("⛔ AutoJoin DISABLED");
+      if (autoJoinIntervalId !== null) {
+        clearInterval(autoJoinIntervalId);
+        autoJoinIntervalId = null;
+      }
+    }
+  }
+
+  function injectAutoJoinToggle() {
+    const existingBtn = document.getElementById('autoJoinToggleBtn');
+    if (existingBtn) return; // tombol sudah ada
+
+    const btn = document.createElement('button');
+    btn.id = 'autoJoinToggleBtn';
+    btn.textContent = getAutoJoinStatus() ? '⛔ AutoJoin: ON (Click to OFF)' : '▶️ AutoJoin: OFF (Click to ON)';
+    btn.style.position = 'fixed';
+    btn.style.bottom = '10px';
+    btn.style.right = '10px';
+    btn.style.zIndex = 9999;
+    btn.style.padding = '8px 12px';
+    btn.style.backgroundColor = '#333';
+    btn.style.color = '#fff';
+    btn.style.border = 'none';
+    btn.style.borderRadius = '5px';
+    btn.style.cursor = 'pointer';
+    btn.style.fontSize = '14px';
+    btn.addEventListener('click', toggleAutoJoin);
+    document.body.appendChild(btn);
+  }
+
+
+  window.addEventListener('load', () => {
+    // Pantau per 2 detik apakah tombol perlu di-render ulang
+    setInterval(injectAutoJoinToggle, 2000);
+
+    if (getAutoJoinStatus()) {
+      console.log("🔁 AutoJoin aktif saat load");
+      autoJoinRally();
+      autoJoinIntervalId = setInterval(autoJoinRally, delayCheckList);
+    } else {
+      console.log("⛔ AutoJoin OFF saat load");
+    }
+  });
 
 
 })();
