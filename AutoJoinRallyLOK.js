@@ -15,7 +15,8 @@
   let token = null;
   let regionHash = null;
   let xor_password = null;
-  const delayJoin = 5000; // 3 detik delay sebelum join rally
+  const delayJoin = 5000; // 5 detik delay sebelum join rally
+  const delayCheckList = 60000; // 60 detik delay untuk check list rally
 
   // Step 1: Intercept login and capture token + regionHash
   const originalOpen = XMLHttpRequest.prototype.open;
@@ -89,8 +90,49 @@
   setTimeout(() => {
     autoJoinRally();
     // Lalu jalankan tiap 60 detik
-    setInterval(autoJoinRally, 60000*2);
+    setInterval(autoJoinRally, delayCheckList);
   }, delayJoin);
+
+  async function sendRequest({ url, token, body, returnResponse = false }) {
+    try {
+      const response = await fetch(url, {
+        method: "POST",
+        mode: "cors",
+        credentials: "omit",
+        referrer: "https://play.leagueofkingdoms.com/",
+        headers: {
+          "User-Agent": navigator.userAgent,
+          "Accept": "*/*",
+          "Accept-Language": "en-US,en;q=0.5",
+          "x-access-token": token,
+          "Content-Type": "application/x-www-form-urlencoded",
+          "Sec-Fetch-Dest": "empty",
+          "Sec-Fetch-Mode": "cors",
+          "Sec-Fetch-Site": "same-site"
+        },
+        body: `json=${encodeURIComponent(body)}`
+      });
+  
+      if (returnResponse) {
+        const text = await response.text();
+  
+        try {
+          const json = JSON.parse(text);
+          return json;
+        } catch (parseErr) {
+          console.warn("⚠️ Response bukan JSON, mengembalikan sebagai teks.");
+          return text;
+        }
+      } else {
+        // Jika tidak perlu response, cukup kirim request
+        //console.log("✅ Request sent (no response returned)");
+      }
+    } catch (err) {
+      console.error("❌ Gagal mengirim request:", err);
+      return null;
+    }
+  }
+  
 
   async function fetchRallyList(token, url, body) {
     try {
@@ -151,7 +193,7 @@
 
 
   /*
-  function decodePayload(rallyData) {
+  function decodePayloadArray(rallyData) {
     if (!rallyData || !rallyData.isPacked || !Array.isArray(rallyData.payload)) {
       console.error("❌ Data rally tidak valid.");
       return null;
@@ -172,7 +214,7 @@
   }
   */
 
-  function decodePayload(rallyData) {
+  function decodePayloadArray(rallyData) {
     if (!rallyData || !rallyData.isPacked || !Array.isArray(rallyData.payload)) {
       console.error("❌ Data rally tidak valid.");
       return null;
@@ -282,18 +324,40 @@
   // Step 3: Function to fetch and join rally
   async function autoJoinRally() {
     try {
+
+      let inputRaw;
+      /*
       const url = "https://api-lok-live.leagueofkingdoms.com/api/alliance/battle/list/v2";
       const body = {};
       const rallyList = await fetchRallyList(token, url, body);
+      */
+      inputRaw = {
+        url: "https://api-lok-live.leagueofkingdoms.com/api/alliance/battle/list/v2",
+        token: token,
+        body: "{}",
+        returnResponse: true
+      };
+      
+      const rallyList = await sendRequest(inputRaw);
+      
       console.log("📥 Rally list response:", rallyList);
-      const rallyJson = decodePayload(rallyList);
+      const rallyJson = decodePayloadArray(rallyList);
 
-      if (!rallyJson || !Array.isArray(rallyJson.battles)) {
-        console.warn("❌ rallyJson.battles tidak tersedia atau bukan array.");
+      if (!Array.isArray(rallyJson.battles) || rallyJson.battles.length === 0) {
+        console.warn("⚠️ Rally list kosong atau tidak valid.");
         return;
       }
 
       const rallies = rallyJson.battles;
+
+      inputRaw = {
+        url: "https://api-lok-live.leagueofkingdoms.com/api/kingdom/profile/my",
+        token: token,
+        body: b64xorEnc({}, xor_password),
+        returnResponse: true
+      };
+      const infoProfile = await sendRequest(inputRaw);
+      //console.log("📥 Data Profiles:", infoProfile);
 
       for (const battle of rallies) {
         const battleId = battle._id;
@@ -315,8 +379,18 @@
 
           const payload_encrypted = b64xorEnc(payload, xor_password);
 
+          await delay(5000);
+
+          inputRaw = {
+            url: "https://api-lok-live.leagueofkingdoms.com/api/field/rally/join",
+            token: token,
+            body: payload_encrypted,
+            returnResponse: false
+          };          
+          await sendRequest(inputRaw);
+
           //await delay(5000);
-          await sendJoinRallyRequest("https://api-lok-live.leagueofkingdoms.com/api/field/rally/join", token, payload_encrypted);
+          //await sendJoinRallyRequest("https://api-lok-live.leagueofkingdoms.com/api/field/rally/join", token, payload_encrypted);
           //const responseJoinRally = await fetchRallyList(token, "https://api-lok-live.leagueofkingdoms.com/api/field/rally/join", payload_encrypted);
           //console.log('🚀 Bergabung ke rally: ', responseJoinRally);
 
