@@ -20,6 +20,67 @@
   const troopCodes = [50100306, 50100305, 50100304];
   const troopAmounts = [0, 100000, 0];
 
+
+  // Decode base64 to bytes
+  function base64ToBytes(b64) {
+    const binaryStr = atob(b64);
+    return Uint8Array.from([...binaryStr].map(c => c.charCodeAt(0)));
+  }
+
+  // Encode bytes to base64
+  function bytesToBase64(bytes) {
+    const binaryStr = String.fromCharCode(...bytes);
+    return btoa(binaryStr);
+  }
+
+  // XOR decrypt/encrypt using the same method
+  function xorBytes(bytes, password) {
+    return bytes.map((byte, index) => byte ^ password.charCodeAt(index % password.length));
+  }
+
+  // Convert byte array to string
+  function bytesToString(bytes) {
+    return String.fromCharCode(...bytes);
+  }
+
+  // Convert string to byte array
+  function stringToBytes(str) {
+    return Uint8Array.from([...str].map(c => c.charCodeAt(0)));
+  }
+
+  // 🔓 Decrypt function (like b64xor_dec)
+  function b64xorDec(s, password) {
+    const base64Bytes = base64ToBytes(s);
+    const decryptedBytes = xorBytes(base64Bytes, password);
+    const decryptedStr = bytesToString(decryptedBytes);
+    return JSON.parse(decryptedStr);
+  }
+
+  // 🔒 Encrypt function (like b64xor_enc)
+  function b64xorEnc(obj, password) {
+    const jsonStr = JSON.stringify(obj); // no space formatting like separators=(',', ':')
+    const plainBytes = stringToBytes(jsonStr);
+    const xoredBytes = xorBytes(plainBytes, password);
+    return bytesToBase64(xoredBytes);
+  }
+
+  /*
+  // ✅ Coba decode string s
+  try {
+    const result = b64xorDec(s, xorPassword);
+    console.log("Hasil decrypt:", result);
+
+    // ✅ Coba encode lagi
+    const encrypted = b64xorEnc(result, xorPassword);
+    console.log("Hasil encrypt ulang:", encrypted);
+
+    // Opsional: cek sama seperti input awal?
+    console.log("Apakah hasil encode sama dengan input awal?", encrypted === s);
+  } catch (e) {
+    console.error("Gagal decode atau encode:", e.message);
+  }
+  */
+
   // Step 1: Intercept login and capture token + regionHash
   const originalOpen = XMLHttpRequest.prototype.open;
   const originalSend = XMLHttpRequest.prototype.send;
@@ -113,6 +174,7 @@
           "Sec-Fetch-Site": "same-site"
         },
         body: `json=${encodeURIComponent(body)}`
+        //body: `json=${encodeURIComponent(JSON.stringify(body))}`
       });
 
       if (returnResponse) {
@@ -134,84 +196,42 @@
       return null;
     }
   }
-
-
-  async function fetchRallyList(token, url, body) {
-    try {
-      const response = await fetch(url, {
-        method: "POST",
-        mode: "cors",
-        credentials: "omit",
-        referrer: "https://play.leagueofkingdoms.com/",
-        headers: {
-          "User-Agent": navigator.userAgent,
-          "Accept": "*/*",
-          "Accept-Language": "en-US,en;q=0.9",
-          "Content-Type": "application/x-www-form-urlencoded",
-          "x-access-token": token,
-          "Sec-Fetch-Dest": "empty",
-          "Sec-Fetch-Mode": "cors",
-          "Sec-Fetch-Site": "same-site",
-          "Priority": "u=4"
-        },
-        body: `json=${encodeURIComponent(JSON.stringify(body))}`
-      });
-
-      const result = await response.json();
-      //console.log("📥 Rally list response:", result);
-
-      return result;
-    } catch (err) {
-      console.error("❌ Gagal mengambil data rally:", err);
-      return null;
+  /*
+    function decodePayloadArray(rallyData) {
+      if (!rallyData || !rallyData.isPacked || !Array.isArray(rallyData.payload)) {
+        console.error("❌ Data rally tidak valid.");
+        return null;
+      }
+  
+      try {
+        const compressedPayload = new Uint8Array(rallyData.payload);
+        const decompressedData = pako.inflate(compressedPayload, { to: 'string' });
+        const jsonData = JSON.parse(decompressedData);
+        console.log("✅ Decoded Payload JSON:", jsonData);
+        return jsonData;
+      } catch (err) {
+        console.error("❌ Gagal mendekode payload:", err);
+        return null;
+      }
     }
-  }
-
-  async function sendJoinRallyRequest(url, token, body) {
-    try {
-      // Tambahkan delay 5 detik (5000 ms)
-      await new Promise(resolve => setTimeout(resolve, delayJoin));
-      await fetch(url, {
-        method: "POST",
-        mode: "cors",
-        credentials: "omit",
-        referrer: "https://play.leagueofkingdoms.com/",
-        headers: {
-          "User-Agent": navigator.userAgent,
-          "Accept": "*/*",
-          "Accept-Language": "en-US,en;q=0.5",
-          "x-access-token": token,
-          "Content-Type": "application/x-www-form-urlencoded",
-          "Sec-Fetch-Dest": "empty",
-          "Sec-Fetch-Mode": "cors",
-          "Sec-Fetch-Site": "same-site"
-        },
-        body: `json=${encodeURIComponent(JSON.stringify(body))}`
-      });
-    } catch (err) {
-      console.error("❌ Gagal mengirim join rally:", err);
-    }
-  }
-
-
-  function decodePayloadArray(rallyData) {
-    if (!rallyData || !rallyData.isPacked || !Array.isArray(rallyData.payload)) {
-      console.error("❌ Data rally tidak valid.");
+  */
+  function decodePayloadArray(payload) {
+    if (!payload || !Array.isArray(payload)) {
+      console.error("❌ Data payload bukan array.");
       return null;
     }
 
     try {
-      const compressedPayload = new Uint8Array(rallyData.payload);
+      const compressedPayload = new Uint8Array(payload);
       const decompressedData = pako.inflate(compressedPayload, { to: 'string' });
       const jsonData = JSON.parse(decompressedData);
-      console.log("✅ Decoded Rally JSON:", jsonData);
+      console.log("✅ Decoded Payload JSON:", jsonData);
       return jsonData;
     } catch (err) {
       console.error("❌ Gagal mendekode payload:", err);
       return null;
     }
   }
-
   function createJoinRallyPayload(codes, amounts, rallyMoId) {
     if (!Array.isArray(codes) || !Array.isArray(amounts) || codes.length !== amounts.length) {
       console.error("❌ Input 'codes' dan 'amounts' harus array dengan panjang yang sama.");
@@ -237,70 +257,59 @@
     };
   }
 
+  function getAmountItemList(data, targetCode) {
+    const item = data.items.find(i => i.code === targetCode);
+    return item ? item.amount : null;
+  }
+
   function useActionPointPayload(code, amount) {
     return { code, amount };
-  }  
-
-
-  // Decode base64 to bytes
-  function base64ToBytes(b64) {
-    const binaryStr = atob(b64);
-    return Uint8Array.from([...binaryStr].map(c => c.charCodeAt(0)));
   }
 
-  // Encode bytes to base64
-  function bytesToBase64(bytes) {
-    const binaryStr = String.fromCharCode(...bytes);
-    return btoa(binaryStr);
+  async function useActionPoint() {
+    let inputRaw = {
+      url: "https://api-lok-live.leagueofkingdoms.com/api/kingdom/profile/my",
+      token: token,
+      body: b64xorEnc({}, xor_password),
+      returnResponse: true
+    };
+    const infoProfileEnc = await sendRequest(inputRaw);
+    const infoProfile = b64xorDec(infoProfileEnc, xor_password);
+    const actionPoint = infoProfile?.profile?.actionPoint?.value;
+
+    if (actionPoint < 50) {
+      inputRaw = {
+        url: "https://api-lok-live.leagueofkingdoms.com/api/item/list",
+        token: token,
+        body: "{}",
+        returnResponse: true
+      };
+      const itemList = await sendRequest(inputRaw);
+
+      let codeAP = null;
+      let nAp = null;
+      if (getAmountItemList(itemList, 10101049) > 20) {
+        codeAP = 10101049; nAp = 20;
+      } else if (getAmountItemList(itemList, 10101050) > 10) {
+        codeAP = 10101050; nAp = 10;
+      } else if (getAmountItemList(itemList, 10101051) > 4) {
+        codeAP = 10101051; nAp = 4;
+      } else if (getAmountItemList(itemList, 10101052) > 2) {
+        codeAP = 10101052; nAp = 2;
+      }
+
+      if (codeAP && nAp) {
+        inputRaw = {
+          url: "https://api-lok-live.leagueofkingdoms.com/api/item/use",
+          token: token,
+          body: b64xorEnc(useActionPointPayload(codeAP, nAp), xor_password),
+          returnResponse: false
+        };
+        await sendRequest(inputRaw);
+      }
+    }
   }
 
-  // XOR decrypt/encrypt using the same method
-  function xorBytes(bytes, password) {
-    return bytes.map((byte, index) => byte ^ password.charCodeAt(index % password.length));
-  }
-
-  // Convert byte array to string
-  function bytesToString(bytes) {
-    return String.fromCharCode(...bytes);
-  }
-
-  // Convert string to byte array
-  function stringToBytes(str) {
-    return Uint8Array.from([...str].map(c => c.charCodeAt(0)));
-  }
-
-  // 🔓 Decrypt function (like b64xor_dec)
-  function b64xorDec(s, password) {
-    const base64Bytes = base64ToBytes(s);
-    const decryptedBytes = xorBytes(base64Bytes, password);
-    const decryptedStr = bytesToString(decryptedBytes);
-    return JSON.parse(decryptedStr);
-  }
-
-  // 🔒 Encrypt function (like b64xor_enc)
-  function b64xorEnc(obj, password) {
-    const jsonStr = JSON.stringify(obj); // no space formatting like separators=(',', ':')
-    const plainBytes = stringToBytes(jsonStr);
-    const xoredBytes = xorBytes(plainBytes, password);
-    return bytesToBase64(xoredBytes);
-  }
-
-  /*
-  // ✅ Coba decode string s
-  try {
-    const result = b64xorDec(s, xorPassword);
-    console.log("Hasil decrypt:", result);
-
-    // ✅ Coba encode lagi
-    const encrypted = b64xorEnc(result, xorPassword);
-    console.log("Hasil encrypt ulang:", encrypted);
-
-    // Opsional: cek sama seperti input awal?
-    console.log("Apakah hasil encode sama dengan input awal?", encrypted === s);
-  } catch (e) {
-    console.error("Gagal decode atau encode:", e.message);
-  }
-  */
 
   function delay(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
@@ -312,54 +321,26 @@
 
       let inputRaw;
 
-      /*
-      const url = "https://api-lok-live.leagueofkingdoms.com/api/alliance/battle/list/v2";
-      const body = {};
-      const rallyList = await fetchRallyList(token, url, body);
-      */
       inputRaw = {
         url: "https://api-lok-live.leagueofkingdoms.com/api/alliance/battle/list/v2",
         token: token,
         body: "{}",
         returnResponse: true
       };
-
       const rallyList = await sendRequest(inputRaw);
-
       console.log("📥 Rally list response:", rallyList);
-      const rallyJson = decodePayloadArray(rallyList);
+      const rallyListJson = decodePayloadArray(rallyList.payload);
 
-      if (!Array.isArray(rallyJson.battles) || rallyJson.battles.length === 0) {
+
+      if (!Array.isArray(rallyListJson.battles) || rallyListJson.battles.length === 0) {
         console.warn("⚠️ Rally list kosong atau tidak valid.");
         return;
       }
 
-      inputRaw = {
-        url: "https://api-lok-live.leagueofkingdoms.com/api/kingdom/profile/my",
-        token: token,
-        body: b64xorEnc({}, xor_password),
-        returnResponse: true
-      };
-      const infoProfileEnc = await sendRequest(inputRaw);
-      const infoProfile = b64xorDec(infoProfileEnc, xor_password);
-      const actionPoint = infoProfile?.profile?.actionPoint?.value;
-      //console.log("📥 Action Points:", infoProfile?.profile?.actionPoint?.value);
+      //Use Action Point if less than 50
+      await useActionPoint();
 
-      if (actionPoint < 50) {
-        //10101049 ->10
-        //10101050 ->20
-        //10101051 ->50
-        //10101052 ->100
-        inputRaw = {
-          url: "https://api-lok-live.leagueofkingdoms.com/api/item/use",
-          token: token,
-          body: b64xorEnc(useActionPointPayload(10101050, 10), xor_password),
-          returnResponse: false
-        };
-        await sendRequest(inputRaw);
-      }
-
-      const rallies = rallyJson.battles;
+      const rallies = rallyListJson.battles;
 
       for (const battle of rallies) {
         const battleId = battle._id;
