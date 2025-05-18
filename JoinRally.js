@@ -1,4 +1,4 @@
-import * as pako from 'https://cdn.jsdelivr.net/npm/pako@2.1.0/+esm';
+//import * as pako from 'https://cdn.jsdelivr.net/npm/pako@2.1.0/+esm';
 
 
 // Deklarasi awal variabel sebagai null
