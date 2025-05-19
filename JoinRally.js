@@ -439,7 +439,7 @@ function interceptWebSocket() {
 
         ws.addEventListener('message', (e) => {
             const data = e.data;
-            if (typeof data === 'string' && data.includes('/chat/enter')) {
+            if (typeof data === 'string' && data.includes('/chat/new')) {
                 try {
                     console.log('[💬 CHAT]', data);
                     //const payload = JSON.parse(data.slice(2)); // buang "42", parse JSON
