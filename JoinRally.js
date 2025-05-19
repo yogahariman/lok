@@ -387,6 +387,7 @@ async function autoJoinRally() {
     }
 }
 
+/*
 function sendTelegramMessage(token, message) {
     const key = `telegram_chat_id_${token.slice(0, 10)}`;
     const send = (chatId) =>
@@ -476,7 +477,7 @@ if (typeof window.sendChatStatus !== "undefined" && window.sendChatStatus === tr
     console.log('[💬 CHAT]');
 }
       
-
+*/
 
 // Step 2: Intercept WebSocket message to detect rally
 /*const wsSend = WebSocket.prototype.send;
