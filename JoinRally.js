@@ -438,7 +438,7 @@ function interceptWebSocket() {
 
         ws.addEventListener('message', (e) => {
             const data = e.data;
-            if (typeof data === 'string' && data.includes('/chat/new')) {
+            if (typeof data === 'string' && data.includes('/chat/enter')) {
                 try {
                     console.log('[💬 CHAT]', data);
                     //const payload = JSON.parse(data.slice(2)); // buang "42", parse JSON
@@ -468,9 +468,14 @@ function interceptWebSocket() {
 
 
 // Jalankan hanya jika sendChatStatus === true
-typeof window.sendChatStatus !== 'undefined' &&
-    window.sendChatStatus === true &&
+// typeof window.sendChatStatus !== 'undefined' &&
+//     window.sendChatStatus === true &&
+//     interceptWebSocket();
+if (typeof window.sendChatStatus !== "undefined" && window.sendChatStatus === true) {
     interceptWebSocket();
+    console.log('[💬 CHAT]');
+}
+      
 
 
 // Step 2: Intercept WebSocket message to detect rally
