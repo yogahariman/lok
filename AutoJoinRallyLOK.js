@@ -438,7 +438,7 @@
       }
     }
   }
-
+  
   function injectAutoJoinToggle() {
     const existingBtn = document.getElementById('autoJoinToggleBtn');
     if (existingBtn) return; // tombol sudah ada

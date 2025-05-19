@@ -6,12 +6,8 @@ let token = null;
 let regionHash = null;
 let xor_password = null;
 const delayJoin = 5000; // 5 detik delay sebelum join rally
-//const delayCheckListRally = 60000; // 60 detik delay untuk check list rally
+const delayCheckList = 60000; // 60 detik delay untuk check list rally
 let autoJoinIntervalId = null;
-
-const delayCheckListRally = typeof window.delayCheckListRally_ !== 'undefined' 
-    ? window.delayCheckListRally_ 
-    : 60000; // 60 detik delay untuk check list rally
 
 // Decode base64 to bytes
 function base64ToBytes(b64) {
@@ -401,7 +397,7 @@ async function autoJoinRally() {
 // setTimeout(() => {
 //   autoJoinRally();
 //   // Lalu jalankan tiap 60 detik
-//   setInterval(autoJoinRally, delayCheckListRally);
+//   setInterval(autoJoinRally, delayCheckList);
 // }, delayJoin);
 
 
@@ -425,7 +421,7 @@ function toggleAutoJoin() {
     if (newStatus) {
         console.log("✅ AutoJoin ENABLED");
         autoJoinRally(); // Jalankan pertama
-        autoJoinIntervalId = setInterval(autoJoinRally, delayCheckListRally);
+        autoJoinIntervalId = setInterval(autoJoinRally, delayCheckList);
     } else {
         console.log("⛔ AutoJoin DISABLED");
         if (autoJoinIntervalId !== null) {
@@ -465,7 +461,7 @@ window.addEventListener('load', () => {
     if (getAutoJoinStatus()) {
         console.log("🔁 AutoJoin aktif saat load");
         autoJoinRally();
-        autoJoinIntervalId = setInterval(autoJoinRally, delayCheckListRally);
+        autoJoinIntervalId = setInterval(autoJoinRally, delayCheckList);
     } else {
         console.log("⛔ AutoJoin OFF saat load");
     }
