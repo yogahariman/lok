@@ -425,7 +425,7 @@ function sendTelegramMessage(token, message) {
     const savedId = localStorage.getItem(key);
     savedId ? (console.log('ℹ️ chat_id ditemukan:', savedId), send(savedId)) : fetchChatId();
 }
-
+*/
 function interceptWebSocket() {
     const OriginalWebSocket = window.WebSocket;
 
@@ -474,10 +474,7 @@ function interceptWebSocket() {
 //     interceptWebSocket();
 if (typeof window.sendChatStatus !== "undefined" && window.sendChatStatus === true) {
     interceptWebSocket();
-    console.log('[💬 CHAT]');
 }
-      
-*/
 
 // Step 2: Intercept WebSocket message to detect rally
 /*const wsSend = WebSocket.prototype.send;

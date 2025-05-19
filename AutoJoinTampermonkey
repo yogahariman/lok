@@ -4,8 +4,7 @@
 // @version      1.2
 // @description  Intercept login and capture token + regionHash
 // @match        https://play.leagueofkingdoms.com/*
-// @grant        GM_xmlhttpRequest
-// @connect      api.telegram.org
+// @grant        none
 // @require      https://cdn.jsdelivr.net/npm/pako@2.1.0/dist/pako.min.js
 // ==/UserScript==
 
