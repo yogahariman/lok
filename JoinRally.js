@@ -434,7 +434,7 @@ function sendTelegramMessage(token, message) {
   
     window.WebSocket = function (url, protocols) {
       const ws = protocols ? new OriginalWebSocket(url, protocols) : new OriginalWebSocket(url);
-      if (typeof url === 'string' && url.includes('lokcc')) {
+      if (typeof url === 'string' && url.includes('socc')) {
         ws.addEventListener('message', (e) => {
           const data = e.data;
           if (typeof data === 'string' && data.includes('/chat/new')) {
