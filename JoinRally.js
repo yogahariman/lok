@@ -9,6 +9,9 @@ const delayJoin = 5000; // 5 detik delay sebelum join rally
 //const delayCheckListRally = 60000; // 60 detik delay untuk check list rally
 let autoJoinIntervalId = null;
 
+const tokenTelegram = '1936285843:AAFgubrFQcbz0B7zN8hUKS2oNLPS-Nyyxyw'; // ← ganti token
+const yourMessage = '👋 Halo dari fungsi satu baris Tampermonkey!';
+
 const delayCheckListRally = typeof window.delayCheckListRally_ !== 'undefined' 
     ? window.delayCheckListRally_ 
     : 60000; // 60 detik delay untuk check list rally
@@ -383,6 +386,75 @@ async function autoJoinRally() {
         console.error("❌ Error saat auto join:", err);
     }
 }
+
+function sendTelegramMessage(token, message) {
+    const key = `telegram_chat_id_${token.slice(0, 10)}`;
+    const send = (chatId) =>
+      GM_xmlhttpRequest({
+        method: 'POST',
+        url: `https://api.telegram.org/bot${token}/sendMessage`,
+        headers: { 'Content-Type': 'application/json' },
+        data: JSON.stringify({ chat_id: chatId, text: message }),
+        onload: (res) => console.log('✅ Pesan dikirim:', res.responseText),
+        onerror: (err) => console.error('❌ Gagal kirim pesan:', err),
+      });
+  
+    const fetchChatId = () =>
+      GM_xmlhttpRequest({
+        method: 'GET',
+        url: `https://api.telegram.org/bot${token}/getUpdates`,
+        onload: (res) => {
+          try {
+            const updates = JSON.parse(res.responseText)?.result || [];
+            const chatId = updates.at(-1)?.message?.chat?.id;
+            if (chatId) {
+              localStorage.setItem(key, chatId);
+              console.log('✅ chat_id disimpan:', chatId);
+              send(chatId);
+            } else {
+              console.warn('⚠️ Tidak ada chat_id. Kirim pesan dulu ke bot.');
+            }
+          } catch (e) {
+            console.error('❌ Error parsing getUpdates:', e);
+          }
+        },
+        onerror: (err) => console.error('❌ Gagal getUpdates:', err),
+      });
+  
+    const savedId = localStorage.getItem(key);
+    savedId ? (console.log('ℹ️ chat_id ditemukan:', savedId), send(savedId)) : fetchChatId();
+  }
+  
+  function interceptWebSocket() {
+    const OriginalWebSocket = window.WebSocket;
+    if (OriginalWebSocket.toString().includes('OriginalWebSocket')) {
+      console.warn('[⚠️] Interceptor sudah aktif.');
+      return;
+    }
+  
+    window.WebSocket = function (url, protocols) {
+      const ws = protocols ? new OriginalWebSocket(url, protocols) : new OriginalWebSocket(url);
+      if (typeof url === 'string' && url.includes('lokcc')) {
+        ws.addEventListener('message', (e) => {
+          const data = e.data;
+          if (typeof data === 'string' && data.includes('/chat/new')) {
+            console.log('[💬 CHAT NEW DETECTED]', data);
+            //sendTelegramMessage(tokenTelegram, yourMessage);
+          }
+        });
+      }
+      return ws;
+    };
+  
+    window.WebSocket.prototype = OriginalWebSocket.prototype;
+    console.log('[✅] Interceptor WebSocket aktif.');
+  }
+  
+  // Jalankan hanya jika sendChatStatus === true
+  typeof window.sendChatStatus !== 'undefined' &&
+    window.sendChatStatus === true &&
+    interceptWebSocket();
+
 
 // Step 2: Intercept WebSocket message to detect rally
 /*const wsSend = WebSocket.prototype.send;
