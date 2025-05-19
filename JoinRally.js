@@ -12,8 +12,8 @@ let autoJoinIntervalId = null;
 const tokenTelegram = '1936285843:AAFgubrFQcbz0B7zN8hUKS2oNLPS-Nyyxyw'; // ← ganti token
 const yourMessage = '👋 Halo dari fungsi satu baris Tampermonkey!';
 
-const delayCheckListRally = typeof window.delayCheckListRally_ !== 'undefined' 
-    ? window.delayCheckListRally_ 
+const delayCheckListRally = typeof window.delayCheckListRally_ !== 'undefined'
+    ? window.delayCheckListRally_
     : 60000; // 60 detik delay untuk check list rally
 
 // Decode base64 to bytes
@@ -80,13 +80,13 @@ try {
 const originalOpen = XMLHttpRequest.prototype.open;
 const originalSend = XMLHttpRequest.prototype.send;
 
-XMLHttpRequest.prototype.open = function(method, url) {
+XMLHttpRequest.prototype.open = function (method, url) {
     this._url = url; // Simpan URL ke instance XHR
     return originalOpen.apply(this, arguments);
 };
 
-XMLHttpRequest.prototype.send = function() {
-    this.addEventListener('load', function() {
+XMLHttpRequest.prototype.send = function () {
+    this.addEventListener('load', function () {
         try {
             const targetEndpoints = [
                 "/api/auth/login",
@@ -390,68 +390,85 @@ async function autoJoinRally() {
 function sendTelegramMessage(token, message) {
     const key = `telegram_chat_id_${token.slice(0, 10)}`;
     const send = (chatId) =>
-      GM_xmlhttpRequest({
-        method: 'POST',
-        url: `https://api.telegram.org/bot${token}/sendMessage`,
-        headers: { 'Content-Type': 'application/json' },
-        data: JSON.stringify({ chat_id: chatId, text: message }),
-        onload: (res) => console.log('✅ Pesan dikirim:', res.responseText),
-        onerror: (err) => console.error('❌ Gagal kirim pesan:', err),
-      });
-  
+        GM_xmlhttpRequest({
+            method: 'POST',
+            url: `https://api.telegram.org/bot${token}/sendMessage`,
+            headers: { 'Content-Type': 'application/json' },
+            data: JSON.stringify({ chat_id: chatId, text: message }),
+            onload: (res) => console.log('✅ Pesan dikirim:', res.responseText),
+            onerror: (err) => console.error('❌ Gagal kirim pesan:', err),
+        });
+
     const fetchChatId = () =>
-      GM_xmlhttpRequest({
-        method: 'GET',
-        url: `https://api.telegram.org/bot${token}/getUpdates`,
-        onload: (res) => {
-          try {
-            const updates = JSON.parse(res.responseText)?.result || [];
-            const chatId = updates.at(-1)?.message?.chat?.id;
-            if (chatId) {
-              localStorage.setItem(key, chatId);
-              console.log('✅ chat_id disimpan:', chatId);
-              send(chatId);
-            } else {
-              console.warn('⚠️ Tidak ada chat_id. Kirim pesan dulu ke bot.');
-            }
-          } catch (e) {
-            console.error('❌ Error parsing getUpdates:', e);
-          }
-        },
-        onerror: (err) => console.error('❌ Gagal getUpdates:', err),
-      });
-  
+        GM_xmlhttpRequest({
+            method: 'GET',
+            url: `https://api.telegram.org/bot${token}/getUpdates`,
+            onload: (res) => {
+                try {
+                    const updates = JSON.parse(res.responseText)?.result || [];
+                    const chatId = updates.at(-1)?.message?.chat?.id;
+                    if (chatId) {
+                        localStorage.setItem(key, chatId);
+                        console.log('✅ chat_id disimpan:', chatId);
+                        send(chatId);
+                    } else {
+                        console.warn('⚠️ Tidak ada chat_id. Kirim pesan dulu ke bot.');
+                    }
+                } catch (e) {
+                    console.error('❌ Error parsing getUpdates:', e);
+                }
+            },
+            onerror: (err) => console.error('❌ Gagal getUpdates:', err),
+        });
+
     const savedId = localStorage.getItem(key);
     savedId ? (console.log('ℹ️ chat_id ditemukan:', savedId), send(savedId)) : fetchChatId();
-  }
-  
-  function interceptWebSocket() {
+}
+
+function interceptWebSocket() {
     const OriginalWebSocket = window.WebSocket;
+
     if (OriginalWebSocket.toString().includes('OriginalWebSocket')) {
-      console.warn('[⚠️] Interceptor sudah aktif.');
-      return;
+        console.warn('[⚠️] Interceptor sudah aktif.');
+        return;
     }
-  
+
     window.WebSocket = function (url, protocols) {
-      const ws = protocols ? new OriginalWebSocket(url, protocols) : new OriginalWebSocket(url);
-      if (typeof url === 'string' && url.includes('socc')) {
+        const ws = protocols ? new OriginalWebSocket(url, protocols) : new OriginalWebSocket(url);
+
         ws.addEventListener('message', (e) => {
-          const data = e.data;
-          if (typeof data === 'string' && data.includes('/chat/new')) {
-            console.log('[💬 CHAT NEW DETECTED]', data);
-            //sendTelegramMessage(tokenTelegram, yourMessage);
-          }
+            const data = e.data;
+            if (typeof data === 'string' && data.includes('/chat/new')) {
+                try {
+                    console.log('[💬 CHAT]', data);
+                    //const payload = JSON.parse(data.slice(2)); // buang "42", parse JSON
+                    //const [, chatData] = payload;
+
+                    //const from = chatData.from;
+                    //const text = chatData.text;
+                    //const tag = chatData.alliance?.tag || '';
+
+                    //const formatted = `[${tag}] ${from}: ${text}`;
+                    //console.log('[💬 CHAT]', formatted);
+
+                    // Kirim ke Telegram jika perlu:
+                    // sendTelegramMessage(tokenTelegram, formatted);
+                } catch (err) {
+                    console.error('❌ Gagal parsing chat /chat/new:', err);
+                }
+            }
         });
-      }
-      return ws;
+
+        return ws;
     };
-  
+
     window.WebSocket.prototype = OriginalWebSocket.prototype;
     console.log('[✅] Interceptor WebSocket aktif.');
-  }
-  
-  // Jalankan hanya jika sendChatStatus === true
-  typeof window.sendChatStatus !== 'undefined' &&
+}
+
+
+// Jalankan hanya jika sendChatStatus === true
+typeof window.sendChatStatus !== 'undefined' &&
     window.sendChatStatus === true &&
     interceptWebSocket();
 
