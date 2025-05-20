@@ -325,7 +325,6 @@ async function useActionPoint() {
     }
 }
 
-/*
 async function openChest() {
     const itemList = await getItemList();
     const chestCodes = [10104024, 10104025, 10104142];
@@ -337,7 +336,8 @@ async function openChest() {
             for (let i = 0; i < amount; i++) {
                 await useItem(code, 1);
                 console.log(`Item code ${code} - Chest ${i + 1}/${amount} opened`);
-                await new Promise(resolve => setTimeout(resolve, 60000)); // tunggu 1 menit
+                //await new Promise(resolve => setTimeout(resolve, 60000)); // tunggu 1 menit
+                await delay(60000);
             }
             console.log(`Finished opening chests for item code ${code}.`);
         } else {
@@ -345,7 +345,6 @@ async function openChest() {
         }
     }
 }
-*/
 
 
 async function sendTelegramMessage(token, message) {
