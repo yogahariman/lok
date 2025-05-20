@@ -457,10 +457,6 @@ async function autoJoinRally() {
         }
 
         if (!Array.isArray(rallyListJson.battles) || rallyListJson.battles.length === 0) {
-
-            // bila sedang tidak ada rally buka beberapa Chest
-            if (window.shouldOpenChest) await openChest();
-
             console.log("⚠️ Rally list kosong atau tidak valid.");
             return;
         }
@@ -546,12 +542,16 @@ async function autoJoinRally() {
 //if (window.tokenTelegram) {monitorChatWebSocket();}
 window.tokenTelegram && monitorChatWebSocket();
 
+
 // Open Chest
-//(async () => {
-//    if (window.shouldOpenChest === true) {
-//        await openChest();
-//    }
-//})();
+// async function autoOpenChest() {
+//     if (window.shouldOpenChest) {
+//         await openChest();
+//     }
+//     setTimeout(autoOpenChest, 60000); // jalankan lagi setelah 1 menit
+// }
+// autoOpenChest(); // mulai loop
+
 
 
 // Fungsi menyimpan status ON/OFF
