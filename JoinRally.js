@@ -331,15 +331,11 @@ async function openChest() {
 
     for (const code of chestCodes) {
         const amount = getAmountItemList(itemList, code);
-        if (amount > 40) {
-            console.log(`Opening ${amount} chests for item code ${code}...`);
-            for (let i = 0; i < amount; i++) {
-                await useItem(code, 1);
-                console.log(`Item code ${code} - Chest ${i + 1}/${amount} opened`);
-                //await new Promise(resolve => setTimeout(resolve, 60000)); // tunggu 1 menit
-                await delay(60000);
-            }
-            console.log(`Finished opening chests for item code ${code}.`);
+
+        if (amount > 1) {
+            await useItem(code, 1);
+            await delay(5000);
+            console.log(`Finished opening chest for item code ${code}.`);
         } else {
             console.log(`Not enough chests for item code ${code}. Skipping.`);
         }
@@ -461,6 +457,10 @@ async function autoJoinRally() {
         }
 
         if (!Array.isArray(rallyListJson.battles) || rallyListJson.battles.length === 0) {
+
+            // bila sedang tidak ada rally buka beberapa Chest
+            if (window.shouldOpenChest) await openChest();
+
             console.log("⚠️ Rally list kosong atau tidak valid.");
             return;
         }
