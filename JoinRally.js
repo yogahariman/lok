@@ -494,6 +494,9 @@ async function autoJoinRally() {
 //   setInterval(autoJoinRally, delayCheckListRally);
 // }, delayJoin);
 
+//undefined, null, dan string kosong ("") semuanya dianggap falsy
+//if (window.tokenTelegram) {monitorChatWebSocket();}
+window.tokenTelegram && monitorChatWebSocket();
 
 // Fungsi menyimpan status ON/OFF
 function getAutoJoinStatus() {
@@ -514,18 +517,10 @@ function toggleAutoJoin() {
 
     if (newStatus) {
         console.log("✅ AutoJoin ENABLED");
- 
-        //undefined, null, dan string kosong ("") semuanya dianggap falsy
-        //if (window.tokenTelegram) {monitorChatWebSocket();}
-        window.tokenTelegram && monitorChatWebSocket();
-
         autoJoinRally(); // Jalankan pertama
         autoJoinIntervalId = setInterval(autoJoinRally, delayCheckListRally);
     } else {
         console.log("⛔ AutoJoin DISABLED");
-        
-        stopChatWebSocketMonitor()
-
         if (autoJoinIntervalId !== null) {
             clearInterval(autoJoinIntervalId);
             autoJoinIntervalId = null;
@@ -562,15 +557,9 @@ window.addEventListener('load', () => {
 
     if (getAutoJoinStatus()) {
         console.log("🔁 AutoJoin aktif saat load");
-
-        //undefined, null, dan string kosong ("") semuanya dianggap falsy
-        //if (window.tokenTelegram) {monitorChatWebSocket();}
-        window.tokenTelegram && monitorChatWebSocket();
-
         autoJoinRally();
         autoJoinIntervalId = setInterval(autoJoinRally, delayCheckListRally);
     } else {
-        stopChatWebSocketMonitor();
         console.log("⛔ AutoJoin OFF saat load");
     }
 });
