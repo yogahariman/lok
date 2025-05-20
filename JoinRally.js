@@ -547,11 +547,11 @@ async function autoJoinRally() {
 window.tokenTelegram && monitorChatWebSocket();
 
 // Open Chest
-(async () => {
-    if (window.shouldOpenChest === true) {
-        await openChest();
-    }
-})();
+//(async () => {
+//    if (window.shouldOpenChest === true) {
+//        await openChest();
+//    }
+//})();
 
 
 // Fungsi menyimpan status ON/OFF
