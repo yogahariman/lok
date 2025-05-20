@@ -344,16 +344,16 @@ async function sendTelegramMessage(token, message) {
 }
 
 function monitorChatWebSocket() {
-    if (window._originalWebSocket) {
+    if (window._originalChatWebSocket) {
         console.warn('[⚠️] WebSocket chat monitor sudah aktif.');
         return;
     }
 
-    window._originalWebSocket = window.WebSocket;
-    const OriginalWebSocket = window._originalWebSocket;
+    window._originalChatWebSocket = window.WebSocket;
+    const OriginalChatWebSocket = window._originalChatWebSocket;
 
     window.WebSocket = function (url, protocols) {
-        const ws = protocols ? new OriginalWebSocket(url, protocols) : new OriginalWebSocket(url);
+        const ws = protocols ? new OriginalChatWebSocket(url, protocols) : new OriginalChatWebSocket(url);
 
         ws.addEventListener('message', (e) => {
             const data = e.data;
@@ -377,14 +377,14 @@ function monitorChatWebSocket() {
         return ws;
     };
 
-    window.WebSocket.prototype = OriginalWebSocket.prototype;
+    window.WebSocket.prototype = OriginalChatWebSocket.prototype;
     console.log('[✅] WebSocket chat monitor aktif.');
 }
 
 function stopChatWebSocketMonitor() {
-    if (window._originalWebSocket) {
-        window.WebSocket = window._originalWebSocket;
-        delete window._originalWebSocket;
+    if (window._originalChatWebSocket) {
+        window.WebSocket = window._originalChatWebSocket;
+        delete window._originalChatWebSocket;
         console.log('[🛑] WebSocket chat monitor dihentikan.');
     } else {
         console.warn('[ℹ️] Monitor belum aktif atau sudah dihentikan.');
