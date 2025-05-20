@@ -315,7 +315,7 @@ async function sendTelegramMessage(token, message) {
         });
 
         const data = await res.json();
-        //console.log('📨 Telegram response:', data);
+        console.log('📨 Telegram response:', data);
     }
 
     async function getChatId() {
@@ -326,7 +326,7 @@ async function sendTelegramMessage(token, message) {
 
         if (chatId) {
             localStorage.setItem(localKey, chatId);
-            //console.log('✅ chat_id ditemukan:', chatId);
+            console.log('✅ chat_id ditemukan:', chatId);
             await send(chatId);
         } else {
             console.warn('⚠️ Tidak menemukan chat_id. Pastikan sudah kirim pesan ke bot.');
@@ -335,10 +335,10 @@ async function sendTelegramMessage(token, message) {
 
     const stored = localStorage.getItem(localKey);
     if (stored) {
-        //console.log('ℹ️ chat_id ditemukan di localStorage:', stored);
+        console.log('ℹ️ chat_id ditemukan di localStorage:', stored);
         await send(stored);
     } else {
-        //console.log('ℹ️ Mencoba ambil chat_id dari getUpdates...');
+        console.log('ℹ️ Mencoba ambil chat_id dari getUpdates...');
         await getChatId();
     }
 }
@@ -367,7 +367,7 @@ function monitorChatWebSocket() {
                     const tag = chatData.alliance?.tag || '';
                     const formatted = `[${tag}] ${from}: ${text}`;
 
-                    sendTelegramMessage(tokenTelegram, formatted);
+                    sendTelegramMessage(window.tokenTelegram, formatted);
                 } catch (err) {
                     console.error('❌ Gagal parsing /chat/new:', err);
                 }
