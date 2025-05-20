@@ -6,10 +6,8 @@ const delayJoin = 5000; // 5 detik delay sebelum join rally
 //const delayCheckListRally = 60000; // 60 detik delay untuk check list rally
 let autoJoinIntervalId = null;
 
-const tokenTelegram = '1936285843:AAFgubrFQcbz0B7zN8hUKS2oNLPS-Nyyxyw'; // ← ganti token
-
-const delayCheckListRally = typeof window.delayCheckListRally_ !== 'undefined'
-    ? window.delayCheckListRally_
+const delayCheckListRally = typeof window.delayCheckListRally !== 'undefined'
+    ? window.delayCheckListRally
     : 60000; // 60 detik delay untuk check list rally
 
 // Decode base64 to bytes
@@ -467,14 +465,16 @@ function interceptWebSocket() {
     console.log('[✅] Interceptor WebSocket aktif.');
 }
 
-
-// Jalankan hanya jika sendChatStatus === true
-// typeof window.sendChatStatus !== 'undefined' &&
-//     window.sendChatStatus === true &&
-//     interceptWebSocket();
-if (typeof window.sendChatStatus !== "undefined" && window.sendChatStatus === true) {
+//undefined, null, dan string kosong ("") semuanya dianggap falsy
+if (window.tokenTelegram) {
     interceptWebSocket();
 }
+
+// Jalankan hanya jika sendChatStatus === true
+//if (typeof window.sendChatStatus !== "undefined" && window.sendChatStatus === true) {
+//    interceptWebSocket();
+//}
+
 
 // Step 2: Intercept WebSocket message to detect rally
 /*const wsSend = WebSocket.prototype.send;
