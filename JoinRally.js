@@ -350,34 +350,40 @@ function monitorChatWebSocket() {
     }
 
     window._originalChatWebSocket = window.WebSocket;
+
     const OriginalChatWebSocket = window._originalChatWebSocket;
+
+    function handleMessage(e) {
+        const data = e.data;
+        if (typeof data === 'string' && data.includes('/chat/new')) {
+            try {
+                const payload = JSON.parse(data.slice(2));
+                const [, chatData] = payload;
+
+                const from = chatData.from;
+                const text = chatData.text;
+                const tag = chatData.alliance?.tag || '';
+                const formatted = `[${tag}] ${from}: ${text}`;
+
+                sendTelegramMessage(window.tokenTelegram, formatted);
+            } catch (err) {
+                console.error('❌ Gagal parsing /chat/new:', err);
+            }
+        }
+    }
+
+    window._chatMessageListener = handleMessage;
 
     window.WebSocket = function (url, protocols) {
         const ws = protocols ? new OriginalChatWebSocket(url, protocols) : new OriginalChatWebSocket(url);
 
-        ws.addEventListener('message', (e) => {
-            const data = e.data;
-            if (typeof data === 'string' && data.includes('/chat/new')) {
-                try {
-                    const payload = JSON.parse(data.slice(2));
-                    const [, chatData] = payload;
-
-                    const from = chatData.from;
-                    const text = chatData.text;
-                    const tag = chatData.alliance?.tag || '';
-                    const formatted = `[${tag}] ${from}: ${text}`;
-
-                    sendTelegramMessage(window.tokenTelegram, formatted);
-                } catch (err) {
-                    console.error('❌ Gagal parsing /chat/new:', err);
-                }
-            }
-        });
+        ws.addEventListener('message', window._chatMessageListener);
 
         return ws;
     };
 
     window.WebSocket.prototype = OriginalChatWebSocket.prototype;
+
     console.log('[✅] WebSocket chat monitor aktif.');
 }
 
@@ -385,6 +391,7 @@ function stopChatWebSocketMonitor() {
     if (window._originalChatWebSocket) {
         window.WebSocket = window._originalChatWebSocket;
         delete window._originalChatWebSocket;
+        delete window._chatMessageListener;
         console.log('[🛑] WebSocket chat monitor dihentikan.');
     } else {
         console.warn('[ℹ️] Monitor belum aktif atau sudah dihentikan.');
