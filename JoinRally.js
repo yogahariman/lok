@@ -544,13 +544,15 @@ window.tokenTelegram && monitorChatWebSocket();
 
 
 // Open Chest
-// async function autoOpenChest() {
-//     if (window.shouldOpenChest) {
+// if (window.shouldOpenChest) {
+//     async function autoOpenChest() {
 //         await openChest();
+//         setTimeout(autoOpenChest, 60000);
 //     }
-//     setTimeout(autoOpenChest, 60000); // jalankan lagi setelah 1 menit
+
+//     autoOpenChest();
 // }
-// autoOpenChest(); // mulai loop
+
 
 
 
