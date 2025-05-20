@@ -325,6 +325,7 @@ async function useActionPoint() {
     }
 }
 
+/*
 async function openChest() {
     const itemList = await getItemList();
     const chestCodes = [10104024, 10104025, 10104142];
@@ -344,7 +345,7 @@ async function openChest() {
         }
     }
 }
-
+*/
 
 
 async function sendTelegramMessage(token, message) {
@@ -546,11 +547,12 @@ async function autoJoinRally() {
 //if (window.tokenTelegram) {monitorChatWebSocket();}
 window.tokenTelegram && monitorChatWebSocket();
 
+/*
 // Open Chest
 if (window.shouldOpenChest === true) {
     await openChest();
 }
-
+*/
 
 // Fungsi menyimpan status ON/OFF
 function getAutoJoinStatus() {
