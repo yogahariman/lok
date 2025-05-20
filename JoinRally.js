@@ -546,12 +546,13 @@ async function autoJoinRally() {
 //if (window.tokenTelegram) {monitorChatWebSocket();}
 window.tokenTelegram && monitorChatWebSocket();
 
-/*
 // Open Chest
-if (window.shouldOpenChest === true) {
-    await openChest();
-}
-*/
+(async () => {
+    if (window.shouldOpenChest === true) {
+        await openChest();
+    }
+})();
+
 
 // Fungsi menyimpan status ON/OFF
 function getAutoJoinStatus() {

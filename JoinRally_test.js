@@ -1,5 +1,5 @@
 // ==UserScript==
-// @name         JoinRally_Test
+// @name         Rafflesia
 // @namespace    http://tampermonkey.net/
 // @version      1.2
 // @description  Intercept login and capture token + regionHash
@@ -12,8 +12,9 @@
     'use strict';
 
     // 💡 Pastikan variabel bisa diakses oleh script eksternal
-    window.sendChatStatus = true;
-    //window.delayCheckListRally_ = 150000; // 150 detik delay untuk check list rally
+    window.delayCheckListRally = 90000; // 90 detik delay untuk check list rally
+    window.shouldOpenChest = true;
+
     window.troopCodes = [50100306, 50100305, 50100304];
     window.troopAmounts = [0, 250000, 0];
     window.allowedMonsters = {
@@ -27,12 +28,6 @@
         "20700506": { name: "Spartoi", minLevel: 4 }
     };
 
-
-
-
-
-
-
     // Deklarasi awal variabel sebagai null
     let token = null;
     let regionHash = null;
@@ -41,10 +36,8 @@
     //const delayCheckListRally = 60000; // 60 detik delay untuk check list rally
     let autoJoinIntervalId = null;
 
-    const tokenTelegram = '1936285843:AAFgubrFQcbz0B7zN8hUKS2oNLPS-Nyyxyw'; // ← ganti token
-
-    const delayCheckListRally = typeof window.delayCheckListRally_ !== 'undefined'
-        ? window.delayCheckListRally_
+    const delayCheckListRally = typeof window.delayCheckListRally !== 'undefined'
+        ? window.delayCheckListRally
         : 60000; // 60 detik delay untuk check list rally
 
     // Decode base64 to bytes
@@ -95,17 +88,21 @@
     try {
       const result = b64xorDec(s, xorPassword);
       console.log("Hasil decrypt:", result);
-    
+     
       // ✅ Coba encode lagi
       const encrypted = b64xorEnc(result, xorPassword);
       console.log("Hasil encrypt ulang:", encrypted);
-    
+     
       // Opsional: cek sama seperti input awal?
       console.log("Apakah hasil encode sama dengan input awal?", encrypted === s);
     } catch (e) {
       console.error("Gagal decode atau encode:", e.message);
     }
     */
+
+    function delay(ms) {
+        return new Promise(resolve => setTimeout(resolve, ms));
+    }
 
     // Step 1: Intercept login and capture token + regionHash
     const originalOpen = XMLHttpRequest.prototype.open;
@@ -213,7 +210,7 @@
           console.error("❌ Data rally tidak valid.");
           return null;
         }
-    
+     
         try {
           const compressedPayload = new Uint8Array(rallyData.payload);
           const decompressedData = pako.inflate(compressedPayload, { to: 'string' });
@@ -271,17 +268,40 @@
         };
     }
 
+
+    async function getItemList() {
+        const inputRaw = {
+            url: "https://api-lok-live.leagueofkingdoms.com/api/item/list",
+            token: token,
+            body: "{}",
+            returnResponse: true
+        };
+        const itemList = await sendRequest(inputRaw);
+        return itemList;
+    }
+
     function getAmountItemList(data, targetCode) {
         const item = data.items.find(i => i.code === targetCode);
         return item ? item.amount : null;
     }
 
-    function useActionPointPayload(code, amount) {
+    function useItemPayload(code, amount) {
         return {
             code,
             amount
         };
     }
+
+    async function useItem(code, amount) {
+        const inputRaw = {
+            url: "https://api-lok-live.leagueofkingdoms.com/api/item/use",
+            token: token,
+            body: b64xorEnc(useItemPayload(code, amount), xor_password),
+            returnResponse: false
+        };
+        await sendRequest(inputRaw);
+    }
+
 
     async function useActionPoint() {
         let inputRaw = {
@@ -295,13 +315,15 @@
         const actionPoint = infoProfile?.profile?.actionPoint?.value;
 
         if (actionPoint < 50) {
-            inputRaw = {
-                url: "https://api-lok-live.leagueofkingdoms.com/api/item/list",
-                token: token,
-                body: "{}",
-                returnResponse: true
-            };
-            const itemList = await sendRequest(inputRaw);
+            //inputRaw = {
+            //    url: "https://api-lok-live.leagueofkingdoms.com/api/item/list",
+            //    token: token,
+            //    body: "{}",
+            //    returnResponse: true
+            //};
+            //const itemList = await sendRequest(inputRaw);
+
+            const itemList = await getItemList();
 
             let codeAP = null;
             let nAp = null;
@@ -320,20 +342,131 @@
             }
 
             if (codeAP && nAp) {
-                inputRaw = {
-                    url: "https://api-lok-live.leagueofkingdoms.com/api/item/use",
-                    token: token,
-                    body: b64xorEnc(useActionPointPayload(codeAP, nAp), xor_password),
-                    returnResponse: false
-                };
-                await sendRequest(inputRaw);
+                await useItem(codeAP, nAp);
+
+                //inputRaw = {
+                //    url: "https://api-lok-live.leagueofkingdoms.com/api/item/use",
+                //    token: token,
+                //    body: b64xorEnc(useItemPayload(codeAP, nAp), xor_password),
+                //    returnResponse: false
+                //};
+                //await sendRequest(inputRaw);
+            }
+        }
+    }
+
+    async function openChest() {
+        const itemList = await getItemList();
+        const chestCodes = [10104024, 10104025, 10104142];
+
+        for (const code of chestCodes) {
+            const amount = getAmountItemList(itemList, code);
+            if (amount > 40) {
+                console.log(`Opening ${amount} chests for item code ${code}...`);
+                for (let i = 0; i < amount; i++) {
+                    await useItem(code, 1);
+                    console.log(`Item code ${code} - Chest ${i + 1}/${amount} opened`);
+                    //await new Promise(resolve => setTimeout(resolve, 60000)); // tunggu 1 menit
+                    await delay(60000);
+                }
+                console.log(`Finished opening chests for item code ${code}.`);
+            } else {
+                console.log(`Not enough chests for item code ${code}. Skipping.`);
             }
         }
     }
 
 
-    function delay(ms) {
-        return new Promise(resolve => setTimeout(resolve, ms));
+    async function sendTelegramMessage(token, message) {
+        const localKey = `telegram_chat_id_${token.slice(0, 10)}`;
+
+        async function send(chatId) {
+            const res = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    chat_id: chatId,
+                    text: message
+                })
+            });
+
+            const data = await res.json();
+            console.log('📨 Telegram response:', data);
+        }
+
+        async function getChatId() {
+            const res = await fetch(`https://api.telegram.org/bot${token}/getUpdates`);
+            const data = await res.json();
+            const last = data.result?.slice(-1)[0];
+            const chatId = last?.message?.chat?.id;
+
+            if (chatId) {
+                localStorage.setItem(localKey, chatId);
+                console.log('✅ chat_id ditemukan:', chatId);
+                await send(chatId);
+            } else {
+                console.warn('⚠️ Tidak menemukan chat_id. Pastikan sudah kirim pesan ke bot.');
+            }
+        }
+
+        const stored = localStorage.getItem(localKey);
+        if (stored) {
+            console.log('ℹ️ chat_id ditemukan di localStorage:', stored);
+            await send(stored);
+        } else {
+            console.log('ℹ️ Mencoba ambil chat_id dari getUpdates...');
+            await getChatId();
+        }
+    }
+
+    function monitorChatWebSocket() {
+        if (window._originalChatWebSocket) {
+            console.warn('[⚠️] WebSocket chat monitor sudah aktif.');
+            return;
+        }
+
+        window._originalChatWebSocket = window.WebSocket;
+        const OriginalChatWebSocket = window._originalChatWebSocket;
+
+        window.WebSocket = function (url, protocols) {
+            const ws = protocols ? new OriginalChatWebSocket(url, protocols) : new OriginalChatWebSocket(url);
+
+            ws.addEventListener('message', (e) => {
+                const data = e.data;
+                if (typeof data === 'string' && data.includes('/chat/new')) {
+                    try {
+                        const payload = JSON.parse(data.slice(2));
+                        const [, chatData] = payload;
+
+                        const from = chatData.from;
+                        const text = chatData.text;
+                        const tag = chatData.alliance?.tag || '';
+                        const formatted = `[${tag}] ${from}: ${text}`;
+
+                        sendTelegramMessage(window.tokenTelegram, formatted);
+                    } catch (err) {
+                        console.error('❌ Gagal parsing /chat/new:', err);
+                    }
+                }
+            });
+
+            return ws;
+        };
+
+        window.WebSocket.prototype = OriginalChatWebSocket.prototype;
+        console.log('[✅] WebSocket chat monitor aktif.');
+    }
+
+    function stopChatWebSocketMonitor() {
+        if (window._originalChatWebSocket) {
+            window.WebSocket = window._originalChatWebSocket;
+            delete window._originalChatWebSocket;
+            console.log('[🛑] WebSocket chat monitor dihentikan.');
+        } else {
+            console.warn('[ℹ️] Monitor belum aktif atau sudah dihentikan.');
+        }
     }
 
     // Step 3: Function to fetch and join rally
@@ -418,98 +551,6 @@
         }
     }
 
-    async function sendTelegramMessage(token, message) {
-        const localKey = `telegram_chat_id_${token.slice(0, 10)}`;
-
-        async function send(chatId) {
-            const res = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    chat_id: chatId,
-                    text: message
-                })
-            });
-
-            const data = await res.json();
-            //console.log('📨 Telegram response:', data);
-        }
-
-        async function getChatId() {
-            const res = await fetch(`https://api.telegram.org/bot${token}/getUpdates`);
-            const data = await res.json();
-            const last = data.result?.slice(-1)[0];
-            const chatId = last?.message?.chat?.id;
-
-            if (chatId) {
-                localStorage.setItem(localKey, chatId);
-                //console.log('✅ chat_id ditemukan:', chatId);
-                await send(chatId);
-            } else {
-                console.warn('⚠️ Tidak menemukan chat_id. Pastikan sudah kirim pesan ke bot.');
-            }
-        }
-
-        const stored = localStorage.getItem(localKey);
-        if (stored) {
-            //console.log('ℹ️ chat_id ditemukan di localStorage:', stored);
-            await send(stored);
-        } else {
-            //console.log('ℹ️ Mencoba ambil chat_id dari getUpdates...');
-            await getChatId();
-        }
-    }
-
-    function interceptWebSocket() {
-        const OriginalWebSocket = window.WebSocket;
-
-        if (OriginalWebSocket.toString().includes('OriginalWebSocket')) {
-            console.warn('[⚠️] Interceptor sudah aktif.');
-            return;
-        }
-
-        window.WebSocket = function (url, protocols) {
-            const ws = protocols ? new OriginalWebSocket(url, protocols) : new OriginalWebSocket(url);
-
-            ws.addEventListener('message', (e) => {
-                const data = e.data;
-                if (typeof data === 'string' && data.includes('/chat/new')) {
-                    try {
-                        const payload = JSON.parse(data.slice(2)); // buang "42", parse JSON
-                        const [, chatData] = payload;
-
-                        const from = chatData.from;
-                        const text = chatData.text;
-                        const tag = chatData.alliance?.tag || '';
-
-                        const formatted = `[${tag}] ${from}: ${text}`;
-                        //console.log('[💬 CHAT]', formatted);
-
-                        // Kirim ke Telegram jika perlu:
-                        sendTelegramMessage(tokenTelegram, formatted);
-                    } catch (err) {
-                        console.error('❌ Gagal parsing chat /chat/new:', err);
-                    }
-                }
-            });
-
-            return ws;
-        };
-
-        window.WebSocket.prototype = OriginalWebSocket.prototype;
-        console.log('[✅] Interceptor WebSocket aktif.');
-    }
-
-
-    // Jalankan hanya jika sendChatStatus === true
-    // typeof window.sendChatStatus !== 'undefined' &&
-    //     window.sendChatStatus === true &&
-    //     interceptWebSocket();
-    if (typeof window.sendChatStatus !== "undefined" && window.sendChatStatus === true) {
-        interceptWebSocket();
-    }
 
     // Step 2: Intercept WebSocket message to detect rally
     /*const wsSend = WebSocket.prototype.send;
@@ -531,6 +572,17 @@
     //   setInterval(autoJoinRally, delayCheckListRally);
     // }, delayJoin);
 
+    //undefined, null, dan string kosong ("") semuanya dianggap falsy
+    //if (window.tokenTelegram) {monitorChatWebSocket();}
+    window.tokenTelegram && monitorChatWebSocket();
+
+    // Open Chest
+    (async () => {
+        if (window.shouldOpenChest === true) {
+            await openChest();
+        }
+    })();
+    
 
     // Fungsi menyimpan status ON/OFF
     function getAutoJoinStatus() {
@@ -597,5 +649,4 @@
             console.log("⛔ AutoJoin OFF saat load");
         }
     });
-
 })();
