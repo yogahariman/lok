@@ -70,6 +70,10 @@ try {
 }
 */
 
+function delay(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
 // Step 1: Intercept login and capture token + regionHash
 const originalOpen = XMLHttpRequest.prototype.open;
 const originalSend = XMLHttpRequest.prototype.send;
@@ -295,8 +299,96 @@ async function useActionPoint() {
 }
 
 
-function delay(ms) {
-    return new Promise(resolve => setTimeout(resolve, ms));
+async function sendTelegramMessage(token, message) {
+    const localKey = `telegram_chat_id_${token.slice(0, 10)}`;
+
+    async function send(chatId) {
+        const res = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                chat_id: chatId,
+                text: message
+            })
+        });
+
+        const data = await res.json();
+        //console.log('📨 Telegram response:', data);
+    }
+
+    async function getChatId() {
+        const res = await fetch(`https://api.telegram.org/bot${token}/getUpdates`);
+        const data = await res.json();
+        const last = data.result?.slice(-1)[0];
+        const chatId = last?.message?.chat?.id;
+
+        if (chatId) {
+            localStorage.setItem(localKey, chatId);
+            //console.log('✅ chat_id ditemukan:', chatId);
+            await send(chatId);
+        } else {
+            console.warn('⚠️ Tidak menemukan chat_id. Pastikan sudah kirim pesan ke bot.');
+        }
+    }
+
+    const stored = localStorage.getItem(localKey);
+    if (stored) {
+        //console.log('ℹ️ chat_id ditemukan di localStorage:', stored);
+        await send(stored);
+    } else {
+        //console.log('ℹ️ Mencoba ambil chat_id dari getUpdates...');
+        await getChatId();
+    }
+}
+
+function monitorChatWebSocket() {
+    if (window._originalWebSocket) {
+        console.warn('[⚠️] WebSocket chat monitor sudah aktif.');
+        return;
+    }
+
+    window._originalWebSocket = window.WebSocket;
+    const OriginalWebSocket = window._originalWebSocket;
+
+    window.WebSocket = function (url, protocols) {
+        const ws = protocols ? new OriginalWebSocket(url, protocols) : new OriginalWebSocket(url);
+
+        ws.addEventListener('message', (e) => {
+            const data = e.data;
+            if (typeof data === 'string' && data.includes('/chat/new')) {
+                try {
+                    const payload = JSON.parse(data.slice(2));
+                    const [, chatData] = payload;
+
+                    const from = chatData.from;
+                    const text = chatData.text;
+                    const tag = chatData.alliance?.tag || '';
+                    const formatted = `[${tag}] ${from}: ${text}`;
+
+                    sendTelegramMessage(tokenTelegram, formatted);
+                } catch (err) {
+                    console.error('❌ Gagal parsing /chat/new:', err);
+                }
+            }
+        });
+
+        return ws;
+    };
+
+    window.WebSocket.prototype = OriginalWebSocket.prototype;
+    console.log('[✅] WebSocket chat monitor aktif.');
+}
+
+function stopChatWebSocketMonitor() {
+    if (window._originalWebSocket) {
+        window.WebSocket = window._originalWebSocket;
+        delete window._originalWebSocket;
+        console.log('[🛑] WebSocket chat monitor dihentikan.');
+    } else {
+        console.warn('[ℹ️] Monitor belum aktif atau sudah dihentikan.');
+    }
 }
 
 // Step 3: Function to fetch and join rally
@@ -381,100 +473,6 @@ async function autoJoinRally() {
     }
 }
 
-async function sendTelegramMessage(token, message) {
-    const localKey = `telegram_chat_id_${token.slice(0, 10)}`;
-
-    async function send(chatId) {
-        const res = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                chat_id: chatId,
-                text: message
-            })
-        });
-
-        const data = await res.json();
-        //console.log('📨 Telegram response:', data);
-    }
-
-    async function getChatId() {
-        const res = await fetch(`https://api.telegram.org/bot${token}/getUpdates`);
-        const data = await res.json();
-        const last = data.result?.slice(-1)[0];
-        const chatId = last?.message?.chat?.id;
-
-        if (chatId) {
-            localStorage.setItem(localKey, chatId);
-            //console.log('✅ chat_id ditemukan:', chatId);
-            await send(chatId);
-        } else {
-            console.warn('⚠️ Tidak menemukan chat_id. Pastikan sudah kirim pesan ke bot.');
-        }
-    }
-
-    const stored = localStorage.getItem(localKey);
-    if (stored) {
-        //console.log('ℹ️ chat_id ditemukan di localStorage:', stored);
-        await send(stored);
-    } else {
-        //console.log('ℹ️ Mencoba ambil chat_id dari getUpdates...');
-        await getChatId();
-    }
-}
-
-function interceptWebSocket() {
-    const OriginalWebSocket = window.WebSocket;
-
-    if (OriginalWebSocket.toString().includes('OriginalWebSocket')) {
-        console.warn('[⚠️] Interceptor sudah aktif.');
-        return;
-    }
-
-    window.WebSocket = function (url, protocols) {
-        const ws = protocols ? new OriginalWebSocket(url, protocols) : new OriginalWebSocket(url);
-
-        ws.addEventListener('message', (e) => {
-            const data = e.data;
-            if (typeof data === 'string' && data.includes('/chat/new')) {
-                try {
-                    const payload = JSON.parse(data.slice(2)); // buang "42", parse JSON
-                    const [, chatData] = payload;
-
-                    const from = chatData.from;
-                    const text = chatData.text;
-                    const tag = chatData.alliance?.tag || '';
-
-                    const formatted = `[${tag}] ${from}: ${text}`;
-                    //console.log('[💬 CHAT]', formatted);
-
-                    // Kirim ke Telegram jika perlu:
-                    sendTelegramMessage(tokenTelegram, formatted);
-                } catch (err) {
-                    console.error('❌ Gagal parsing chat /chat/new:', err);
-                }
-            }
-        });
-
-        return ws;
-    };
-
-    window.WebSocket.prototype = OriginalWebSocket.prototype;
-    console.log('[✅] Interceptor WebSocket aktif.');
-}
-
-//undefined, null, dan string kosong ("") semuanya dianggap falsy
-if (window.tokenTelegram) {
-    interceptWebSocket();
-}
-
-// Jalankan hanya jika sendChatStatus === true
-//if (typeof window.sendChatStatus !== "undefined" && window.sendChatStatus === true) {
-//    interceptWebSocket();
-//}
-
 
 // Step 2: Intercept WebSocket message to detect rally
 /*const wsSend = WebSocket.prototype.send;
@@ -516,10 +514,18 @@ function toggleAutoJoin() {
 
     if (newStatus) {
         console.log("✅ AutoJoin ENABLED");
+ 
+        //undefined, null, dan string kosong ("") semuanya dianggap falsy
+        //if (window.tokenTelegram) {monitorChatWebSocket();}
+        window.tokenTelegram && monitorChatWebSocket();
+
         autoJoinRally(); // Jalankan pertama
         autoJoinIntervalId = setInterval(autoJoinRally, delayCheckListRally);
     } else {
         console.log("⛔ AutoJoin DISABLED");
+        
+        stopChatWebSocketMonitor()
+
         if (autoJoinIntervalId !== null) {
             clearInterval(autoJoinIntervalId);
             autoJoinIntervalId = null;
@@ -556,9 +562,15 @@ window.addEventListener('load', () => {
 
     if (getAutoJoinStatus()) {
         console.log("🔁 AutoJoin aktif saat load");
+
+        //undefined, null, dan string kosong ("") semuanya dianggap falsy
+        //if (window.tokenTelegram) {monitorChatWebSocket();}
+        window.tokenTelegram && monitorChatWebSocket();
+
         autoJoinRally();
         autoJoinIntervalId = setInterval(autoJoinRally, delayCheckListRally);
     } else {
+        stopChatWebSocketMonitor();
         console.log("⛔ AutoJoin OFF saat load");
     }
 });
