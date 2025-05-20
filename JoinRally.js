@@ -544,16 +544,18 @@ window.tokenTelegram && monitorChatWebSocket();
 
 
 // Open Chest
-// if (window.shouldOpenChest) {
-//     async function autoOpenChest() {
-//         await openChest();
-//         setTimeout(autoOpenChest, 60000);
-//     }
-
-//     autoOpenChest();
-// }
-
-
+async function autoOpenChest() {
+    try {
+        if (window.shouldOpenChest) {
+            await openChest(); // kemungkinan error di sini
+        }
+    } catch (err) {
+        console.error("Error in openChest:", err);
+    } finally {
+        setTimeout(autoOpenChest, 60000);
+    }
+}
+autoOpenChest();
 
 
 // Fungsi menyimpan status ON/OFF

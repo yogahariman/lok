@@ -1,5 +1,5 @@
 // ==UserScript==
-// @name         Rafflesia
+// @name         Test
 // @namespace    http://tampermonkey.net/
 // @version      1.2
 // @description  Intercept login and capture token + regionHash
@@ -361,15 +361,11 @@
 
         for (const code of chestCodes) {
             const amount = getAmountItemList(itemList, code);
-            if (amount > 40) {
-                console.log(`Opening ${amount} chests for item code ${code}...`);
-                for (let i = 0; i < amount; i++) {
-                    await useItem(code, 1);
-                    console.log(`Item code ${code} - Chest ${i + 1}/${amount} opened`);
-                    //await new Promise(resolve => setTimeout(resolve, 60000)); // tunggu 1 menit
-                    await delay(60000);
-                }
-                console.log(`Finished opening chests for item code ${code}.`);
+
+            if (amount > 1) {
+                await useItem(code, 1);
+                await delay(5000);
+                console.log(`Finished opening chest for item code ${code}.`);
             } else {
                 console.log(`Not enough chests for item code ${code}. Skipping.`);
             }
@@ -576,13 +572,23 @@
     //if (window.tokenTelegram) {monitorChatWebSocket();}
     window.tokenTelegram && monitorChatWebSocket();
 
+
     // Open Chest
-    //(async () => {
-    //    if (window.shouldOpenChest === true) {
-    //        await openChest();
-    //    }
-    //})();
+    async function autoOpenChest() {
+        try {
+            if (window.shouldOpenChest) {
+                await openChest(); // kemungkinan error di sini
+            }
+        } catch (err) {
+            console.error("Error in openChest:", err);
+        } finally {
+            setTimeout(autoOpenChest, 30000);
+        }
+    }
     
+    autoOpenChest();
+    
+
 
     // Fungsi menyimpan status ON/OFF
     function getAutoJoinStatus() {
