@@ -13,7 +13,8 @@
 
     // 💡 Pastikan variabel bisa diakses oleh script eksternal
     window.tokenTelegram = '1936285843:AAFgubrFQcbz0B7zN8hUKS2oNLPS-Nyyxyw'; // ← ganti token
-    window.delayCheckListRally = 150000; // 150 detik delay untuk check list rally
+    window.delayCheckListRally = 90000; // 90 detik delay untuk check list rally
+    window.shouldOpenChest = true;
 
 
     window.troopCodes = [50100306, 50100305, 50100304];

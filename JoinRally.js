@@ -238,17 +238,40 @@ function createJoinRallyPayload(codes, amounts, rallyMoId) {
     };
 }
 
+
+async function getItemList() {
+    const inputRaw = {
+        url: "https://api-lok-live.leagueofkingdoms.com/api/item/list",
+        token: token,
+        body: "{}",
+        returnResponse: true
+    };
+    const itemList = await sendRequest(inputRaw);
+    return itemList;
+}
+
 function getAmountItemList(data, targetCode) {
     const item = data.items.find(i => i.code === targetCode);
     return item ? item.amount : null;
 }
 
-function useActionPointPayload(code, amount) {
+function useItemPayload(code, amount) {
     return {
         code,
         amount
     };
 }
+
+async function useItem(code, amount) {
+    const inputRaw = {
+        url: "https://api-lok-live.leagueofkingdoms.com/api/item/use",
+        token: token,
+        body: b64xorEnc(useItemPayload(code, amount), xor_password),
+        returnResponse: false
+    };
+    await sendRequest(inputRaw);
+}
+
 
 async function useActionPoint() {
     let inputRaw = {
@@ -262,13 +285,15 @@ async function useActionPoint() {
     const actionPoint = infoProfile?.profile?.actionPoint?.value;
 
     if (actionPoint < 50) {
-        inputRaw = {
-            url: "https://api-lok-live.leagueofkingdoms.com/api/item/list",
-            token: token,
-            body: "{}",
-            returnResponse: true
-        };
-        const itemList = await sendRequest(inputRaw);
+        //inputRaw = {
+        //    url: "https://api-lok-live.leagueofkingdoms.com/api/item/list",
+        //    token: token,
+        //    body: "{}",
+        //    returnResponse: true
+        //};
+        //const itemList = await sendRequest(inputRaw);
+
+        const itemList = await getItemList();
 
         let codeAP = null;
         let nAp = null;
@@ -287,16 +312,39 @@ async function useActionPoint() {
         }
 
         if (codeAP && nAp) {
-            inputRaw = {
-                url: "https://api-lok-live.leagueofkingdoms.com/api/item/use",
-                token: token,
-                body: b64xorEnc(useActionPointPayload(codeAP, nAp), xor_password),
-                returnResponse: false
-            };
-            await sendRequest(inputRaw);
+            await useItem(codeAP, nAp);
+
+            //inputRaw = {
+            //    url: "https://api-lok-live.leagueofkingdoms.com/api/item/use",
+            //    token: token,
+            //    body: b64xorEnc(useItemPayload(codeAP, nAp), xor_password),
+            //    returnResponse: false
+            //};
+            //await sendRequest(inputRaw);
         }
     }
 }
+
+async function openChest() {
+    const itemList = await getItemList();
+    const chestCodes = [10104024, 10104025, 10104142];
+
+    for (const code of chestCodes) {
+        const amount = getAmountItemList(itemList, code);
+        if (amount > 40) {
+            console.log(`Opening ${amount} chests for item code ${code}...`);
+            for (let i = 0; i < amount; i++) {
+                await useItem(code, 1);
+                console.log(`Item code ${code} - Chest ${i + 1}/${amount} opened`);
+                await new Promise(resolve => setTimeout(resolve, 60000)); // tunggu 1 menit
+            }
+            console.log(`Finished opening chests for item code ${code}.`);
+        } else {
+            console.log(`Not enough chests for item code ${code}. Skipping.`);
+        }
+    }
+}
+
 
 
 async function sendTelegramMessage(token, message) {
@@ -497,6 +545,12 @@ async function autoJoinRally() {
 //undefined, null, dan string kosong ("") semuanya dianggap falsy
 //if (window.tokenTelegram) {monitorChatWebSocket();}
 window.tokenTelegram && monitorChatWebSocket();
+
+// Open Chest
+if (window.shouldOpenChest === true) {
+    await openChest();
+}
+
 
 // Fungsi menyimpan status ON/OFF
 function getAutoJoinStatus() {
