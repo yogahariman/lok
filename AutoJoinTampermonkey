@@ -16,6 +16,7 @@
     window.delayCheckListRally = 90000; // 90 detik delay untuk check list rally
     window.shouldOpenChest = true;
     window.shouldOpenFreeChest = true;
+    window.shouldSearchTower = false;
 
 
     window.troopCodes = [50100306, 50100305, 50100304];

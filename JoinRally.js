@@ -378,29 +378,58 @@ async function autoOpenFreeChest() {
         console.error("Error in autoOpenFreeChest:", err);
     }
 
-    // // Hitung delay sampai ke waktu HH:00:00 berikutnya
-    // const now = new Date();
-    // const nextHour = new Date(now);
-    // nextHour.setHours(now.getHours() + 1, 0, 0, 0); // set ke jam berikutnya tepat (menit & detik = 0)
-
-    // const delay = nextHour - now;
-
-    // Hitung delay ke menit ke-0 atau ke-30 berikutnya
+    // Hitung delay sampai ke waktu HH:00:00 berikutnya
     const now = new Date();
-    const next = new Date(now);
+    const nextHour = new Date(now);
+    nextHour.setHours(now.getHours() + 1, 0, 0, 0); // set ke jam berikutnya tepat (menit & detik = 0)
 
-    if (now.getMinutes() < 30) {
-        next.setMinutes(30, 0, 0);
-    } else {
-        next.setHours(now.getHours() + 1, 0, 0, 0);
-    }
+    const delay = nextHour - now;
 
-    const delay = next - now;
-        
     console.log(`Jadwal buka berikutnya: ${nextHour.toLocaleTimeString()} (dalam ${(delay / 60000).toFixed(1)} menit)`);
 
     setTimeout(autoOpenFreeChest, delay);
 }
+
+// search tower 30 minutes
+async function startTower() {
+    const payload = JSON.stringify({searchType: 0, level: 2});
+
+    await sendRequest({
+        url: "https://api-lok-live.leagueofkingdoms.com/api/item/use",
+        token,
+        body: payload,
+        returnResponse: false
+    });
+}
+
+// jalankan tower tiap menit ke 2 detik ke 10
+function scheduleStartTower() {
+    const now = new Date();
+    const next = new Date();
+
+    next.setHours(now.getHours(), 2, 10, 0); // set ke HH:02:10
+
+    // Kalau sudah lewat HH:02:10 sekarang, set ke jam berikutnya
+    if (next <= now) {
+        next.setHours(next.getHours() + 1);
+    }
+
+    const delay = next - now;
+    console.log(`startTower akan dijalankan pada: ${next.toLocaleTimeString()} (dalam ${(delay / 1000).toFixed(1)} detik)`);
+
+    // Jalankan pertama kali dengan delay ke HH:02:10 berikutnya
+    setTimeout(() => {
+        startTower(); // panggil pertama kali
+        console.log(`[${new Date().toLocaleTimeString()}] startTower() dijalankan`);
+
+        // Setelah itu, ulangi setiap 1 jam
+        setInterval(() => {
+            startTower();
+            console.log(`[${new Date().toLocaleTimeString()}] startTower() dijalankan`);
+        }, 60 * 60 * 1000); // 1 jam
+    }, delay);
+}
+
 
 async function autoRefreshAtHours() {
     try {
@@ -631,6 +660,9 @@ window.shouldOpenChest && autoOpenChest();
 
 // Open Free Chest
 window.shouldOpenFreeChest && autoOpenFreeChest();
+
+// jalankan tower tiap menit ke 2 detik ke 10
+window.shouldSearchTower && scheduleStartTower();
 
 //autoRefreshAtHours();
 
