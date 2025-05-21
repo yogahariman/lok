@@ -378,13 +378,25 @@ async function autoOpenFreeChest() {
         console.error("Error in autoOpenFreeChest:", err);
     }
 
-    // Hitung delay sampai ke waktu HH:00:00 berikutnya
+    // // Hitung delay sampai ke waktu HH:00:00 berikutnya
+    // const now = new Date();
+    // const nextHour = new Date(now);
+    // nextHour.setHours(now.getHours() + 1, 0, 0, 0); // set ke jam berikutnya tepat (menit & detik = 0)
+
+    // const delay = nextHour - now;
+
+    // Hitung delay ke menit ke-0 atau ke-30 berikutnya
     const now = new Date();
-    const nextHour = new Date(now);
-    nextHour.setHours(now.getHours() + 1, 0, 0, 0); // set ke jam berikutnya tepat (menit & detik = 0)
+    const next = new Date(now);
 
-    const delay = nextHour - now;
+    if (now.getMinutes() < 30) {
+        next.setMinutes(30, 0, 0);
+    } else {
+        next.setHours(now.getHours() + 1, 0, 0, 0);
+    }
 
+    const delay = next - now;
+        
     console.log(`Jadwal buka berikutnya: ${nextHour.toLocaleTimeString()} (dalam ${(delay / 60000).toFixed(1)} menit)`);
 
     setTimeout(autoOpenFreeChest, delay);
