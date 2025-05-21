@@ -348,6 +348,34 @@ async function autoOpenChest() {
     }
 }
 
+async function autoOpenFreeChest() {
+    try {
+        const payload = { type: 1 };
+
+        const inputRaw = {
+            url: "https://api-lok-live.leagueofkingdoms.com/api/item/freechest",
+            token: token, // variabel global
+            body: b64xorEnc(payload, xor_password), // variabel global
+            returnResponse: false
+        };
+
+        await sendRequest(inputRaw);
+        console.log(`[${new Date().toLocaleTimeString()}] Free chest dibuka.`);
+    } catch (err) {
+        console.error("Error in autoOpenFreeChest:", err);
+    }
+
+    // Hitung delay sampai ke waktu HH:00:00 berikutnya
+    const now = new Date();
+    const nextHour = new Date(now);
+    nextHour.setHours(now.getHours() + 1, 0, 0, 0); // set ke jam berikutnya tepat (menit & detik = 0)
+
+    const delay = nextHour - now;
+
+    console.log(`Jadwal buka berikutnya: ${nextHour.toLocaleTimeString()} (dalam ${(delay / 60000).toFixed(1)} menit)`);
+
+    setTimeout(autoOpenFreeChest, delay);
+}
 
 async function sendTelegramMessage(token, message) {
     const localKey = `telegram_chat_id_${token.slice(0, 10)}`;
@@ -550,6 +578,9 @@ window.tokenTelegram && monitorChatWebSocket();
 
 // Open Chest
 window.shouldOpenChest && autoOpenChest();
+
+// Open Free Chest
+window.shouldOpenFreeChest && autoOpenFreeChest();
 
 // Fungsi menyimpan status ON/OFF
 function getAutoJoinStatus() {

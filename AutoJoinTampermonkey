@@ -15,6 +15,7 @@
     window.tokenTelegram = '1936285843:AAFgubrFQcbz0B7zN8hUKS2oNLPS-Nyyxyw'; // ← ganti token
     window.delayCheckListRally = 90000; // 90 detik delay untuk check list rally
     window.shouldOpenChest = true;
+    window.shouldOpenFreeChest = true;
 
 
     window.troopCodes = [50100306, 50100305, 50100304];
