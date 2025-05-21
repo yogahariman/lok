@@ -390,6 +390,31 @@ async function autoOpenFreeChest() {
     setTimeout(autoOpenFreeChest, delay);
 }
 
+async function autoRefreshAtHours() {
+    try {
+      const refreshHours = [3, 7, 11, 15, 19, 23];
+      const delay = 30 * 1000; // delay dalam milidetik (30 detik)
+  
+      const now = new Date();
+      const hour = now.getHours();
+      const minute = now.getMinutes();
+  
+      // Kita simpan lastReloadHour di properti fungsi supaya tetap ingat antar pemanggilan
+      if (!autoRefreshAtHours.lastReloadHour) autoRefreshAtHours.lastReloadHour = null;
+  
+      if (refreshHours.includes(hour) && minute === 0 && hour !== autoRefreshAtHours.lastReloadHour) {
+        autoRefreshAtHours.lastReloadHour = hour;
+        location.reload();
+      }
+    } catch (err) {
+      console.error("Error in autoRefreshAtHours:", err);
+    }
+  
+    // panggil ulang fungsi ini setelah delay
+    setTimeout(autoRefreshAtHours, 30 * 1000);
+  }
+  
+
 async function sendTelegramMessage(token, message) {
     const localKey = `telegram_chat_id_${token.slice(0, 10)}`;
 
@@ -594,6 +619,8 @@ window.shouldOpenChest && autoOpenChest();
 
 // Open Free Chest
 window.shouldOpenFreeChest && autoOpenFreeChest();
+
+//autoRefreshAtHours();
 
 // Fungsi menyimpan status ON/OFF
 function getAutoJoinStatus() {
