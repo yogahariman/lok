@@ -348,7 +348,7 @@ async function autoOpenChest() {
 
             if (amount > 1) {
                 await useItem(code, 1);
-                await delay(5000);
+                await delay(8000);
                 console.log(`Finished opening chest for item code ${code}.`);
             } else {
                 console.log(`Not enough chests for item code ${code}. Skipping.`);
@@ -357,7 +357,7 @@ async function autoOpenChest() {
     } catch (err) {
         console.error("Error in autoOpenChest:", err);
     } finally {
-        setTimeout(autoOpenChest, 60000);
+        setTimeout(autoOpenChest, 30000);
     }
 }
 
