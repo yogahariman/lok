@@ -325,20 +325,26 @@ async function useActionPoint() {
     }
 }
 
-async function openChest() {
-    const itemList = await getItemList();
-    const chestCodes = [10104024, 10104025, 10104142];
+async function autoOpenChest() {
+    try {
+        const itemList = await getItemList();
+        const chestCodes = [10104024, 10104025, 10104142];
 
-    for (const code of chestCodes) {
-        const amount = getAmountItemList(itemList, code);
+        for (const code of chestCodes) {
+            const amount = getAmountItemList(itemList, code);
 
-        if (amount > 1) {
-            await useItem(code, 1);
-            await delay(5000);
-            console.log(`Finished opening chest for item code ${code}.`);
-        } else {
-            console.log(`Not enough chests for item code ${code}. Skipping.`);
+            if (amount > 1) {
+                await useItem(code, 1);
+                await delay(5000);
+                console.log(`Finished opening chest for item code ${code}.`);
+            } else {
+                console.log(`Not enough chests for item code ${code}. Skipping.`);
+            }
         }
+    } catch (err) {
+        console.error("Error in autoOpenChest:", err);
+    } finally {
+        setTimeout(autoOpenChest, 60000);
     }
 }
 
@@ -542,23 +548,8 @@ async function autoJoinRally() {
 //if (window.tokenTelegram) {monitorChatWebSocket();}
 window.tokenTelegram && monitorChatWebSocket();
 
-
 // Open Chest
-async function autoOpenChest() {
-    try {
-        await openChest(); // kemungkinan error di sini
-    } catch (err) {
-        console.error("Error in openChest:", err);
-    } finally {
-        setTimeout(autoOpenChest, 60000);
-    }
-}
-
-// Cek hanya sekali saat awal
-if (window.shouldOpenChest) {
-    autoOpenChest();
-}
-
+window.shouldOpenChest && autoOpenChest();
 
 // Fungsi menyimpan status ON/OFF
 function getAutoJoinStatus() {
