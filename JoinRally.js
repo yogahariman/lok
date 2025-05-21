@@ -363,7 +363,7 @@ async function autoOpenChest() {
 
 async function autoOpenFreeChest() {
     try {
-        const payload = { type: 1 };
+        const payload = { type: 0 };
 
         const inputRaw = {
             url: "https://api-lok-live.leagueofkingdoms.com/api/item/freechest",

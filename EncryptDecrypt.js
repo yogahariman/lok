@@ -15,7 +15,9 @@ const xorPassword = ".0d172qwfg634.";
 //buka box
 //const s ="VRYbX1cCEwkJVwZRRQAaHBhaUV4IRF1MRQ1QDA";
 //harvest
-const s ="VRIQSEdXU01XGg";
+//const s ="VRIQSEdXU01WGg";
+//const s ="VRIQSEdXU01XGg";
+const s ="VRIQSEdXU01UGg";
 
 // Decode base64 to bytes
 function base64ToBytes(b64) {
