@@ -1,8 +1,3 @@
-import {
-    b64xorDec,
-    b64xorEnc,
-    // import others if needed
-} from './EncryptDecrypt.js'; // pastikan path-nya benar
 
 // Deklarasi awal variabel sebagai null
 let token = null;
