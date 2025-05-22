@@ -255,35 +255,29 @@ function getAmountItemList(data, targetCode) {
     return item ? item.amount : null;
 }
 
-// function useItemPayload(code, amount) {
-//     return {
-//         code,
-//         amount
-//     };
-// }
-
-// async function useItem(code, amount) {
-//     const inputRaw = {
-//         url: "https://api-lok-live.leagueofkingdoms.com/api/item/use",
-//         token: token,
-//         body: b64xorEnc(useItemPayload(code, amount), xor_password),
-//         returnResponse: false
-//     };
-//     await sendRequest(inputRaw);
-// }
-
 async function useItem(code, amount) {
-    const payload = { code, amount };
-
+    const itemPayload = { code, amount };
+    const analyticsPayload = {
+      url: "item/use",
+      param: `${code}|${amount}`
+    };
+  
+    // Kirim request penggunaan item
     await sendRequest({
-        url: "https://api-lok-live.leagueofkingdoms.com/api/item/use",
-        token,
-        body: b64xorEnc(payload, xor_password),
-        returnResponse: false
+      url: "https://api-lok-live.leagueofkingdoms.com/api/item/use",
+      token,
+      body: b64xorEnc(itemPayload, xor_password),
+      returnResponse: false
     });
-}
-
-
+  
+    // Kirim data analitik
+    await sendRequest({
+      url: "https://api-lok-live.leagueofkingdoms.com/api/auth/analytics",
+      token,
+      body: JSON.stringify(analyticsPayload),
+      returnResponse: false
+    });
+  }
 
 
 async function useActionPoint() {
