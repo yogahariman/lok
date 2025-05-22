@@ -75,6 +75,25 @@ function delay(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
 
+function getZoneIds(minX, maxX, minY, maxY) {
+    const zoneIds = new Set();
+  
+    for (let y = minY; y <= maxY; y++) {
+      for (let x = minX; x <= maxX; x++) {
+        const zoneId = Math.floor((x / 32) + 64 * (y / 32));
+        zoneIds.add(zoneId);
+      }
+    }
+  
+    return Array.from(zoneIds);
+  }
+  
+  // Contoh penggunaan:
+  //const result = getZoneIds(1, 2000, 1, 2000);
+  //console.log(result);
+  
+  
+
 // Step 1: Intercept login and capture token + regionHash
 const originalOpen = XMLHttpRequest.prototype.open;
 const originalSend = XMLHttpRequest.prototype.send;
@@ -382,15 +401,15 @@ async function startTower() {
     });
 }
 
-// jalankan tower tiap menit ke 32 detik ke 10
+// jalankan tower tiap menit ke 32 detik ke 20
 function scheduleStartTower() {
     const now = new Date();
     const next = new Date();
 
-    // Set ke HH:32:10
-    next.setHours(now.getHours(), 32, 10, 0);
+    // Set ke HH:32:20
+    next.setHours(now.getHours(), 32, 20, 0);
 
-    // Kalau sudah lewat HH:32:10 sekarang, set ke jam berikutnya
+    // Kalau sudah lewat HH:32:20 sekarang, set ke jam berikutnya
     if (next <= now) {
         next.setHours(next.getHours() + 1);
     }
