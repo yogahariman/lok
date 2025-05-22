@@ -395,7 +395,7 @@ async function startTower() {
     const payload = JSON.stringify({searchType: 0, level: 2});
 
     await sendRequest({
-        url: "https://api-lok-live.leagueofkingdoms.com/api/item/use",
+        url: "https://api-lok-live.leagueofkingdoms.com/api/kingdom/watchtower/search",
         token,
         body: payload,
         returnResponse: false
