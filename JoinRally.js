@@ -16,7 +16,6 @@ const delayCheckListRally = typeof window.delayCheckListRally !== 'undefined'
     ? window.delayCheckListRally
     : 60000; // 60 detik delay untuk check list rally
 
-/*
 // Decode base64 to bytes
 function base64ToBytes(b64) {
     const binaryStr = atob(b64);
@@ -60,6 +59,7 @@ function b64xorEnc(obj, password) {
     return bytesToBase64(xoredBytes);
 }
 
+/*
 // ✅ Coba decode string s
 try {
   const result = b64xorDec(s, xorPassword);
