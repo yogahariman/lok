@@ -292,14 +292,6 @@ async function useActionPoint() {
     const actionPoint = infoProfile?.profile?.actionPoint?.value;
 
     if (actionPoint < 50) {
-        //inputRaw = {
-        //    url: "https://api-lok-live.leagueofkingdoms.com/api/item/list",
-        //    token: token,
-        //    body: "{}",
-        //    returnResponse: true
-        //};
-        //const itemList = await sendRequest(inputRaw);
-
         const itemList = await getItemList();
 
         let codeAP = null;
@@ -321,13 +313,6 @@ async function useActionPoint() {
         if (codeAP && nAp) {
             await useItem(codeAP, nAp);
 
-            //inputRaw = {
-            //    url: "https://api-lok-live.leagueofkingdoms.com/api/item/use",
-            //    token: token,
-            //    body: b64xorEnc(useItemPayload(codeAP, nAp), xor_password),
-            //    returnResponse: false
-            //};
-            //await sendRequest(inputRaw);
         }
     }
 }
