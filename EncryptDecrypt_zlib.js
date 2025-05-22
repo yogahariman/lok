@@ -15,6 +15,8 @@ zlib.gunzip(buffer, (err, decoded) => {
     // 4. Tampilkan hasil decoding
     console.log("Decoded payload:", decoded.toString());
 });
+
+
 const json = {
     result: true,
     battles: [
