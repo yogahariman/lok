@@ -402,14 +402,15 @@ async function startTower() {
     });
 }
 
-// jalankan tower tiap menit ke 2 detik ke 10
+// jalankan tower tiap menit ke 32 detik ke 10
 function scheduleStartTower() {
     const now = new Date();
     const next = new Date();
 
-    next.setHours(now.getHours(), 2, 10, 0); // set ke HH:02:10
+    // Set ke HH:32:10
+    next.setHours(now.getHours(), 32, 10, 0);
 
-    // Kalau sudah lewat HH:02:10 sekarang, set ke jam berikutnya
+    // Kalau sudah lewat HH:32:10 sekarang, set ke jam berikutnya
     if (next <= now) {
         next.setHours(next.getHours() + 1);
     }
@@ -417,9 +418,9 @@ function scheduleStartTower() {
     const delay = next - now;
     console.log(`startTower akan dijalankan pada: ${next.toLocaleTimeString()} (dalam ${(delay / 1000).toFixed(1)} detik)`);
 
-    // Jalankan pertama kali dengan delay ke HH:02:10 berikutnya
+    // Jalankan pertama kali dengan delay ke HH:32:10 berikutnya
     setTimeout(() => {
-        startTower(); // panggil pertama kali
+        startTower();
         console.log(`[${new Date().toLocaleTimeString()}] startTower() dijalankan`);
 
         // Setelah itu, ulangi setiap 1 jam
@@ -429,7 +430,6 @@ function scheduleStartTower() {
         }, 60 * 60 * 1000); // 1 jam
     }, delay);
 }
-
 
 async function autoRefreshAtHours() {
     try {

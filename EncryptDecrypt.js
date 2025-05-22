@@ -17,7 +17,8 @@ const xorPassword = ".0d172qwfg634.";
 //harvest
 //const s ="VRIQSEdXU01WGg";
 //const s ="VRIQSEdXU01XGg";
-const s ="VRIQSEdXU01UGg";
+//const s ="VRIQSEdXU01UGg";
+//const s ="VRIUXkRbBR4JCRQJBR4cTQ";
 
 // Decode base64 to bytes
 function base64ToBytes(b64) {
@@ -62,6 +63,8 @@ function b64xorEnc(obj, password) {
     return bytesToBase64(xoredBytes);
 }
 
+
+
 // ✅ Coba decode string s
 try {
     const result = b64xorDec(s, xorPassword);
@@ -76,3 +79,6 @@ try {
 } catch (e) {
     console.error("Gagal decode atau encode:", e.message);
 }
+
+
+const s ="VRIUXkRbBR4JCRQJBR4ZTQ";console.log("Hasil decrypt:", b64xorDec(s, xorPassword));
