@@ -3,7 +3,7 @@
 let token = null;
 let regionHash = null;
 let xor_password = null;
-let kingdom = null;
+let kingdomData = null;
 const delayJoin = 5000; // 5 detik delay sebelum join rally
 //const delayCheckListRally = 60000; // 60 detik delay untuk check list rally
 let autoJoinIntervalId = null;
@@ -102,8 +102,10 @@ function getZoneIds(minX, maxX, minY, maxY) {
 function handleAuthResponse(xhr) {
     const targetEndpoints = [
         "/api/auth/login",
-        "/api/auth/connect"
+        "/api/auth/connect",
+        "/api/kingdom/enter"
     ];
+    
 
     if (!targetEndpoints.some(endpoint => xhr._url.includes(endpoint))) return;
 
@@ -133,6 +135,14 @@ function handleAuthResponse(xhr) {
             console.log("🟢 RegionHash:", regionHash);
             console.log("🟢 XOR Password:", xor_password);
         }
+        if (xhr._url.includes("/api/kingdom/enter")) {
+            kingdomData = json.kingdom;
+            console.log("Data kingdom:", kingdomData);
+        }
+
+
+
+
     } catch (err) {
         console.error("❌ Gagal parsing response:", err, xhr.response);
     }
@@ -265,9 +275,9 @@ function payloadJoinRally(saveTroopsGroup, rallyMoId) {
 }
 
 function getTroopGroupByHP(monsterHP) {
-    if (monsterHP <= 1000000) return kingdom.saveTroops[0];
-    if (monsterHP <= 2000000) return kingdom.saveTroops[1];
-    return kingdom.saveTroops[2];
+    if (monsterHP <= 1000000) return kingdomData.saveTroops[0];
+    if (monsterHP <= 2000000) return kingdomData.saveTroops[1];
+    return kingdomData.saveTroops[2];
 }
 
 
@@ -586,17 +596,6 @@ function stopChatWebSocketMonitor() {
     }
 }
 
-async function enterKingdom(){
-    const res = await sendRequest({
-        url: "https://api-lok-live.leagueofkingdoms.com/api/kingdom/enter",
-        token: token,
-        body: "{}",
-        returnResponse: true
-    });
-    kingdom = res.kingdom;        
-    console.log("📥 Kingdom response:", kingdom);
-}
-
 // Step 3: Function to fetch and join rally
 async function autoJoinRally() {
     try {
@@ -652,9 +651,9 @@ async function autoJoinRally() {
             if (!isJoined) {
                 //console.log(`🚀 Bergabung ke rally: ${battleId} (Monster: ${monsterCode}, HP: ${monsterHP})`);
 
-                //const saveTroopsGroup = getTroopGroupByHP(monsterHP);
-                //const payload = payloadJoinRally(saveTroopsGroup, battleId);
-                const payload = createJoinRallyPayload(troopCodes, troopAmounts, rallyId);
+                const saveTroopsGroup = getTroopGroupByHP(monsterHP);
+                const payload = payloadJoinRally(saveTroopsGroup, battleId);
+                //const payload = createJoinRallyPayload(troopCodes, troopAmounts, rallyId);
                 //console.log(JSON.stringify(payload, null, 2));
 
                 const payload_encrypted = b64xorEnc(payload, xor_password);
@@ -746,7 +745,6 @@ function toggleAutoJoin() {
 
     if (newStatus) {
         console.log("✅ AutoJoin ENABLED");
-        enterKingdom();
         autoJoinRally(); // Jalankan pertama
         autoJoinIntervalId = setInterval(autoJoinRally, delayCheckListRally);
     } else {
@@ -787,7 +785,6 @@ window.addEventListener('load', () => {
 
     if (getAutoJoinStatus()) {
         console.log("🔁 AutoJoin aktif saat load");
-        enterKingdom();
         autoJoinRally();
         autoJoinIntervalId = setInterval(autoJoinRally, delayCheckListRally);
     } else {
