@@ -222,7 +222,6 @@ function decodePayloadArray(payload) {
     }
 }
 
-/*
 function createJoinRallyPayload(codes, amounts, rallyMoId) {
     if (!Array.isArray(codes) || !Array.isArray(amounts) || codes.length !== amounts.length) {
         console.error("❌ Input 'codes' dan 'amounts' harus array dengan panjang yang sama.");
@@ -247,7 +246,6 @@ function createJoinRallyPayload(codes, amounts, rallyMoId) {
         rallyMoId
     };
 }
-*/
 
 function payloadJoinRally(saveTroopsGroup, rallyMoId) {
     const marchTroops = saveTroopsGroup.map(({ code, amount }) => ({
@@ -654,9 +652,9 @@ async function autoJoinRally() {
             if (!isJoined) {
                 //console.log(`🚀 Bergabung ke rally: ${battleId} (Monster: ${monsterCode}, HP: ${monsterHP})`);
 
-                const saveTroopsGroup = getTroopGroupByHP(monsterHP);
-                const payload = payloadJoinRally(saveTroopsGroup, battleId);
-                //const payload = createJoinRallyPayload(troopCodes, troopAmounts, rallyId);
+                //const saveTroopsGroup = getTroopGroupByHP(monsterHP);
+                //const payload = payloadJoinRally(saveTroopsGroup, battleId);
+                const payload = createJoinRallyPayload(troopCodes, troopAmounts, rallyId);
                 //console.log(JSON.stringify(payload, null, 2));
 
                 const payload_encrypted = b64xorEnc(payload, xor_password);
