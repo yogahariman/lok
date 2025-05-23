@@ -120,9 +120,9 @@ function handleAuthResponse(xhr) {
         }
 
         if (json.result && json.token && json.regionHash) {
-            const token = json.token;
-            const regionHash = json.regionHash;
-            const xor_password = atob(regionHash).split("-")[1];
+            token = json.token;
+            regionHash = json.regionHash;
+            xor_password = atob(regionHash).split("-")[1];
 
             //localStorage.setItem("lok_token", token);
             //localStorage.setItem("lok_regionHash", regionHash);
