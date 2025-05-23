@@ -55,6 +55,9 @@ function b64xorEnc(obj, password) {
 }
 
 /*
+xorPassword = ".0d172qwfg634.";
+const s= "VRICQ1h...";
+console.log("Hasil decrypt:", b64xorDec(s, xorPassword));
 // ✅ Coba decode string s
 try {
   const result = b64xorDec(s, xorPassword);
@@ -337,6 +340,7 @@ async function useActionPoint() {
     }
 }
 
+/*
 async function autoOpenChest() {
     try {
         const itemList = await getItemList();
@@ -359,6 +363,31 @@ async function autoOpenChest() {
         setTimeout(autoOpenChest, 30000);
     }
 }
+*/
+async function autoOpenChest() {
+    try {
+        const itemList = await getItemList();
+        const chestCodes = [10104024, 10104025, 10104142];
+
+        for (const code of chestCodes) {
+            const amount = getAmountItemList(itemList, code);
+
+            if (amount > 1) {
+                for (let i = 0; i < amount; i++) {
+                    await useItem(code, 1);
+                    console.log(`Opened chest ${i + 1}/${amount} for item code ${code}.`);
+                    await delay(10000); // jeda antar buka
+                }
+                console.log(`Finished opening all ${amount} chests for item code ${code}.`);
+            } else {
+                console.log(`Not enough chests for item code ${code}. Skipping.`);
+            }
+        }
+    } catch (err) {
+        console.error("Error in autoOpenChest:", err);
+    }
+}
+
 
 async function autoOpenFreeChest() {
     try {
