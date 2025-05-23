@@ -668,7 +668,7 @@ async function autoJoinRally() {
 window.tokenTelegram && monitorChatWebSocket();
 
 // Open Chest
-window.shouldOpenChest && autoOpenChest();
+//window.shouldOpenChest && autoOpenChest();
 
 // Open Free Chest
 window.shouldOpenFreeChest && autoOpenFreeChest();
