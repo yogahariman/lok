@@ -340,7 +340,6 @@ async function useActionPoint() {
     }
 }
 
-/*
 async function autoOpenChest() {
     try {
         const itemList = await getItemList();
@@ -363,7 +362,7 @@ async function autoOpenChest() {
         setTimeout(autoOpenChest, 30000);
     }
 }
-*/
+/*
 async function autoOpenChest() {
     try {
         const itemList = await getItemList();
@@ -387,7 +386,7 @@ async function autoOpenChest() {
         console.error("Error in autoOpenChest:", err);
     }
 }
-
+*/
 
 async function autoOpenFreeChest() {
     try {
