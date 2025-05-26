@@ -720,6 +720,14 @@ XMLHttpRequest.prototype.send = function () {
 
 monitorWebSocket(); // Aktifkan monitoring kalau belum
 
+// Open Chest
+window.shouldOpenChest && autoOpenChest();
+// Open Free Chest
+window.shouldOpenFreeChest && scheduleAutoOpenFreeChest();
+// jalankan tower tiap menit ke 2 detik ke 10
+window.shouldSearchTower && scheduleStartTower();
+
+
 // Fungsi menyimpan status ON/OFF
 function getAutoJoinStatus() {
     return localStorage.getItem('autojoin_enabled') === 'true';
@@ -743,16 +751,6 @@ function toggleAutoJoin() {
         //autoJoinIntervalId = setInterval(autoJoinRally, delayCheckListRally);
         autoJoinRally();
         monitorWebSocket(); // Aktifkan monitoring kalau belum
-        
-        if (!autoOpen) {
-            autoOpen = true;
-            // Open Chest
-            window.shouldOpenChest && autoOpenChest();
-            // Open Free Chest
-            window.shouldOpenFreeChest && scheduleAutoOpenFreeChest();
-            // jalankan tower tiap menit ke 2 detik ke 10
-            window.shouldSearchTower && scheduleStartTower();
-        }
         
     } else {
         console.log("⛔ AutoJoin DISABLED");
