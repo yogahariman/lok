@@ -750,7 +750,7 @@ function toggleAutoJoin() {
         //autoJoinRally(); // Jalankan pertama
         //autoJoinIntervalId = setInterval(autoJoinRally, delayCheckListRally);
         autoJoinRally();
-        monitorWebSocket(); // Aktifkan monitoring kalau belum
+        //monitorWebSocket(); // Aktifkan monitoring kalau belum
         
     } else {
         console.log("⛔ AutoJoin DISABLED");
