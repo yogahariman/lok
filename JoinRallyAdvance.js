@@ -5,6 +5,7 @@ let regionHash = null;
 let xor_password = null;
 let kingdomData = null;
 const delayJoin = 5000; // 5 detik delay sebelum join rally
+let autoOpen = false;
 //const delayCheckListRally = 60000; // 60 detik delay untuk check list rally
 //let autoJoinIntervalId = null;
 
@@ -363,8 +364,6 @@ async function useActionPoint() {
 
 async function autoOpenChest() {
     
-    if (!getAutoJoinStatus()) return; // Cek status tombol
-
     try {
         const itemList = await getItemList();
         const chestCodes = [10104024, 10104025, 10104142];
@@ -389,8 +388,6 @@ async function autoOpenChest() {
 
 function scheduleAutoOpenFreeChest() {
     
-    if (!getAutoJoinStatus()) return; // Cek status tombol
-
     const now = new Date();
     const nextHour = new Date(now);
     nextHour.setHours(now.getHours() + 1, 0, 0, 0); // HH:00:00 berikutnya
@@ -438,8 +435,6 @@ async function startTower() {
 //tower akan dijalankan menit ke 12, 32, 52
 function scheduleStartTower() {
     
-    if (!getAutoJoinStatus()) return; // Cek status tombol
-
     const now = new Date();
     const next = new Date();
 
@@ -714,12 +709,17 @@ function toggleAutoJoin() {
         //autoJoinIntervalId = setInterval(autoJoinRally, delayCheckListRally);
         autoJoinRally();
         monitorWebSocket(); // Aktifkan monitoring kalau belum
-        // Open Chest
-        window.shouldOpenChest && autoOpenChest();
-        // Open Free Chest
-        window.shouldOpenFreeChest && scheduleAutoOpenFreeChest();
-        // jalankan tower tiap menit ke 2 detik ke 10
-        window.shouldSearchTower && scheduleStartTower();
+
+        if (!autoOpen) {
+            autoOpen = true;
+            // Open Chest
+            window.shouldOpenChest && autoOpenChest();
+            // Open Free Chest
+            window.shouldOpenFreeChest && scheduleAutoOpenFreeChest();
+            // jalankan tower tiap menit ke 2 detik ke 10
+            window.shouldSearchTower && scheduleStartTower();
+            end
+        }
     } else {
         console.log("⛔ AutoJoin DISABLED");
         //if (autoJoinIntervalId !== null) {
