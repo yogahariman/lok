@@ -741,7 +741,7 @@ function toggleAutoJoin() {
         //autoJoinIntervalId = setInterval(autoJoinRally, delayCheckListRally);
         autoJoinRally();
         monitorWebSocket(); // Aktifkan monitoring kalau belum
-
+        /*
         if (!autoOpen) {
             autoOpen = true;
             // Open Chest
@@ -751,6 +751,7 @@ function toggleAutoJoin() {
             // jalankan tower tiap menit ke 2 detik ke 10
             window.shouldSearchTower && scheduleStartTower();
         }
+        */
     } else {
         console.log("⛔ AutoJoin DISABLED");
         //if (autoJoinIntervalId !== null) {
