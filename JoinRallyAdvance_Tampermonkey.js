@@ -2,7 +2,7 @@
 // @name         Hariman
 // @namespace    http://tampermonkey.net/
 // @version      1.2
-// @description  Intercept login and capture token + regionHash
+// @description  Auto Join Rally LOK
 // @match        https://play.leagueofkingdoms.com/*
 // @grant        none
 // @require      https://cdn.jsdelivr.net/npm/pako@2.1.0/dist/pako.min.js
@@ -17,9 +17,6 @@
     window.shouldOpenFreeChest = true;
     window.shouldSearchTower = true;
 
-
-    window.troopCodes = [50100306, 50100305, 50100304];
-    window.troopAmounts = [0, 250000, 0];
     window.allowedMonsters = {
         "20200201": { name: "DeathKar", minLevel: 4 },
         "20200202": { name: "Green Dragon", minLevel: 99 },
@@ -32,7 +29,7 @@
     };
 
     const script = document.createElement("script");
-    script.src = "https://yogahariman.github.io/lok/JoinRally.js?_=" + Date.now(); // cache buster
+    script.src = "https://yogahariman.github.io/lok/JoinRallyAdvance.js?_=" + Date.now(); // cache buster
     script.async = false; // agar urutan eksekusi terjaga
     document.head.appendChild(script);
 })();

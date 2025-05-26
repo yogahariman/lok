@@ -6,11 +6,11 @@ let xor_password = null;
 let kingdomData = null;
 const delayJoin = 5000; // 5 detik delay sebelum join rally
 //const delayCheckListRally = 60000; // 60 detik delay untuk check list rally
-let autoJoinIntervalId = null;
+//let autoJoinIntervalId = null;
 
-const delayCheckListRally = typeof window.delayCheckListRally !== 'undefined'
-    ? window.delayCheckListRally
-    : 60000; // 60 detik delay untuk check list rally
+//const delayCheckListRally = typeof window.delayCheckListRally !== 'undefined'
+//    ? window.delayCheckListRally
+//    : 60000; // 60 detik delay untuk check list rally
 
 // Decode base64 to bytes
 function base64ToBytes(b64) {
