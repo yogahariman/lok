@@ -718,6 +718,8 @@ XMLHttpRequest.prototype.send = function () {
     return originalSend.apply(this, arguments);
 };
 
+monitorWebSocket(); // Aktifkan monitoring kalau belum
+
 // Fungsi menyimpan status ON/OFF
 function getAutoJoinStatus() {
     return localStorage.getItem('autojoin_enabled') === 'true';
