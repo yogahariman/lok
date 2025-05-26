@@ -105,7 +105,7 @@ function handleAuthResponse(xhr) {
         "/api/auth/connect",
         "/api/kingdom/enter"
     ];
-    
+
 
     if (!targetEndpoints.some(endpoint => xhr._url.includes(endpoint))) return;
 
@@ -604,76 +604,172 @@ async function autoJoinRally() {
             token: token,
             body: "{}",
             returnResponse: true
-        });        
+        });
+
         console.log("📥 Rally list response:", rallyList);
+
         const rallyListJson = decodePayloadArray(rallyList.payload);
 
-        if (!rallyListJson.result) {
-            console.log("⚠️ Rally list payload tidak ada.");
-            return;
-        }
-
-        if (!Array.isArray(rallyListJson.battles) || rallyListJson.battles.length === 0) {
-            console.log("⚠️ Rally list kosong atau tidak valid.");
+        if (!rallyListJson.result || !Array.isArray(rallyListJson.battles) || rallyListJson.battles.length === 0) {
+            console.log("⚠️ Rally list tidak valid atau kosong.");
             return;
         }
 
         const rallies = rallyListJson.battles;
 
-        if (rallies.every(battle => battle.isJoined)) {
-            console.log("Sudah Join semua rally")
+        const unjoinedRallies = rallies.filter(b => !b.isJoined);
+        if (unjoinedRallies.length === 0) {
+            console.log("✅ Semua rally sudah diikuti.");
             return;
         }
 
-        //Use Action Point if less than 50
+        // Gunakan AP jika < 50
         await useActionPoint();
 
 
-        for (const battle of rallies) {
-            const battleId = battle._id;
-            const isJoined = battle.isJoined;
-            const monsterCode = battle.targetMonster?.code;
-            const monsterLevel = battle.targetMonster?.level;
-            const monsterHP = battle.targetMonster?.param?.value ?? 0; // default 0 kalau null
+        for (const battle of unjoinedRallies) {
+            //const battleId = battle._id;
+            //const isJoined = battle.isJoined;
+            //const monsterCode = battle.targetMonster?.code;
+            //const monsterLevel = battle.targetMonster?.level;
+            //const monsterHP = battle.targetMonster?.param?.value ?? 0; // default 0 kalau null
+            const {
+                _id: battleId,
+                isJoined,
+                targetMonster: {
+                    code: monsterCode,
+                    level: monsterLevel,
+                    param: { value: monsterHP = 0 } = {}
+                } = {}
+            } = battle;
 
             const monsterInfo = allowedMonsters[monsterCode];
             const isAllowed = monsterInfo && monsterLevel >= monsterInfo.minLevel;
+
             if (!isAllowed) {
                 console.log("❌ Tidak join rally:", monsterInfo?.name || "Unknown", "(Level:", monsterLevel, ")");
-                return; // atau continue; jika di dalam loop
-            } else {
-                console.log("✅ Join rally:", monsterInfo.name, "(Level:", monsterLevel, ")");
-                // lanjut join rally
+                continue;
             }
 
-            //console.log(`🔍 Memeriksa rally: ${battleId}, isJoined: ${isJoined}, monster: ${monsterCode}, HP: ${monsterHP}`);
+            console.log("✅ Join rally:", monsterInfo.name, "(Level:", monsterLevel, ")");
 
-            if (!isJoined) {
-                //console.log(`🚀 Bergabung ke rally: ${battleId} (Monster: ${monsterCode}, HP: ${monsterHP})`);
+            const saveTroopsGroup = getTroopGroupByHP(monsterHP);
+            const payload = payloadJoinRally(saveTroopsGroup, battleId);
+            const payload_encrypted = b64xorEnc(payload, xor_password);
 
-                const saveTroopsGroup = getTroopGroupByHP(monsterHP);
-                const payload = payloadJoinRally(saveTroopsGroup, battleId);
-                //const payload = createJoinRallyPayload(troopCodes, troopAmounts, rallyId);
-                //console.log(JSON.stringify(payload, null, 2));
+            await delay(5000);
 
-                const payload_encrypted = b64xorEnc(payload, xor_password);
-
-                await delay(5000);
-
-                await sendRequest({
-                    url: "https://api-lok-live.leagueofkingdoms.com/api/field/rally/join",
-                    token: token,
-                    body: payload_encrypted,
-                    returnResponse: false
-                });
-                
-            }
-
+            await sendRequest({
+                url: "https://api-lok-live.leagueofkingdoms.com/api/field/rally/join",
+                token: token,
+                body: payload_encrypted,
+                returnResponse: false
+            });
         }
     } catch (err) {
         console.error("❌ Error saat auto join:", err);
     }
 }
+
+function monitorWebSocket() {
+    if (window._originalWebSocket) {
+        console.warn('[⚠️] WebSocket monitor sudah aktif.');
+        return;
+    }
+
+    // Simpan WebSocket asli
+    window._originalWebSocket = window.WebSocket;
+    const OriginalWebSocket = window._originalWebSocket;
+
+    // Antrean untuk autoJoinRally
+    const rallyQueue = [];
+    let rallyProcessing = false;
+
+    async function processRallyQueue() {
+        if (rallyProcessing) return;
+        rallyProcessing = true;
+
+        while (rallyQueue.length > 0) {
+            rallyQueue.shift(); // Kita tidak perlu data, hanya trigger
+            try {
+                console.log('[⏳] Memproses rally dari antrean...');
+                await autoJoinRally(); // Fungsi utama join rally
+            } catch (err) {
+                console.error('❌ Gagal auto join rally:', err);
+            }
+        }
+
+        rallyProcessing = false;
+    }
+
+    // Override WebSocket
+    window.WebSocket = function (url, protocols) {
+        const ws = protocols ? new OriginalWebSocket(url, protocols) : new OriginalWebSocket(url);
+        Object.setPrototypeOf(ws, OriginalWebSocket.prototype);
+
+        // Simpan instance
+        window._webSocketInstances.push(ws);
+
+        ws.addEventListener('message', (event) => {
+            const data = event.data;
+            if (typeof data !== 'string' || !data.startsWith('42')) return;
+
+            try {
+                const [path, message] = JSON.parse(data.slice(2));
+
+                // Chat Handler
+                if (path === '/chat/new') {
+                    const from = message.from;
+                    const text = message.text;
+                    const tag = message.alliance?.tag || '';
+                    const formatted = `[${tag}] ${from}: ${text}`;
+                    sendTelegramMessage(window.tokenTelegram, formatted);
+                }
+
+                // Rally Handler
+                else if (path === '/alliance/rally/new') {
+                    console.warn('[🎯 RALLY DETECTED]', message);
+                    rallyQueue.push(message);
+                    processRallyQueue();
+                }
+
+            } catch (err) {
+                console.error('❌ Gagal parsing payload socket:', err);
+            }
+        });
+
+        return ws;
+    };
+
+    window.WebSocket.prototype = OriginalWebSocket.prototype;
+
+    console.log('[✅] WebSocket monitoring aktif.');
+}
+
+function stopWebSocketMonitor() {
+    if (window._originalWebSocket) {
+        window.WebSocket = window._originalWebSocket;
+        delete window._originalWebSocket;
+
+        // Tutup semua koneksi aktif
+        if (Array.isArray(window._webSocketInstances)) {
+            window._webSocketInstances.forEach(ws => {
+                try {
+                    ws.close(); // Menutup koneksi WebSocket aktif
+                    console.log('[🔌] WebSocket connection closed.');
+                } catch (err) {
+                    console.warn('⚠️ Gagal menutup WebSocket:', err);
+                }
+            });
+            delete window._webSocketInstances;
+        }
+
+        console.log('[🛑] WebSocket monitor dihentikan dan koneksi ditutup.');
+    } else {
+        console.warn('[ℹ️] Monitor belum aktif atau sudah dihentikan.');
+    }
+}
+
 
 
 // Step 2: Intercept WebSocket message to detect rally
@@ -698,7 +794,7 @@ async function autoJoinRally() {
 
 //undefined, null, dan string kosong ("") semuanya dianggap falsy
 //if (window.tokenTelegram) {monitorChatWebSocket();}
-window.tokenTelegram && monitorChatWebSocket();
+//window.tokenTelegram && monitorChatWebSocket();
 
 // Open Chest
 //window.shouldOpenChest && autoOpenChest();
@@ -726,6 +822,7 @@ XMLHttpRequest.prototype.send = function () {
     return originalSend.apply(this, arguments);
 };
 
+
 // Fungsi menyimpan status ON/OFF
 function getAutoJoinStatus() {
     return localStorage.getItem('autojoin_enabled') === 'true';
@@ -745,14 +842,16 @@ function toggleAutoJoin() {
 
     if (newStatus) {
         console.log("✅ AutoJoin ENABLED");
-        autoJoinRally(); // Jalankan pertama
-        autoJoinIntervalId = setInterval(autoJoinRally, delayCheckListRally);
+        //autoJoinRally(); // Jalankan pertama
+        //autoJoinIntervalId = setInterval(autoJoinRally, delayCheckListRally);
+        monitorWebSocket();
     } else {
         console.log("⛔ AutoJoin DISABLED");
-        if (autoJoinIntervalId !== null) {
-            clearInterval(autoJoinIntervalId);
-            autoJoinIntervalId = null;
-        }
+        stopWebSocketMonitor();
+        //if (autoJoinIntervalId !== null) {
+        //    clearInterval(autoJoinIntervalId);
+        //    autoJoinIntervalId = null;
+        //}
     }
 }
 
@@ -785,8 +884,9 @@ window.addEventListener('load', () => {
 
     if (getAutoJoinStatus()) {
         console.log("🔁 AutoJoin aktif saat load");
-        autoJoinRally();
-        autoJoinIntervalId = setInterval(autoJoinRally, delayCheckListRally);
+        //autoJoinRally();
+        //autoJoinIntervalId = setInterval(autoJoinRally, delayCheckListRally);
+        monitorWebSocket();
     } else {
         console.log("⛔ AutoJoin OFF saat load");
     }
