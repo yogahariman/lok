@@ -362,6 +362,9 @@ async function useActionPoint() {
 }
 
 async function autoOpenChest() {
+    
+    if (!getAutoJoinStatus()) return; // Cek status tombol
+
     try {
         const itemList = await getItemList();
         const chestCodes = [10104024, 10104025, 10104142];
@@ -384,34 +387,41 @@ async function autoOpenChest() {
     }
 }
 
+function scheduleAutoOpenFreeChest() {
+    
+    if (!getAutoJoinStatus()) return; // Cek status tombol
+
+    const now = new Date();
+    const nextHour = new Date(now);
+    nextHour.setHours(now.getHours() + 1, 0, 0, 0); // HH:00:00 berikutnya
+    const delay = nextHour - now;
+
+    console.log(`Free chest akan dibuka pada: ${nextHour.toLocaleTimeString()} (dalam ${(delay / 60000).toFixed(1)} menit)`);
+
+    setTimeout(async () => {
+        await autoOpenFreeChest(); // buka saat jam baru
+        scheduleAutoOpenFreeChest(); // jadwalkan lagi untuk jam berikutnya
+    }, delay);
+}
+
 async function autoOpenFreeChest() {
     try {
         const payload = { type: 0 };
 
         const inputRaw = {
             url: "https://api-lok-live.leagueofkingdoms.com/api/item/freechest",
-            token: token, // variabel global
-            body: b64xorEnc(payload, xor_password), // variabel global
+            token: token,
+            body: b64xorEnc(payload, xor_password),
             returnResponse: false
         };
 
         await sendRequest(inputRaw);
-        console.log(`[${new Date().toLocaleTimeString()}] Free chest dibuka.`);
+        console.log(`[${new Date().toLocaleTimeString()}] ✅ Free chest dibuka.`);
     } catch (err) {
-        console.error("Error in autoOpenFreeChest:", err);
+        console.error(`[${new Date().toLocaleTimeString()}] ❌ Error saat buka free chest:`, err);
     }
-
-    // Hitung delay sampai ke waktu HH:00:00 berikutnya
-    const now = new Date();
-    const nextHour = new Date(now);
-    nextHour.setHours(now.getHours() + 1, 0, 0, 0); // set ke jam berikutnya tepat (menit & detik = 0)
-
-    const delay = nextHour - now;
-
-    console.log(`Jadwal buka berikutnya: ${nextHour.toLocaleTimeString()} (dalam ${(delay / 60000).toFixed(1)} menit)`);
-
-    setTimeout(autoOpenFreeChest, delay);
 }
+
 
 // search tower 10 minutes
 async function startTower() {
@@ -427,6 +437,9 @@ async function startTower() {
 
 //tower akan dijalankan menit ke 12, 32, 52
 function scheduleStartTower() {
+    
+    if (!getAutoJoinStatus()) return; // Cek status tombol
+
     const now = new Date();
     const next = new Date();
 
@@ -678,20 +691,6 @@ XMLHttpRequest.prototype.send = function () {
     return originalSend.apply(this, arguments);
 };
 
-
-// Open Chest
-window.shouldOpenChest && autoOpenChest();
-
-// Open Free Chest
-window.shouldOpenFreeChest && autoOpenFreeChest();
-
-// jalankan tower tiap menit ke 2 detik ke 10
-window.shouldSearchTower && scheduleStartTower();
-
-//autoRefreshAtHours();
-
-//monitorWebSocket();
-
 // Fungsi menyimpan status ON/OFF
 function getAutoJoinStatus() {
     return localStorage.getItem('autojoin_enabled') === 'true';
@@ -715,6 +714,12 @@ function toggleAutoJoin() {
         //autoJoinIntervalId = setInterval(autoJoinRally, delayCheckListRally);
         autoJoinRally();
         monitorWebSocket(); // Aktifkan monitoring kalau belum
+        // Open Chest
+        window.shouldOpenChest && autoOpenChest();
+        // Open Free Chest
+        window.shouldOpenFreeChest && scheduleAutoOpenFreeChest();
+        // jalankan tower tiap menit ke 2 detik ke 10
+        window.shouldSearchTower && scheduleStartTower();
     } else {
         console.log("⛔ AutoJoin DISABLED");
         //if (autoJoinIntervalId !== null) {

@@ -12,11 +12,11 @@
     'use strict';
 
     // 💡 Pastikan variabel bisa diakses oleh script eksternal
-    window.tokenTelegram = '1936285843:AAFgubrFQcbz0B7zN8hUKS2oNLPS-Nyyxyw'; // ← ganti token
-    window.delayCheckListRally = 90000;
-    window.shouldOpenChest = true;
-    window.shouldOpenFreeChest = true;
-    window.shouldSearchTower = true;
+    //window.tokenTelegram = '1936285843:AAFgubrFQcbz0B7zN8hUKS2oNLPS-Nyyxyw'; // ← ganti token
+    //window.delayCheckListRally = 90000;
+    //window.shouldOpenChest = true;
+    //window.shouldOpenFreeChest = true;
+    //window.shouldSearchTower = true;
 
 
     window.troopCodes = [50100306, 50100305, 50100304];
