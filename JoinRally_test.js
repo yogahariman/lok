@@ -13,13 +13,13 @@
 
     // 💡 Pastikan variabel bisa diakses oleh script eksternal
     window.tokenTelegram = '1936285843:AAFgubrFQcbz0B7zN8hUKS2oNLPS-Nyyxyw'; // ← ganti token
-    //window.shouldOpenChest = false;
+    window.shouldOpenChest = false;
     window.shouldOpenFreeChest = true;
     window.shouldSearchTower = true;
 
 
-    window.troopCodes = [50100306, 50100305, 50100304];
-    window.troopAmounts = [0, 250000, 0];
+    //window.troopCodes = [50100306, 50100305, 50100304];
+    //window.troopAmounts = [0, 250000, 0];
     window.allowedMonsters = {
         "20200201": { name: "DeathKar", minLevel: 4 },
         "20200202": { name: "Green Dragon", minLevel: 1 },
@@ -35,18 +35,22 @@
 
 
 
+
+
+
     // Deklarasi awal variabel sebagai null
     let token = null;
     let regionHash = null;
     let xor_password = null;
     let kingdomData = null;
     const delayJoin = 5000; // 5 detik delay sebelum join rally
+    let autoOpen = false;
     //const delayCheckListRally = 60000; // 60 detik delay untuk check list rally
-    let autoJoinIntervalId = null;
+    //let autoJoinIntervalId = null;
 
-    const delayCheckListRally = typeof window.delayCheckListRally !== 'undefined'
-        ? window.delayCheckListRally
-        : 60000; // 60 detik delay untuk check list rally
+    //const delayCheckListRally = typeof window.delayCheckListRally !== 'undefined'
+    //    ? window.delayCheckListRally
+    //    : 60000; // 60 detik delay untuk check list rally
 
     // Decode base64 to bytes
     function base64ToBytes(b64) {
@@ -320,6 +324,10 @@
 
 
     async function getItemList() {
+        if (!token || !xor_password) {
+            console.warn("⏳ Token belum tersedia.");
+            return;
+        }
         const inputRaw = {
             url: "https://api-lok-live.leagueofkingdoms.com/api/item/list",
             token: token,
@@ -336,6 +344,11 @@
     }
 
     async function useItem(code, amount) {
+        if (!token || !xor_password) {
+            console.warn("⏳ Token belum tersedia.");
+            return;
+        }
+
         const itemPayload = { code, amount };
         const analyticsPayload = {
             url: "item/use",
@@ -361,6 +374,11 @@
 
 
     async function useActionPoint() {
+        if (!token || !xor_password) {
+            console.warn("⏳ Token belum tersedia.");
+            return;
+        }
+
         let inputRaw = {
             url: "https://api-lok-live.leagueofkingdoms.com/api/kingdom/profile/my",
             token: token,
@@ -398,6 +416,11 @@
     }
 
     async function autoOpenChest() {
+        if (!token || !xor_password) {
+            console.warn("⏳ Token belum tersedia.");
+            return;
+        }
+
         try {
             const itemList = await getItemList();
             const chestCodes = [10104024, 10104025, 10104142];
@@ -419,64 +442,53 @@
             setTimeout(autoOpenChest, 30000);
         }
     }
-    /*
-    async function autoOpenChest() {
-        try {
-            const itemList = await getItemList();
-            const chestCodes = [10104024, 10104025, 10104142];
-    
-            for (const code of chestCodes) {
-                const amount = getAmountItemList(itemList, code);
-    
-                if (amount > 1) {
-                    for (let i = 0; i < amount; i++) {
-                        await useItem(code, 1);
-                        console.log(`Opened chest ${i + 1}/${amount} for item code ${code}.`);
-                        await delay(10000); // jeda antar buka
-                    }
-                    console.log(`Finished opening all ${amount} chests for item code ${code}.`);
-                } else {
-                    console.log(`Not enough chests for item code ${code}. Skipping.`);
-                }
-            }
-        } catch (err) {
-            console.error("Error in autoOpenChest:", err);
-        }
+
+    function scheduleAutoOpenFreeChest() {
+
+        const now = new Date();
+        const nextHour = new Date(now);
+        nextHour.setHours(now.getHours() + 1, 0, 0, 0); // HH:00:00 berikutnya
+        const delay = nextHour - now;
+
+        console.log(`Free chest akan dibuka pada: ${nextHour.toLocaleTimeString()} (dalam ${(delay / 60000).toFixed(1)} menit)`);
+
+        setTimeout(async () => {
+            await autoOpenFreeChest(); // buka saat jam baru
+            scheduleAutoOpenFreeChest(); // jadwalkan lagi untuk jam berikutnya
+        }, delay);
     }
-    */
 
     async function autoOpenFreeChest() {
+        if (!token || !xor_password) {
+            console.warn("⏳ Token belum tersedia.");
+            return;
+        }
         try {
             const payload = { type: 0 };
 
             const inputRaw = {
                 url: "https://api-lok-live.leagueofkingdoms.com/api/item/freechest",
-                token: token, // variabel global
-                body: b64xorEnc(payload, xor_password), // variabel global
+                token: token,
+                body: b64xorEnc(payload, xor_password),
                 returnResponse: false
             };
 
             await sendRequest(inputRaw);
-            console.log(`[${new Date().toLocaleTimeString()}] Free chest dibuka.`);
+            console.log(`[${new Date().toLocaleTimeString()}] ✅ Free chest dibuka.`);
         } catch (err) {
-            console.error("Error in autoOpenFreeChest:", err);
+            console.error(`[${new Date().toLocaleTimeString()}] ❌ Error saat buka free chest:`, err);
         }
-
-        // Hitung delay sampai ke waktu HH:00:00 berikutnya
-        const now = new Date();
-        const nextHour = new Date(now);
-        nextHour.setHours(now.getHours() + 1, 0, 0, 0); // set ke jam berikutnya tepat (menit & detik = 0)
-
-        const delay = nextHour - now;
-
-        console.log(`Jadwal buka berikutnya: ${nextHour.toLocaleTimeString()} (dalam ${(delay / 60000).toFixed(1)} menit)`);
-
-        setTimeout(autoOpenFreeChest, delay);
     }
 
-    // search tower 30 minutes
+
+    // search tower 10 minutes
     async function startTower() {
-        const payload = JSON.stringify({ searchType: 0, level: 2 });
+        if (!token || !xor_password) {
+            console.warn("⏳ Token belum tersedia.");
+            return;
+        }
+
+        const payload = JSON.stringify({ searchType: 0, level: 1 });
 
         await sendRequest({
             url: "https://api-lok-live.leagueofkingdoms.com/api/kingdom/watchtower/search",
@@ -486,59 +498,47 @@
         });
     }
 
-    // jalankan tower tiap menit ke 32 detik ke 20
+    //tower akan dijalankan menit ke 12, 32, 52
     function scheduleStartTower() {
+
         const now = new Date();
         const next = new Date();
 
-        // Set ke HH:32:20
-        next.setHours(now.getHours(), 32, 20, 0);
+        // Menentukan menit target: 12, 32, 52
+        const targetMinutes = [12, 32, 52];
 
-        // Kalau sudah lewat HH:32:20 sekarang, set ke jam berikutnya
-        if (next <= now) {
-            next.setHours(next.getHours() + 1);
+        // Cari menit target berikutnya
+        let nextMinute = targetMinutes.find(m => now.getMinutes() < m);
+
+        if (nextMinute === undefined) {
+            // Semua target menit sudah lewat, pakai yang pertama di jam berikutnya
+            nextMinute = targetMinutes[0];
+            next.setHours(now.getHours() + 1);
         }
+
+        next.setMinutes(nextMinute, 20, 0); // menit + detik + ms
 
         const delay = next - now;
         console.log(`startTower akan dijalankan pada: ${next.toLocaleTimeString()} (dalam ${(delay / 1000).toFixed(1)} detik)`);
 
-        // Jalankan pertama kali dengan delay ke HH:32:10 berikutnya
+        // Pertama kali jalan
         setTimeout(() => {
             startTower();
             console.log(`[${new Date().toLocaleTimeString()}] startTower() dijalankan`);
 
-            // Setelah itu, ulangi setiap 1 jam
+            // Setelah itu, periksa setiap 1 menit apakah waktunya
             setInterval(() => {
-                startTower();
-                console.log(`[${new Date().toLocaleTimeString()}] startTower() dijalankan`);
-            }, 60 * 60 * 1000); // 1 jam
+                const d = new Date();
+                const m = d.getMinutes();
+                const s = d.getSeconds();
+
+                if ([12, 32, 52].includes(m) && s === 20) {
+                    startTower();
+                    console.log(`[${d.toLocaleTimeString()}] startTower() dijalankan`);
+                }
+            }, 1000); // periksa setiap detik agar tepat
         }, delay);
     }
-
-    async function autoRefreshAtHours() {
-        try {
-            const refreshHours = [3, 7, 11, 15, 19, 23];
-            const delay = 30 * 1000; // delay dalam milidetik (30 detik)
-
-            const now = new Date();
-            const hour = now.getHours();
-            const minute = now.getMinutes();
-
-            // Kita simpan lastReloadHour di properti fungsi supaya tetap ingat antar pemanggilan
-            if (!autoRefreshAtHours.lastReloadHour) autoRefreshAtHours.lastReloadHour = null;
-
-            if (refreshHours.includes(hour) && minute === 0 && hour !== autoRefreshAtHours.lastReloadHour) {
-                autoRefreshAtHours.lastReloadHour = hour;
-                location.reload();
-            }
-        } catch (err) {
-            console.error("Error in autoRefreshAtHours:", err);
-        }
-
-        // panggil ulang fungsi ini setelah delay
-        setTimeout(autoRefreshAtHours, 30 * 1000);
-    }
-
 
     async function sendTelegramMessage(token, message) {
         const localKey = `telegram_chat_id_${token.slice(0, 10)}`;
@@ -584,56 +584,13 @@
         }
     }
 
-    function monitorChatWebSocket() {
-        if (window._originalChatWebSocket) {
-            console.warn('[⚠️] WebSocket chat monitor sudah aktif.');
+    // Step 3: Function to fetch and join rally
+    async function autoJoinRally() {
+        if (!token || !xor_password) {
+            console.warn("⏳ Token belum tersedia.");
             return;
         }
 
-        window._originalChatWebSocket = window.WebSocket;
-        const OriginalChatWebSocket = window._originalChatWebSocket;
-
-        window.WebSocket = function (url, protocols) {
-            const ws = protocols ? new OriginalChatWebSocket(url, protocols) : new OriginalChatWebSocket(url);
-
-            ws.addEventListener('message', (e) => {
-                const data = e.data;
-                if (typeof data === 'string' && data.includes('/chat/new')) {
-                    try {
-                        const payload = JSON.parse(data.slice(2));
-                        const [, chatData] = payload;
-
-                        const from = chatData.from;
-                        const text = chatData.text;
-                        const tag = chatData.alliance?.tag || '';
-                        const formatted = `[${tag}] ${from}: ${text}`;
-
-                        sendTelegramMessage(window.tokenTelegram, formatted);
-                    } catch (err) {
-                        console.error('❌ Gagal parsing /chat/new:', err);
-                    }
-                }
-            });
-
-            return ws;
-        };
-
-        window.WebSocket.prototype = OriginalChatWebSocket.prototype;
-        console.log('[✅] WebSocket chat monitor aktif.');
-    }
-
-    function stopChatWebSocketMonitor() {
-        if (window._originalChatWebSocket) {
-            window.WebSocket = window._originalChatWebSocket;
-            delete window._originalChatWebSocket;
-            console.log('[🛑] WebSocket chat monitor dihentikan.');
-        } else {
-            console.warn('[ℹ️] Monitor belum aktif atau sudah dihentikan.');
-        }
-    }
-
-    // Step 3: Function to fetch and join rally
-    async function autoJoinRally() {
         try {
             const rallyList = await sendRequest({
                 url: "https://api-lok-live.leagueofkingdoms.com/api/alliance/battle/list/v2",
@@ -693,7 +650,7 @@
                 const payload = payloadJoinRally(saveTroopsGroup, battleId);
                 const payload_encrypted = b64xorEnc(payload, xor_password);
 
-                await delay(5000);
+                await delay(8000);
 
                 await sendRequest({
                     url: "https://api-lok-live.leagueofkingdoms.com/api/field/rally/join",
@@ -757,7 +714,7 @@
                     const [path, message] = JSON.parse(data.slice(2));
 
                     // Chat Handler
-                    if (path === '/chat/new') {
+                    if (path === '/chat/new' && window.tokenTelegram) {
                         const from = message.from;
                         const text = message.text;
                         const tag = message.alliance?.tag || '';
@@ -785,69 +742,6 @@
         console.log('[✅] WebSocket monitoring aktif.');
     }
 
-    function stopWebSocketMonitor() {
-        if (window._originalWebSocket) {
-            window.WebSocket = window._originalWebSocket;
-            delete window._originalWebSocket;
-
-            if (Array.isArray(window._webSocketInstances)) {
-                for (const ws of window._webSocketInstances) {
-                    try {
-                        ws.close();
-                        console.log('[🔌] WebSocket connection closed.');
-                    } catch (err) {
-                        console.warn('⚠️ Gagal menutup WebSocket:', err);
-                    }
-                }
-                delete window._webSocketInstances;
-            }
-
-            console.log('[🛑] WebSocket monitor dihentikan dan koneksi ditutup.');
-        } else {
-            console.warn('[ℹ️] Monitor belum aktif atau sudah dihentikan.');
-        }
-    }
-
-
-
-
-    // Step 2: Intercept WebSocket message to detect rally
-    /*const wsSend = WebSocket.prototype.send;
-      WebSocket.prototype.send = function (...args) {
-        this.addEventListener("message", (event) => {
-          const data = event.data;
-          if (typeof data === "string" && data.includes("/alliance/rally/new")) {
-            console.warn("[🎯 RALLY DETECTED]", data);
-            setTimeout(autoJoinRally, delayJoin); // add delay before joining
-          }
-        });
-        return wsSend.apply(this, args);
-      };
-    */
-    // // Jalankan autoJoinRally pertama kali setelah delayJoin (3 detik)
-    // setTimeout(() => {
-    //   autoJoinRally();
-    //   // Lalu jalankan tiap 60 detik
-    //   setInterval(autoJoinRally, delayCheckListRally);
-    // }, delayJoin);
-
-    //undefined, null, dan string kosong ("") semuanya dianggap falsy
-    //if (window.tokenTelegram) {monitorChatWebSocket();}
-    //window.tokenTelegram && monitorChatWebSocket();
-
-    // Open Chest
-    //window.shouldOpenChest && autoOpenChest();
-
-    // Open Free Chest
-    window.shouldOpenFreeChest && autoOpenFreeChest();
-
-    // jalankan tower tiap menit ke 2 detik ke 10
-    window.shouldSearchTower && scheduleStartTower();
-
-    //autoRefreshAtHours();
-
-    monitorWebSocket();
-
     const originalOpen = XMLHttpRequest.prototype.open;
     const originalSend = XMLHttpRequest.prototype.send;
 
@@ -862,7 +756,6 @@
         });
         return originalSend.apply(this, arguments);
     };
-
 
     // Fungsi menyimpan status ON/OFF
     function getAutoJoinStatus() {
@@ -887,6 +780,16 @@
             //autoJoinIntervalId = setInterval(autoJoinRally, delayCheckListRally);
             autoJoinRally();
             monitorWebSocket(); // Aktifkan monitoring kalau belum
+
+            if (!autoOpen) {
+                autoOpen = true;
+                // Open Chest
+                window.shouldOpenChest && autoOpenChest();
+                // Open Free Chest
+                window.shouldOpenFreeChest && scheduleAutoOpenFreeChest();
+                // jalankan tower tiap menit ke 2 detik ke 10
+                window.shouldSearchTower && scheduleStartTower();
+            }
         } else {
             console.log("⛔ AutoJoin DISABLED");
             //if (autoJoinIntervalId !== null) {

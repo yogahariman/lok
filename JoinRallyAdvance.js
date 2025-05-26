@@ -285,6 +285,10 @@ function getTroopGroupByHP(monsterHP) {
 
 
 async function getItemList() {
+    if (!token || !xor_password) {
+        console.warn("⏳ Token belum tersedia.");
+        return;
+    }   
     const inputRaw = {
         url: "https://api-lok-live.leagueofkingdoms.com/api/item/list",
         token: token,
@@ -301,6 +305,11 @@ function getAmountItemList(data, targetCode) {
 }
 
 async function useItem(code, amount) {
+    if (!token || !xor_password) {
+        console.warn("⏳ Token belum tersedia.");
+        return;
+    }   
+
     const itemPayload = { code, amount };
     const analyticsPayload = {
         url: "item/use",
@@ -326,6 +335,11 @@ async function useItem(code, amount) {
 
 
 async function useActionPoint() {
+    if (!token || !xor_password) {
+        console.warn("⏳ Token belum tersedia.");
+        return;
+    }   
+
     let inputRaw = {
         url: "https://api-lok-live.leagueofkingdoms.com/api/kingdom/profile/my",
         token: token,
@@ -363,6 +377,10 @@ async function useActionPoint() {
 }
 
 async function autoOpenChest() {
+    if (!token || !xor_password) {
+        console.warn("⏳ Token belum tersedia.");
+        return;
+    }    
     
     try {
         const itemList = await getItemList();
@@ -402,6 +420,10 @@ function scheduleAutoOpenFreeChest() {
 }
 
 async function autoOpenFreeChest() {
+    if (!token || !xor_password) {
+        console.warn("⏳ Token belum tersedia.");
+        return;
+    }
     try {
         const payload = { type: 0 };
 
@@ -422,6 +444,11 @@ async function autoOpenFreeChest() {
 
 // search tower 10 minutes
 async function startTower() {
+    if (!token || !xor_password) {
+        console.warn("⏳ Token belum tersedia.");
+        return;
+    }
+    
     const payload = JSON.stringify({ searchType: 0, level: 1 });
 
     await sendRequest({
@@ -520,6 +547,11 @@ async function sendTelegramMessage(token, message) {
 
 // Step 3: Function to fetch and join rally
 async function autoJoinRally() {
+    if (!token || !xor_password) {
+        console.warn("⏳ Token belum tersedia.");
+        return;
+    }   
+
     try {
         const rallyList = await sendRequest({
             url: "https://api-lok-live.leagueofkingdoms.com/api/alliance/battle/list/v2",
