@@ -718,7 +718,6 @@ function toggleAutoJoin() {
             window.shouldOpenFreeChest && scheduleAutoOpenFreeChest();
             // jalankan tower tiap menit ke 2 detik ke 10
             window.shouldSearchTower && scheduleStartTower();
-            end
         }
     } else {
         console.log("⛔ AutoJoin DISABLED");
