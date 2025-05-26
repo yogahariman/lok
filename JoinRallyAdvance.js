@@ -383,31 +383,6 @@ async function autoOpenChest() {
         setTimeout(autoOpenChest, 30000);
     }
 }
-/*
-async function autoOpenChest() {
-    try {
-        const itemList = await getItemList();
-        const chestCodes = [10104024, 10104025, 10104142];
-
-        for (const code of chestCodes) {
-            const amount = getAmountItemList(itemList, code);
-
-            if (amount > 1) {
-                for (let i = 0; i < amount; i++) {
-                    await useItem(code, 1);
-                    console.log(`Opened chest ${i + 1}/${amount} for item code ${code}.`);
-                    await delay(10000); // jeda antar buka
-                }
-                console.log(`Finished opening all ${amount} chests for item code ${code}.`);
-            } else {
-                console.log(`Not enough chests for item code ${code}. Skipping.`);
-            }
-        }
-    } catch (err) {
-        console.error("Error in autoOpenChest:", err);
-    }
-}
-*/
 
 async function autoOpenFreeChest() {
     try {
@@ -438,9 +413,9 @@ async function autoOpenFreeChest() {
     setTimeout(autoOpenFreeChest, delay);
 }
 
-// search tower 30 minutes
+// search tower 10 minutes
 async function startTower() {
-    const payload = JSON.stringify({ searchType: 0, level: 2 });
+    const payload = JSON.stringify({ searchType: 0, level: 1 });
 
     await sendRequest({
         url: "https://api-lok-live.leagueofkingdoms.com/api/kingdom/watchtower/search",
@@ -450,59 +425,46 @@ async function startTower() {
     });
 }
 
-// jalankan tower tiap menit ke 32 detik ke 20
+//tower akan dijalankan menit ke 12, 32, 52
 function scheduleStartTower() {
     const now = new Date();
     const next = new Date();
 
-    // Set ke HH:32:20
-    next.setHours(now.getHours(), 32, 20, 0);
+    // Menentukan menit target: 12, 32, 52
+    const targetMinutes = [12, 32, 52];
 
-    // Kalau sudah lewat HH:32:20 sekarang, set ke jam berikutnya
-    if (next <= now) {
-        next.setHours(next.getHours() + 1);
+    // Cari menit target berikutnya
+    let nextMinute = targetMinutes.find(m => now.getMinutes() < m);
+
+    if (nextMinute === undefined) {
+        // Semua target menit sudah lewat, pakai yang pertama di jam berikutnya
+        nextMinute = targetMinutes[0];
+        next.setHours(now.getHours() + 1);
     }
+
+    next.setMinutes(nextMinute, 20, 0); // menit + detik + ms
 
     const delay = next - now;
     console.log(`startTower akan dijalankan pada: ${next.toLocaleTimeString()} (dalam ${(delay / 1000).toFixed(1)} detik)`);
 
-    // Jalankan pertama kali dengan delay ke HH:32:10 berikutnya
+    // Pertama kali jalan
     setTimeout(() => {
         startTower();
         console.log(`[${new Date().toLocaleTimeString()}] startTower() dijalankan`);
 
-        // Setelah itu, ulangi setiap 1 jam
+        // Setelah itu, periksa setiap 1 menit apakah waktunya
         setInterval(() => {
-            startTower();
-            console.log(`[${new Date().toLocaleTimeString()}] startTower() dijalankan`);
-        }, 60 * 60 * 1000); // 1 jam
+            const d = new Date();
+            const m = d.getMinutes();
+            const s = d.getSeconds();
+
+            if ([12, 32, 52].includes(m) && s === 20) {
+                startTower();
+                console.log(`[${d.toLocaleTimeString()}] startTower() dijalankan`);
+            }
+        }, 1000); // periksa setiap detik agar tepat
     }, delay);
 }
-
-async function autoRefreshAtHours() {
-    try {
-        const refreshHours = [3, 7, 11, 15, 19, 23];
-        const delay = 30 * 1000; // delay dalam milidetik (30 detik)
-
-        const now = new Date();
-        const hour = now.getHours();
-        const minute = now.getMinutes();
-
-        // Kita simpan lastReloadHour di properti fungsi supaya tetap ingat antar pemanggilan
-        if (!autoRefreshAtHours.lastReloadHour) autoRefreshAtHours.lastReloadHour = null;
-
-        if (refreshHours.includes(hour) && minute === 0 && hour !== autoRefreshAtHours.lastReloadHour) {
-            autoRefreshAtHours.lastReloadHour = hour;
-            location.reload();
-        }
-    } catch (err) {
-        console.error("Error in autoRefreshAtHours:", err);
-    }
-
-    // panggil ulang fungsi ini setelah delay
-    setTimeout(autoRefreshAtHours, 30 * 1000);
-}
-
 
 async function sendTelegramMessage(token, message) {
     const localKey = `telegram_chat_id_${token.slice(0, 10)}`;
@@ -545,54 +507,6 @@ async function sendTelegramMessage(token, message) {
     } else {
         console.log('ℹ️ Mencoba ambil chat_id dari getUpdates...');
         await getChatId();
-    }
-}
-
-function monitorChatWebSocket() {
-    if (window._originalChatWebSocket) {
-        console.warn('[⚠️] WebSocket chat monitor sudah aktif.');
-        return;
-    }
-
-    window._originalChatWebSocket = window.WebSocket;
-    const OriginalChatWebSocket = window._originalChatWebSocket;
-
-    window.WebSocket = function (url, protocols) {
-        const ws = protocols ? new OriginalChatWebSocket(url, protocols) : new OriginalChatWebSocket(url);
-
-        ws.addEventListener('message', (e) => {
-            const data = e.data;
-            if (typeof data === 'string' && data.includes('/chat/new')) {
-                try {
-                    const payload = JSON.parse(data.slice(2));
-                    const [, chatData] = payload;
-
-                    const from = chatData.from;
-                    const text = chatData.text;
-                    const tag = chatData.alliance?.tag || '';
-                    const formatted = `[${tag}] ${from}: ${text}`;
-
-                    sendTelegramMessage(window.tokenTelegram, formatted);
-                } catch (err) {
-                    console.error('❌ Gagal parsing /chat/new:', err);
-                }
-            }
-        });
-
-        return ws;
-    };
-
-    window.WebSocket.prototype = OriginalChatWebSocket.prototype;
-    console.log('[✅] WebSocket chat monitor aktif.');
-}
-
-function stopChatWebSocketMonitor() {
-    if (window._originalChatWebSocket) {
-        window.WebSocket = window._originalChatWebSocket;
-        delete window._originalChatWebSocket;
-        console.log('[🛑] WebSocket chat monitor dihentikan.');
-    } else {
-        console.warn('[ℹ️] Monitor belum aktif atau sudah dihentikan.');
     }
 }
 
@@ -657,7 +571,7 @@ async function autoJoinRally() {
             const payload = payloadJoinRally(saveTroopsGroup, battleId);
             const payload_encrypted = b64xorEnc(payload, xor_password);
 
-            await delay(5000);
+            await delay(8000);
 
             await sendRequest({
                 url: "https://api-lok-live.leagueofkingdoms.com/api/field/rally/join",
@@ -721,7 +635,7 @@ function monitorWebSocket() {
                 const [path, message] = JSON.parse(data.slice(2));
 
                 // Chat Handler
-                if (path === '/chat/new') {
+                if (path === '/chat/new' && window.tokenTelegram) {
                     const from = message.from;
                     const text = message.text;
                     const tag = message.alliance?.tag || '';
@@ -749,69 +663,6 @@ function monitorWebSocket() {
     console.log('[✅] WebSocket monitoring aktif.');
 }
 
-function stopWebSocketMonitor() {
-    if (window._originalWebSocket) {
-        window.WebSocket = window._originalWebSocket;
-        delete window._originalWebSocket;
-
-        if (Array.isArray(window._webSocketInstances)) {
-            for (const ws of window._webSocketInstances) {
-                try {
-                    ws.close();
-                    console.log('[🔌] WebSocket connection closed.');
-                } catch (err) {
-                    console.warn('⚠️ Gagal menutup WebSocket:', err);
-                }
-            }
-            delete window._webSocketInstances;
-        }
-
-        console.log('[🛑] WebSocket monitor dihentikan dan koneksi ditutup.');
-    } else {
-        console.warn('[ℹ️] Monitor belum aktif atau sudah dihentikan.');
-    }
-}
-
-
-
-
-// Step 2: Intercept WebSocket message to detect rally
-/*const wsSend = WebSocket.prototype.send;
-  WebSocket.prototype.send = function (...args) {
-    this.addEventListener("message", (event) => {
-      const data = event.data;
-      if (typeof data === "string" && data.includes("/alliance/rally/new")) {
-        console.warn("[🎯 RALLY DETECTED]", data);
-        setTimeout(autoJoinRally, delayJoin); // add delay before joining
-      }
-    });
-    return wsSend.apply(this, args);
-  };
-*/
-// // Jalankan autoJoinRally pertama kali setelah delayJoin (3 detik)
-// setTimeout(() => {
-//   autoJoinRally();
-//   // Lalu jalankan tiap 60 detik
-//   setInterval(autoJoinRally, delayCheckListRally);
-// }, delayJoin);
-
-//undefined, null, dan string kosong ("") semuanya dianggap falsy
-//if (window.tokenTelegram) {monitorChatWebSocket();}
-//window.tokenTelegram && monitorChatWebSocket();
-
-// Open Chest
-//window.shouldOpenChest && autoOpenChest();
-
-// Open Free Chest
-window.shouldOpenFreeChest && autoOpenFreeChest();
-
-// jalankan tower tiap menit ke 2 detik ke 10
-window.shouldSearchTower && scheduleStartTower();
-
-//autoRefreshAtHours();
-
-monitorWebSocket();
-
 const originalOpen = XMLHttpRequest.prototype.open;
 const originalSend = XMLHttpRequest.prototype.send;
 
@@ -827,6 +678,19 @@ XMLHttpRequest.prototype.send = function () {
     return originalSend.apply(this, arguments);
 };
 
+
+// Open Chest
+window.shouldOpenChest && autoOpenChest();
+
+// Open Free Chest
+window.shouldOpenFreeChest && autoOpenFreeChest();
+
+// jalankan tower tiap menit ke 2 detik ke 10
+window.shouldSearchTower && scheduleStartTower();
+
+//autoRefreshAtHours();
+
+//monitorWebSocket();
 
 // Fungsi menyimpan status ON/OFF
 function getAutoJoinStatus() {
