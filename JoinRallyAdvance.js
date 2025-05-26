@@ -648,6 +648,7 @@ function monitorWebSocket() {
 
         while (rallyQueue.length > 0) {
             rallyQueue.shift(); // Kita tidak perlu data, hanya trigger
+            await delay(30000);
             try {
                 console.log('[⏳] Memproses rally dari antrean...');
                 await autoJoinRally(); // Fungsi utama join rally
