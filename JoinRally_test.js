@@ -13,7 +13,7 @@
 
     // 💡 Pastikan variabel bisa diakses oleh script eksternal
     window.tokenTelegram = '1936285843:AAFgubrFQcbz0B7zN8hUKS2oNLPS-Nyyxyw'; // ← ganti token
-    window.shouldOpenChest = false;
+    window.shouldOpenChest = true;
     window.shouldOpenFreeChest = true;
     window.shouldSearchTower = true;
 
@@ -30,11 +30,6 @@
         "20700505": { name: "Magdar", minLevel: 1 },
         "20700506": { name: "Spartoi", minLevel: 4 }
     };
-
-
-
-
-
 
 
 
@@ -780,7 +775,7 @@
             //autoJoinIntervalId = setInterval(autoJoinRally, delayCheckListRally);
             autoJoinRally();
             monitorWebSocket(); // Aktifkan monitoring kalau belum
-
+            
             if (!autoOpen) {
                 autoOpen = true;
                 // Open Chest
@@ -790,6 +785,7 @@
                 // jalankan tower tiap menit ke 2 detik ke 10
                 window.shouldSearchTower && scheduleStartTower();
             }
+            
         } else {
             console.log("⛔ AutoJoin DISABLED");
             //if (autoJoinIntervalId !== null) {
