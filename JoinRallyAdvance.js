@@ -681,6 +681,9 @@ function monitorWebSocket() {
     window._originalWebSocket = window.WebSocket;
     const OriginalWebSocket = window._originalWebSocket;
 
+    // Pastikan array untuk menyimpan instance ada
+    window._webSocketInstances = [];
+
     // Antrean untuk autoJoinRally
     const rallyQueue = [];
     let rallyProcessing = false;
@@ -751,16 +754,15 @@ function stopWebSocketMonitor() {
         window.WebSocket = window._originalWebSocket;
         delete window._originalWebSocket;
 
-        // Tutup semua koneksi aktif
         if (Array.isArray(window._webSocketInstances)) {
-            window._webSocketInstances.forEach(ws => {
+            for (const ws of window._webSocketInstances) {
                 try {
-                    ws.close(); // Menutup koneksi WebSocket aktif
+                    ws.close();
                     console.log('[🔌] WebSocket connection closed.');
                 } catch (err) {
                     console.warn('⚠️ Gagal menutup WebSocket:', err);
                 }
-            });
+            }
             delete window._webSocketInstances;
         }
 
@@ -769,6 +771,7 @@ function stopWebSocketMonitor() {
         console.warn('[ℹ️] Monitor belum aktif atau sudah dihentikan.');
     }
 }
+
 
 
 
