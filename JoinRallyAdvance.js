@@ -689,7 +689,7 @@ function monitorWebSocket() {
     let rallyProcessing = false;
 
     async function processRallyQueue() {
-        if (rallyProcessing) return;
+        if (rallyProcessing || !getAutoJoinStatus()) return; // Cek status tombol
         rallyProcessing = true;
 
         while (rallyQueue.length > 0) {
@@ -810,6 +810,8 @@ window.shouldSearchTower && scheduleStartTower();
 
 //autoRefreshAtHours();
 
+monitorWebSocket();
+
 const originalOpen = XMLHttpRequest.prototype.open;
 const originalSend = XMLHttpRequest.prototype.send;
 
@@ -847,10 +849,10 @@ function toggleAutoJoin() {
         console.log("✅ AutoJoin ENABLED");
         //autoJoinRally(); // Jalankan pertama
         //autoJoinIntervalId = setInterval(autoJoinRally, delayCheckListRally);
-        monitorWebSocket();
+        autoJoinRally();
+        monitorWebSocket(); // Aktifkan monitoring kalau belum
     } else {
         console.log("⛔ AutoJoin DISABLED");
-        stopWebSocketMonitor();
         //if (autoJoinIntervalId !== null) {
         //    clearInterval(autoJoinIntervalId);
         //    autoJoinIntervalId = null;
@@ -882,15 +884,20 @@ function injectAutoJoinToggle() {
 
 
 window.addEventListener('load', () => {
+    // Paksa autojoin OFF setiap refresh
+    localStorage.setItem('autojoin_enabled', 'false');
+    updateAutoJoinButton();
+
     // Pantau per 2 detik apakah tombol perlu di-render ulang
     setInterval(injectAutoJoinToggle, 2000);
 
-    if (getAutoJoinStatus()) {
-        console.log("🔁 AutoJoin aktif saat load");
-        //autoJoinRally();
-        //autoJoinIntervalId = setInterval(autoJoinRally, delayCheckListRally);
-        monitorWebSocket();
-    } else {
-        console.log("⛔ AutoJoin OFF saat load");
-    }
+    //if (getAutoJoinStatus()) {
+    //    console.log("🔁 AutoJoin aktif saat load");
+    //    //autoJoinRally();
+    //    //autoJoinIntervalId = setInterval(autoJoinRally, delayCheckListRally);
+    //    autoJoinRally();
+    //    monitorWebSocket();
+    //} else {
+    //    console.log("⛔ AutoJoin OFF saat load");
+    //}
 });
