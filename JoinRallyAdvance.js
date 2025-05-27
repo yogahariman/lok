@@ -357,6 +357,10 @@ async function autoOpenChest() {
 */
 
 async function autoOpenFreeChest() {
+    if (!token || !xor_password) {
+        console.warn("⏳ Token belum tersedia.");
+        return;
+    }
     try {
         const payload = { type: 0 };
 
@@ -375,11 +379,6 @@ async function autoOpenFreeChest() {
 }
 
 function scheduleAutoOpenFreeChest() {
-    if (!token || !xor_password) {
-        console.warn("⏳ Token belum tersedia.");
-        return;
-    }
-    
     const now = new Date();
     const nextHour = new Date(now);
     nextHour.setHours(now.getHours() + 1, 0, 0, 0); // HH:00:00 berikutnya
@@ -387,10 +386,18 @@ function scheduleAutoOpenFreeChest() {
 
     console.log(`Free chest akan dibuka pada: ${nextHour.toLocaleTimeString()} (dalam ${(delay / 60000).toFixed(1)} menit)`);
 
-    setTimeout(async () => {
-        await autoOpenFreeChest(); // buka saat jam baru
-        scheduleAutoOpenFreeChest(); // jadwalkan lagi untuk jam berikutnya
+    setTimeout(() => {
+        (async () => {
+            try {
+                await autoOpenFreeChest();
+            } catch (e) {
+                console.error("❌ Gagal saat buka chest:", e);
+            } finally {
+                scheduleAutoOpenFreeChest(); // tetap dijadwalkan ulang
+            }
+        })();
     }, delay);
+    
 }
 
 // search tower 10 minutes
