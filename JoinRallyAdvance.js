@@ -542,7 +542,7 @@ async function sendTelegramMessage(token, message) {
 
         if (chatId) {
             localStorage.setItem(localKey, chatId);
-            console.log('✅ chat_id ditemukan:', chatId);
+            //console.log('✅ chat_id ditemukan:', chatId);
             await send(chatId);
         } else {
             console.warn('⚠️ Tidak menemukan chat_id. Pastikan sudah kirim pesan ke bot.');
