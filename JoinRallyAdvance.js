@@ -623,9 +623,9 @@ async function autoJoinRally() {
             // 🔁 Cek march queue sebelum lanjut
             marchQueueUsed = await getMarchQueueUsed();
             if (marchQueueUsed >= marchLimit) {
-                console.log(`⏳ March queue penuh (${marchQueueUsed}/${marchLimit}), menunggu 20 detik...`);
+                console.log(`⏳ March queue penuh (${marchQueueUsed}/${marchLimit}), menunggu 30 detik...`);
 
-                await delay(20000); // tunggu 20 detik
+                await delay(30000); // tunggu 20 detik
 
                 // Cek ulang setelah delay
                 marchQueueUsed = await getMarchQueueUsed();
