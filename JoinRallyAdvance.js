@@ -402,23 +402,30 @@ function scheduleAutoOpenFreeChest() {
 
 // search tower 10 minutes
 async function startTower() {
-    const payload = JSON.stringify({ searchType: 0, level: 1 });
-
-    await sendRequest({
-        url: "https://api-lok-live.leagueofkingdoms.com/api/kingdom/watchtower/search",
-        token,
-        body: payload,
-        returnResponse: false
-    });
-}
-
-//tower akan dijalankan menit ke 12, 32, 52
-function scheduleStartTower() {
     if (!token || !xor_password) {
         console.warn("⏳ Token belum tersedia.");
         return;
+    }    
+    try {
+        const payload = JSON.stringify({ searchType: 0, level: 1 });
+
+        await sendRequest({
+            url: "https://api-lok-live.leagueofkingdoms.com/api/kingdom/watchtower/search",
+            token,
+            body: payload,
+            returnResponse: false
+        });
+
+        console.log(`[${new Date().toLocaleTimeString()}] ✅ startTower berhasil.`);
+    } catch (err) {
+        console.error(`[${new Date().toLocaleTimeString()}] ❌ startTower gagal:`, err);
     }
-    
+}
+
+
+//tower akan dijalankan menit ke 12, 32, 52
+function scheduleStartTower() {
+   
     const now = new Date();
     const next = new Date();
 
@@ -441,21 +448,20 @@ function scheduleStartTower() {
 
     // Pertama kali jalan
     setTimeout(() => {
-        startTower();
+        startTower().catch(err => console.error("❌ Gagal saat setTimeout startTower:", err));
         console.log(`[${new Date().toLocaleTimeString()}] startTower() dijalankan`);
-
-        // Setelah itu, periksa setiap 1 menit apakah waktunya
+    
         setInterval(() => {
             const d = new Date();
             const m = d.getMinutes();
             const s = d.getSeconds();
-
+    
             if ([12, 32, 52].includes(m) && s === 20) {
-                startTower();
+                startTower().catch(err => console.error("❌ Gagal saat interval startTower:", err));
                 console.log(`[${d.toLocaleTimeString()}] startTower() dijalankan`);
             }
-        }, 1000); // periksa setiap detik agar tepat
-    }, delay);
+        }, 1000);
+    }, delay);    
 }
 
 async function sendTelegramMessage(token, message) {
@@ -700,10 +706,10 @@ function handleAuthResponse(xhr) {
         if (xhr._url.includes("/api/kingdom/enter")) {
             kingdomData = json.kingdom;
             console.log("Data kingdom:", kingdomData);
-            //// Open Free Chest
-            //window.shouldOpenFreeChest && scheduleAutoOpenFreeChest();
-            //// jalankan tower tiap menit ke 2 detik ke 10
-            //window.shouldSearchTower && scheduleStartTower();
+            // Open Free Chest
+            window.shouldOpenFreeChest && scheduleAutoOpenFreeChest();
+            // jalankan tower tiap menit ke 2 detik ke 10
+            window.shouldSearchTower && scheduleStartTower();
         }
 
     } catch (err) {

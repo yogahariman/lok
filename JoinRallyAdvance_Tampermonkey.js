@@ -8,7 +8,7 @@
 // @require      https://cdn.jsdelivr.net/npm/pako@2.1.0/dist/pako.min.js
 // ==/UserScript==
 
-(function() {
+(function () {
     'use strict';
 
     // 💡 Pastikan variabel bisa diakses oleh script eksternal
@@ -32,10 +32,10 @@
     script.async = false; // agar urutan eksekusi terjaga
     document.head.appendChild(script);
 
-    window.addEventListener('load', () => {
-        // Open Free Chest
-        scheduleAutoOpenFreeChest();
-        // jalankan tower tiap menit ke 2 detik ke 10
-        scheduleStartTower();
-        });
+    // window.addEventListener('load', () => {
+    //     // Open Free Chest
+    //     scheduleAutoOpenFreeChest();
+    //     // jalankan tower tiap menit ke 2 detik ke 10
+    //     scheduleStartTower();
+    // });
 })();
