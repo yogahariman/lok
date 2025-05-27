@@ -97,58 +97,6 @@ function getZoneIds(minX, maxX, minY, maxY) {
 //const result = getZoneIds(1, 2000, 1, 2000);
 //console.log(result);
 
-
-
-// Step 1: Intercept login and capture token + regionHash
-function handleAuthResponse(xhr) {
-    const targetEndpoints = [
-        "/api/auth/login",
-        "/api/auth/connect",
-        "/api/kingdom/enter"
-    ];
-
-
-    if (!targetEndpoints.some(endpoint => xhr._url.includes(endpoint))) return;
-
-    try {
-        let json;
-
-        if (xhr.response instanceof ArrayBuffer) {
-            const decoder = new TextDecoder("utf-8");
-            const text = decoder.decode(xhr.response);
-            json = JSON.parse(text);
-            console.log("✅ Parsed JSON from ArrayBuffer:", json);
-        } else {
-            json = JSON.parse(xhr.response);
-            console.log("✅ Parsed JSON (non-binary):", json);
-        }
-
-        if (json.result && json.token && json.regionHash) {
-            token = json.token;
-            regionHash = json.regionHash;
-            xor_password = atob(regionHash).split("-")[1];
-
-            //localStorage.setItem("lok_token", token);
-            //localStorage.setItem("lok_regionHash", regionHash);
-            //localStorage.setItem("lok_xor_password", xor_password);
-
-            console.log("🟢 Token:", token);
-            console.log("🟢 RegionHash:", regionHash);
-            console.log("🟢 XOR Password:", xor_password);
-        }
-        if (xhr._url.includes("/api/kingdom/enter")) {
-            kingdomData = json.kingdom;
-            console.log("Data kingdom:", kingdomData);
-        }
-
-
-
-
-    } catch (err) {
-        console.error("❌ Gagal parsing response:", err, xhr.response);
-    }
-}
-
 async function sendRequest({
     url,
     token,
@@ -704,6 +652,61 @@ function monitorWebSocket() {
     console.log('[✅] WebSocket monitoring aktif.');
 }
 
+function handleAuthResponse(xhr) {
+    const targetEndpoints = [
+        "/api/auth/login",
+        "/api/auth/connect",
+        "/api/kingdom/enter"
+    ];
+
+
+    if (!targetEndpoints.some(endpoint => xhr._url.includes(endpoint))) return;
+
+    try {
+        let json;
+
+        if (xhr.response instanceof ArrayBuffer) {
+            const decoder = new TextDecoder("utf-8");
+            const text = decoder.decode(xhr.response);
+            json = JSON.parse(text);
+            console.log("✅ Parsed JSON from ArrayBuffer:", json);
+        } else {
+            json = JSON.parse(xhr.response);
+            console.log("✅ Parsed JSON (non-binary):", json);
+        }
+
+        if (json.result && json.token && json.regionHash) {
+            token = json.token;
+            regionHash = json.regionHash;
+            xor_password = atob(regionHash).split("-")[1];
+
+            //localStorage.setItem("lok_token", token);
+            //localStorage.setItem("lok_regionHash", regionHash);
+            //localStorage.setItem("lok_xor_password", xor_password);
+
+            console.log("🟢 Token:", token);
+            console.log("🟢 RegionHash:", regionHash);
+            console.log("🟢 XOR Password:", xor_password);
+        }
+        if (xhr._url.includes("/api/kingdom/enter")) {
+            kingdomData = json.kingdom;
+            console.log("Data kingdom:", kingdomData);
+            // Open Chest
+            //window.shouldOpenChest && autoOpenChest();
+            // Open Free Chest
+            window.shouldOpenFreeChest && scheduleAutoOpenFreeChest();
+            // jalankan tower tiap menit ke 2 detik ke 10
+            window.shouldSearchTower && scheduleStartTower();
+        }
+
+    } catch (err) {
+        console.error("❌ Gagal parsing response:", err, xhr.response);
+    }
+}
+
+
+monitorWebSocket(); // Aktifkan monitoring kalau belum
+
 const originalOpen = XMLHttpRequest.prototype.open;
 const originalSend = XMLHttpRequest.prototype.send;
 
@@ -718,15 +721,6 @@ XMLHttpRequest.prototype.send = function () {
     });
     return originalSend.apply(this, arguments);
 };
-
-monitorWebSocket(); // Aktifkan monitoring kalau belum
-
-// Open Chest
-window.shouldOpenChest && autoOpenChest();
-// Open Free Chest
-window.shouldOpenFreeChest && scheduleAutoOpenFreeChest();
-// jalankan tower tiap menit ke 2 detik ke 10
-window.shouldSearchTower && scheduleStartTower();
 
 
 // Fungsi menyimpan status ON/OFF
