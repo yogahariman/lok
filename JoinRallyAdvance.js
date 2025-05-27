@@ -788,6 +788,13 @@ async function handleAuthResponse(xhr) {
             window.shouldOpenFreeChest && scheduleAutoOpenFreeChest();
             // jalankan tower tiap menit ke 2 detik ke 10
             window.shouldSearchTower && scheduleStartTower();
+
+            localStorage.setItem('autojoin_enabled', 'true');
+            if (typeof updateAutoJoinButton === 'function') {
+                updateAutoJoinButton();
+                autoJoinRally();
+            }
+            
         }
 
     } catch (err) {
