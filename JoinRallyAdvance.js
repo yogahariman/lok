@@ -303,27 +303,30 @@ async function useActionPoint() {
 
         let codeAP = null;
         let nAp = null;
-        if (getAmountItemList(itemList, 10101049) > 20) {
+        if (getAmountItemList(itemList, 10101049) > 10) {
             codeAP = 10101049;
-            nAp = 20;
-        } else if (getAmountItemList(itemList, 10101050) > 10) {
-            codeAP = 10101050;
             nAp = 10;
-        } else if (getAmountItemList(itemList, 10101051) > 4) {
+        } else if (getAmountItemList(itemList, 10101050) > 5) {
+            codeAP = 10101050;
+            nAp = 5;
+        } else if (getAmountItemList(itemList, 10101051) > 2) {
             codeAP = 10101051;
-            nAp = 4;
-        } else if (getAmountItemList(itemList, 10101052) > 2) {
-            codeAP = 10101052;
             nAp = 2;
+        } else if (getAmountItemList(itemList, 10101052) > 1) {
+            codeAP = 10101052;
+            nAp = 1;
         }
+
+        //open silver chest
+        getAmountItemList(itemList, 10104024) > 1 && await useItem(10104024, 1);
 
         if (codeAP && nAp) {
             await useItem(codeAP, nAp);
-
         }
     }
 }
 
+/*
 async function autoOpenChest() {
     if (!token || !xor_password) {
         console.warn("⏳ Token belum tersedia.");
@@ -351,6 +354,7 @@ async function autoOpenChest() {
         setTimeout(autoOpenChest, 30000);
     }
 }
+*/
 
 function scheduleAutoOpenFreeChest() {
     
