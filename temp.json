@@ -1,0 +1,205 @@
+// https://api-lok-live.leagueofkingdoms.com/api/kingdom/profile/troops
+{
+    "result": true,
+    "troops": {
+      "total": [
+        {
+          "code": 50100204,
+          "amount": 258998
+        },
+        {
+          "code": 50100104,
+          "amount": 279995
+        },
+        {
+          "code": 50100304,
+          "amount": 272995
+        },
+        {
+          "code": 50100305,
+          "amount": 279674
+        },
+        {
+          "code": 50100105,
+          "amount": 185911
+        },
+        {
+          "code": 50100205,
+          "amount": 166773
+        },
+        {
+          "code": 50100106,
+          "amount": 383455
+        },
+        {
+          "code": 50100306,
+          "amount": 468684
+        },
+        {
+          "code": 50100206,
+          "amount": 408615
+        },
+        {
+          "code": 50100107,
+          "amount": 5000
+        },
+        {
+          "code": 50100207,
+          "amount": 5000
+        },
+        {
+          "code": 50100307,
+          "amount": 10000
+        }
+      ],
+      "kingdom": [
+        {
+          "code": 50100204,
+          "amount": 258998
+        },
+        {
+          "code": 50100104,
+          "amount": 279995
+        },
+        {
+          "code": 50100304,
+          "amount": 272995
+        },
+        {
+          "code": 50100305,
+          "amount": 279674
+        },
+        {
+          "code": 50100105,
+          "amount": 185911
+        },
+        {
+          "code": 50100205,
+          "amount": 166773
+        },
+        {
+          "code": 50100106,
+          "amount": 383455
+        },
+        {
+          "code": 50100306,
+          "amount": 468684
+        },
+        {
+          "code": 50100206,
+          "amount": 408615
+        },
+        {
+          "code": 50100107,
+          "amount": 5000
+        },
+        {
+          "code": 50100207,
+          "amount": 5000
+        },
+        {
+          "code": 50100307,
+          "amount": 9500
+        }
+      ],
+      "field": [
+        {
+          "drago": {
+            "parts": []
+          },
+          "_id": "68352f5cb8bdf486ac1839c8",
+          "worldId": 11,
+          "isRally": false,
+          "inRally": false,
+          "loc": [],
+          "fromLoc": [
+            11,
+            1023,
+            1018
+          ],
+          "toLoc": [
+            11,
+            1377,
+            1313
+          ],
+          "zoneList": [
+            2015,
+            2016,
+            2080,
+            2081,
+            2145,
+            2146,
+            2210,
+            2211,
+            2275,
+            2276,
+            2341,
+            2342,
+            2406,
+            2407,
+            2471,
+            2472,
+            2536,
+            2537,
+            2601,
+            2602,
+            2667
+          ],
+          "transport": [],
+          "troops": [
+            {
+              "code": 50100307,
+              "level": 0,
+              "select": 0,
+              "amount": 500,
+              "dead": 0,
+              "wounded": 0,
+              "hp": 0,
+              "attack": 0,
+              "defense": 0,
+              "seq": 0
+            }
+          ],
+          "useBoost": false,
+          "actionPoint": 0,
+          "isBF": false,
+          "isCVC": false,
+          "isMI": false,
+          "returned": false,
+          "lazyDapPayScheme": false,
+          "leaderBoost": [],
+          "logCodes": [],
+          "marchType": 1,
+          "kingdomId": "60f7c7ef5f000b742bd23175",
+          "allianceId": "60f53dea84d14075416cb5e7",
+          "distance": 461,
+          "time": 2430,
+          "startTime": "2025-05-27T03:21:21.669Z",
+          "endTime": "2025-05-27T04:01:51.669Z",
+          "taskId": "68352fb1b5e2902542fdb771",
+          "state": 2,
+          "foCode": 20100105,
+          "__v": 0,
+          "param": {
+            "foId": "683501157ce7b09fe9da2dc1",
+            "foCode": 20100105,
+            "foLoc": [
+              11,
+              1377,
+              1313
+            ],
+            "foLevel": 3,
+            "targetValue": 200
+          }
+        }
+      ],
+      "info": {
+        "numTroops": 2725100,
+        "maxTroops": 6720000,
+        "marchLimit": 11,
+        "hospitalCapacity": 2550000,
+        "troopsPower": 107995800,
+        "marchSize": 530400
+      }
+    }
+  }

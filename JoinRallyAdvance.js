@@ -4,8 +4,12 @@ let token = null;
 let regionHash = null;
 let xor_password = null;
 let kingdomData = null;
-const delayJoin = 5000; // 5 detik delay sebelum join rally
-let autoOpen = false;
+let marchLimit = null;
+let marchQueueUsed = null;
+
+
+//const delayJoin = 5000; // 5 detik delay sebelum join rally
+//let autoOpen = false;
 //const delayCheckListRally = 60000; // 60 detik delay untuk check list rally
 //let autoJoinIntervalId = null;
 
@@ -230,7 +234,29 @@ function getTroopGroupByHP(monsterHP) {
 }
 
 
+async function getMarchLimit() {
+    if (!token || !xor_password) {
+        console.warn("⏳ Token belum tersedia.");
+        return null;
+    }
 
+    const response = await sendRequest({
+        url: "https://api-lok-live.leagueofkingdoms.com/api/kingdom/profile/troops",
+        token: token,
+        body: "{}",
+        returnResponse: true
+    });
+
+    // Pastikan response valid dan berisi properti yang diharapkan
+    if (response && response.result && response.troops && response.troops.info) {
+        marchLimit = response.troops.info.marchLimit;
+        console.log("✅ marchLimit:", marchLimit);
+        return marchLimit;
+    } else {
+        console.warn("⚠️ Gagal mendapatkan marchLimit dari response:", response);
+        return null;
+    }
+}
 
 async function getItemList() {
     if (!token || !xor_password) {
@@ -667,7 +693,7 @@ function monitorWebSocket() {
     console.log('[✅] WebSocket monitoring aktif.');
 }
 
-function handleAuthResponse(xhr) {
+async function handleAuthResponse(xhr) {
     const targetEndpoints = [
         "/api/auth/login",
         "/api/auth/connect",
@@ -712,6 +738,9 @@ function handleAuthResponse(xhr) {
         if (xhr._url.includes("/api/kingdom/enter")) {
             kingdomData = json.kingdom;
             console.log("Data kingdom:", kingdomData);
+
+            await getMarchLimit();
+
             // Open Free Chest
             window.shouldOpenFreeChest && scheduleAutoOpenFreeChest();
             // jalankan tower tiap menit ke 2 detik ke 10
@@ -735,8 +764,8 @@ XMLHttpRequest.prototype.open = function (method, url) {
 };
 
 XMLHttpRequest.prototype.send = function () {
-    this.addEventListener('load', function () {
-        handleAuthResponse(this);
+    this.addEventListener('load', async function () {
+        await handleAuthResponse(this);
     });
     return originalSend.apply(this, arguments);
 };
