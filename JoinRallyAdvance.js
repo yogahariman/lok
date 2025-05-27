@@ -591,24 +591,6 @@ async function autoJoinRally() {
             return;
         }
 
-        // 🔁 Cek march queue sebelum lanjut
-        marchQueueUsed = await getMarchQueueUsed();
-        if (marchQueueUsed >= marchLimit) {
-            console.log(`⏳ March queue penuh (${marchQueueUsed}/${marchLimit}), menunggu 20 detik...`);
-
-            await delay(20000); // tunggu 20 detik
-
-            // Cek ulang setelah delay
-            marchQueueUsed = await getMarchQueueUsed();
-            if (marchQueueUsed >= marchLimit) {
-                console.log(`⛔ Masih penuh (${marchQueueUsed}/${marchLimit}), batal join rally.`);
-                return;
-            }
-
-            console.log("✅ Slot march tersedia setelah menunggu, lanjut join rally...");
-        }
-
-
         // Gunakan AP jika < 50
         await useActionPoint();
 
@@ -635,7 +617,25 @@ async function autoJoinRally() {
             if (!isAllowed) {
                 console.log("❌ Tidak join rally:", monsterInfo?.name || "Unknown", "(Level:", monsterLevel, ")");
                 continue;
-            }           
+            }
+            
+            // 🔁 Cek march queue sebelum lanjut
+            marchQueueUsed = await getMarchQueueUsed();
+            if (marchQueueUsed >= marchLimit) {
+                console.log(`⏳ March queue penuh (${marchQueueUsed}/${marchLimit}), menunggu 20 detik...`);
+
+                await delay(20000); // tunggu 20 detik
+
+                // Cek ulang setelah delay
+                marchQueueUsed = await getMarchQueueUsed();
+                if (marchQueueUsed >= marchLimit) {
+                    console.log(`⛔ Masih penuh (${marchQueueUsed}/${marchLimit}), batal join rally.`);
+                    return;
+                }
+
+                console.log("✅ Slot march tersedia setelah menunggu, lanjut join rally...");
+            }
+
 
             console.log("✅ Join rally:", monsterInfo.name, "(Level:", monsterLevel, ")");
 
