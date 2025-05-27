@@ -675,7 +675,13 @@ function handleAuthResponse(xhr) {
     ];
 
 
-    if (!targetEndpoints.some(endpoint => xhr._url.includes(endpoint))) return;
+    //if (!targetEndpoints.some(endpoint => xhr._url.includes(endpoint))) return;
+    if (!xhr._url || !targetEndpoints.some(endpoint => xhr._url.includes(endpoint))) return;
+
+    if (!xhr.response) {
+        console.warn("⚠️ Response kosong:", xhr._url);
+        return;
+    }
 
     try {
         let json;
