@@ -1,10 +1,4 @@
 /*
-import {
-    b64xorDec,
-    b64xorEnc,
-    // import others if needed
-} from './EncryptDecrypt.js'; // pastikan path-nya benar
-
 // Contoh penggunaan:
 // ✅ Coba decode string s
 try {
@@ -25,36 +19,36 @@ try {
 
 
 // EncryptDecrypt.js
-export function base64ToBytes(b64) {
+function base64ToBytes(b64) {
     const binaryStr = atob(b64);
     return Uint8Array.from([...binaryStr].map(c => c.charCodeAt(0)));
 }
 
-export function bytesToBase64(bytes) {
+function bytesToBase64(bytes) {
     const binaryStr = String.fromCharCode(...bytes);
     return btoa(binaryStr);
 }
 
-export function xorBytes(bytes, password) {
+function xorBytes(bytes, password) {
     return bytes.map((byte, index) => byte ^ password.charCodeAt(index % password.length));
 }
 
-export function bytesToString(bytes) {
+function bytesToString(bytes) {
     return String.fromCharCode(...bytes);
 }
 
-export function stringToBytes(str) {
+function stringToBytes(str) {
     return Uint8Array.from([...str].map(c => c.charCodeAt(0)));
 }
 
-export function b64xorDec(s, password) {
+function b64xorDec(s, password) {
     const base64Bytes = base64ToBytes(s);
     const decryptedBytes = xorBytes(base64Bytes, password);
     const decryptedStr = bytesToString(decryptedBytes);
     return JSON.parse(decryptedStr);
 }
 
-export function b64xorEnc(obj, password) {
+function b64xorEnc(obj, password) {
     const jsonStr = JSON.stringify(obj);
     const plainBytes = stringToBytes(jsonStr);
     const xoredBytes = xorBytes(plainBytes, password);

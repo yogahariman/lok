@@ -567,6 +567,7 @@ async function autoJoinRally() {
     }   
 
     try {
+        
         const rallyList = await sendRequest({
             url: "https://api-lok-live.leagueofkingdoms.com/api/alliance/battle/list/v2",
             token: token,
@@ -644,6 +645,43 @@ async function autoJoinRally() {
             const payload_encrypted = b64xorEnc(payload, xor_password);
 
             await delay(8000);
+
+            await sendRequest({
+                url: "https://api-lok-live.leagueofkingdoms.com/api/alliance/info/my",
+                token: token,
+                body: "{}",
+                returnResponse: false
+            });
+    
+            await sendRequest({
+                url: "https://api-lok-live.leagueofkingdoms.com/api/alliance/battle/list/v2",
+                token: token,
+                body: "{}",
+                returnResponse: false
+            });
+    
+            const battleInfo = await sendRequest({
+                url: "https://api-lok-live.leagueofkingdoms.com/api/alliance/battle/info",
+                token: token,
+                body: JSON.stringify({ rallyMoId: battleId }),
+                returnResponse: true
+            });
+            console.log("📥 /alliance/battle/info", battleInfo);
+
+            
+            const payload_marchInfo = {
+                fromId: kingdomData.fieldObjectId,
+                toLoc: battleInfo.battle.fromLoc,
+                rallyMoId: battleId
+            };
+            
+            const saveTroopsInfo = await sendRequest({
+                url: "https://api-lok-live.leagueofkingdoms.com/api/field/march/info",
+                token: token,
+                body: b64xorEnc(payload_marchInfo, xor_password),
+                returnResponse: true
+            });
+            console.log("📥 /field/march/info", saveTroopsInfo);
 
             await sendRequest({
                 url: "https://api-lok-live.leagueofkingdoms.com/api/field/rally/join",
