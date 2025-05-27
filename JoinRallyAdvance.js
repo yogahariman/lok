@@ -666,7 +666,7 @@ async function autoJoinRally() {
                 body: JSON.stringify({ rallyMoId: battleId }),
                 returnResponse: true
             });
-            console.log("📥 /alliance/battle/info", battleInfo);
+            //console.log("📥 /alliance/battle/info", battleInfo);
 
             
             const payload_marchInfo = {
@@ -681,7 +681,7 @@ async function autoJoinRally() {
                 body: b64xorEnc(payload_marchInfo, xor_password),
                 returnResponse: true
             });
-            console.log("📥 /field/march/info", saveTroopsInfo);
+            //console.log("📥 /field/march/info", saveTroopsInfo);
 
             await sendRequest({
                 url: "https://api-lok-live.leagueofkingdoms.com/api/field/rally/join",
@@ -933,3 +933,35 @@ window.addEventListener('load', () => {
     //    console.log("⛔ AutoJoin OFF saat load");
     //}
 });
+
+//const loc = [11, 723, 1983];
+//sendMarch(loc);
+//sendMarch([11, 723, 1983]);
+async function sendMarch(toLoc) {
+    const payload = {
+        fromId: kingdomData.fieldObjectId,
+        marchType: 1,
+        toLoc: toLoc,
+        marchTroops: [
+            {
+                code: 50100307,
+                level: 0,
+                select: 0,
+                amount: 500,
+                dead: 0,
+                wounded: 0,
+                hp: 0,
+                attack: 0,
+                defense: 0,
+                seq: 0
+            }
+        ]
+    };
+
+    await sendRequest({
+        url: "https://api-lok-live.leagueofkingdoms.com/api/field/march/start",
+        token: token,
+        body: b64xorEnc(payload, xor_password),
+        returnResponse: false
+    });
+}
