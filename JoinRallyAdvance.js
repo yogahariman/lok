@@ -368,7 +368,8 @@ async function useActionPoint() {
         }
 
         //open silver chest
-        getAmountItemList(itemList, 10104024) > 1 && await useItem(10104024, 1);
+        getAmountItemList(itemList, 10104024) > 10 && await useItem(10104024, 10);
+        await delay(5000);
 
         if (codeAP && nAp) {
             await useItem(codeAP, nAp);
