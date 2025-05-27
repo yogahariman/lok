@@ -13,8 +13,8 @@
 
     // 💡 Pastikan variabel bisa diakses oleh script eksternal
     window.tokenTelegram = '1936285843:AAFgubrFQcbz0B7zN8hUKS2oNLPS-Nyyxyw'; // ← ganti token
-    window.shouldOpenFreeChest = true;
-    window.shouldSearchTower = true;
+    //window.shouldOpenFreeChest = true;
+    //window.shouldSearchTower = true;
 
     window.allowedMonsters = {
         "20200201": { name: "DeathKar", minLevel: 4 },
@@ -31,4 +31,11 @@
     script.src = "https://yogahariman.github.io/lok/JoinRallyAdvance.js?_=" + Date.now(); // cache buster
     script.async = false; // agar urutan eksekusi terjaga
     document.head.appendChild(script);
+
+    window.addEventListener('load', () => {
+        // Open Free Chest
+        scheduleAutoOpenFreeChest();
+        // jalankan tower tiap menit ke 2 detik ke 10
+        scheduleStartTower();
+        });
 })();

@@ -700,10 +700,10 @@ function handleAuthResponse(xhr) {
         if (xhr._url.includes("/api/kingdom/enter")) {
             kingdomData = json.kingdom;
             console.log("Data kingdom:", kingdomData);
-            // Open Free Chest
-            window.shouldOpenFreeChest && scheduleAutoOpenFreeChest();
-            // jalankan tower tiap menit ke 2 detik ke 10
-            window.shouldSearchTower && scheduleStartTower();
+            //// Open Free Chest
+            //window.shouldOpenFreeChest && scheduleAutoOpenFreeChest();
+            //// jalankan tower tiap menit ke 2 detik ke 10
+            //window.shouldSearchTower && scheduleStartTower();
         }
 
     } catch (err) {
