@@ -249,7 +249,7 @@ async function getMarchLimit() {
 
     // Pastikan response valid dan berisi properti yang diharapkan
     if (response && response.result && response.troops && response.troops.info) {
-        marchLimit = response.troops.info.marchLimit;
+        const marchLimit = response.troops.info.marchLimit;
         console.log("✅ marchLimit:", marchLimit);
         return marchLimit;
     } else {
@@ -257,6 +257,30 @@ async function getMarchLimit() {
         return null;
     }
 }
+
+async function getMarchQueueUsed() {
+    if (!token || !xor_password) {
+        console.warn("⏳ Token belum tersedia.");
+        return 0;
+    }
+
+    const response = await sendRequest({
+        url: "https://api-lok-live.leagueofkingdoms.com/api/kingdom/profile/troops",
+        token: token,
+        body: "{}",
+        returnResponse: true
+    });
+
+    if (response?.result && Array.isArray(response.troops?.field)) {
+        const marchQueueUsed = response.troops.field.length;
+        console.log("Jumlah march queue yang digunakan:", marchQueueUsed);
+        return marchQueueUsed;
+    } else {
+        console.warn("⚠️ Field troops tidak ditemukan atau bukan array:", response);
+        return 0;
+    }
+}
+
 
 async function getItemList() {
     if (!token || !xor_password) {
@@ -566,6 +590,24 @@ async function autoJoinRally() {
             return;
         }
 
+        // 🔁 Cek march queue sebelum lanjut
+        marchQueueUsed = await getMarchQueueUsed();
+        if (marchQueueUsed >= marchLimit) {
+            console.log(`⏳ March queue penuh (${marchQueueUsed}/${marchLimit}), menunggu 20 detik...`);
+
+            await delay(20000); // tunggu 20 detik
+
+            // Cek ulang setelah delay
+            marchQueueUsed = await getMarchQueueUsed();
+            if (marchQueueUsed >= marchLimit) {
+                console.log(`⛔ Masih penuh (${marchQueueUsed}/${marchLimit}), batal join rally.`);
+                return;
+            }
+
+            console.log("✅ Slot march tersedia setelah menunggu, lanjut join rally...");
+        }
+
+
         // Gunakan AP jika < 50
         await useActionPoint();
 
@@ -592,7 +634,7 @@ async function autoJoinRally() {
             if (!isAllowed) {
                 console.log("❌ Tidak join rally:", monsterInfo?.name || "Unknown", "(Level:", monsterLevel, ")");
                 continue;
-            }
+            }           
 
             console.log("✅ Join rally:", monsterInfo.name, "(Level:", monsterLevel, ")");
 
@@ -739,7 +781,7 @@ async function handleAuthResponse(xhr) {
             kingdomData = json.kingdom;
             console.log("Data kingdom:", kingdomData);
 
-            await getMarchLimit();
+            marchLimit = await getMarchLimit();
 
             // Open Free Chest
             window.shouldOpenFreeChest && scheduleAutoOpenFreeChest();
