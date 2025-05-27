@@ -356,26 +356,7 @@ async function autoOpenChest() {
 }
 */
 
-function scheduleAutoOpenFreeChest() {
-    
-    const now = new Date();
-    const nextHour = new Date(now);
-    nextHour.setHours(now.getHours() + 1, 0, 0, 0); // HH:00:00 berikutnya
-    const delay = nextHour - now;
-
-    console.log(`Free chest akan dibuka pada: ${nextHour.toLocaleTimeString()} (dalam ${(delay / 60000).toFixed(1)} menit)`);
-
-    setTimeout(async () => {
-        await autoOpenFreeChest(); // buka saat jam baru
-        scheduleAutoOpenFreeChest(); // jadwalkan lagi untuk jam berikutnya
-    }, delay);
-}
-
 async function autoOpenFreeChest() {
-    if (!token || !xor_password) {
-        console.warn("⏳ Token belum tersedia.");
-        return;
-    }
     try {
         const payload = { type: 0 };
 
@@ -393,14 +374,27 @@ async function autoOpenFreeChest() {
     }
 }
 
-
-// search tower 10 minutes
-async function startTower() {
+function scheduleAutoOpenFreeChest() {
     if (!token || !xor_password) {
         console.warn("⏳ Token belum tersedia.");
         return;
     }
     
+    const now = new Date();
+    const nextHour = new Date(now);
+    nextHour.setHours(now.getHours() + 1, 0, 0, 0); // HH:00:00 berikutnya
+    const delay = nextHour - now;
+
+    console.log(`Free chest akan dibuka pada: ${nextHour.toLocaleTimeString()} (dalam ${(delay / 60000).toFixed(1)} menit)`);
+
+    setTimeout(async () => {
+        await autoOpenFreeChest(); // buka saat jam baru
+        scheduleAutoOpenFreeChest(); // jadwalkan lagi untuk jam berikutnya
+    }, delay);
+}
+
+// search tower 10 minutes
+async function startTower() {
     const payload = JSON.stringify({ searchType: 0, level: 1 });
 
     await sendRequest({
@@ -413,6 +407,10 @@ async function startTower() {
 
 //tower akan dijalankan menit ke 12, 32, 52
 function scheduleStartTower() {
+    if (!token || !xor_password) {
+        console.warn("⏳ Token belum tersedia.");
+        return;
+    }
     
     const now = new Date();
     const next = new Date();
@@ -695,8 +693,6 @@ function handleAuthResponse(xhr) {
         if (xhr._url.includes("/api/kingdom/enter")) {
             kingdomData = json.kingdom;
             console.log("Data kingdom:", kingdomData);
-            // Open Chest
-            //window.shouldOpenChest && autoOpenChest();
             // Open Free Chest
             window.shouldOpenFreeChest && scheduleAutoOpenFreeChest();
             // jalankan tower tiap menit ke 2 detik ke 10
