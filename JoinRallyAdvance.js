@@ -653,28 +653,29 @@ async function autoJoinRally() {
             const payload = payloadJoinRally(saveTroopsGroup, battleId);
             const payload_encrypted = b64xorEnc(payload, xor_password);
 
-            await delay(8000);
-
             await sendRequest({
                 url: "https://api-lok-live.leagueofkingdoms.com/api/alliance/info/my",
                 token: token,
                 body: "{}",
                 returnResponse: false
             });
-    
+            await delay(2000);
+
             await sendRequest({
                 url: "https://api-lok-live.leagueofkingdoms.com/api/alliance/battle/list/v2",
                 token: token,
                 body: "{}",
                 returnResponse: false
             });
-    
+            await delay(2000);
+
             const battleInfo = await sendRequest({
                 url: "https://api-lok-live.leagueofkingdoms.com/api/alliance/battle/info",
                 token: token,
                 body: JSON.stringify({ rallyMoId: battleId }),
                 returnResponse: true
             });
+            await delay(2000);
             //console.log("📥 /alliance/battle/info", battleInfo);
 
             
@@ -690,6 +691,7 @@ async function autoJoinRally() {
                 body: b64xorEnc(payload_marchInfo, xor_password),
                 returnResponse: true
             });
+            await delay(2000);
             //console.log("📥 /field/march/info", saveTroopsInfo);
 
             await sendRequest({
