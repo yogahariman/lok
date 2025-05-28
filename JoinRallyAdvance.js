@@ -451,14 +451,17 @@ function scheduleAutoOpenFreeChest() {
     
 }
 
-// search tower 10 minutes
-async function startTower() {
+//0 is 5 minutes
+//1 is 10 minutes
+//2 is 30 minutes
+async function startTower(level) {
     if (!token || !xor_password) {
         console.warn("⏳ Token belum tersedia.");
         return;
     }    
+
     try {
-        const payload = JSON.stringify({ searchType: 0, level: 1 });
+        const payload = JSON.stringify({ searchType: 0, level });
 
         await sendRequest({
             url: "https://api-lok-live.leagueofkingdoms.com/api/kingdom/watchtower/search",
@@ -467,52 +470,58 @@ async function startTower() {
             returnResponse: false
         });
 
-        console.log(`[${new Date().toLocaleTimeString()}] ✅ startTower berhasil.`);
+        console.log(`[${new Date().toLocaleTimeString()}] ✅ startTower (level ${level}) berhasil.`);
     } catch (err) {
-        console.error(`[${new Date().toLocaleTimeString()}] ❌ startTower gagal:`, err);
+        console.error(`[${new Date().toLocaleTimeString()}] ❌ startTower gagal (level ${level}):`, err);
     }
 }
 
-
-//tower akan dijalankan menit ke 12, 32, 52
-function scheduleStartTower() {
-   
+function scheduleStartTower(targetMinutes = [5, 32], levels = [1, 2]) {
     const now = new Date();
     const next = new Date();
 
-    // Menentukan menit target: 12, 32, 52
-    const targetMinutes = [12, 32, 52];
+    if (targetMinutes.length !== levels.length) {
+        console.error("❌ Jumlah targetMinutes dan levels harus sama.");
+        return;
+    }
 
-    // Cari menit target berikutnya
-    let nextMinute = targetMinutes.find(m => now.getMinutes() < m);
+    // Cari target menit berikutnya dan indeksnya
+    let nextIndex = targetMinutes.findIndex(m => now.getMinutes() < m);
 
-    if (nextMinute === undefined) {
+    if (nextIndex === -1) {
         // Semua target menit sudah lewat, pakai yang pertama di jam berikutnya
-        nextMinute = targetMinutes[0];
+        nextIndex = 0;
         next.setHours(now.getHours() + 1);
     }
 
-    next.setMinutes(nextMinute, 20, 0); // menit + detik + ms
+    const nextMinute = targetMinutes[nextIndex];
+    const nextLevel = levels[nextIndex];
 
+    next.setMinutes(nextMinute, 20, 0); // menit + detik + ms
     const delay = next - now;
-    console.log(`startTower akan dijalankan pada: ${next.toLocaleTimeString()} (dalam ${(delay / 1000).toFixed(1)} detik)`);
+
+    console.log(`startTower(level ${nextLevel}) akan dijalankan pada: ${next.toLocaleTimeString()} (dalam ${(delay / 1000).toFixed(1)} detik)`);
 
     // Pertama kali jalan
     setTimeout(() => {
-        startTower().catch(err => console.error("❌ Gagal saat setTimeout startTower:", err));
-        console.log(`[${new Date().toLocaleTimeString()}] startTower() dijalankan`);
-    
+        startTower(nextLevel).catch(err => console.error("❌ Gagal saat setTimeout startTower:", err));
+        console.log(`[${new Date().toLocaleTimeString()}] startTower(${nextLevel}) dijalankan`);
+
+        // Setiap detik cek apakah waktunya menjalankan startTower
         setInterval(() => {
             const d = new Date();
             const m = d.getMinutes();
             const s = d.getSeconds();
-    
-            if ([12, 32, 52].includes(m) && s === 20) {
-                startTower().catch(err => console.error("❌ Gagal saat interval startTower:", err));
-                console.log(`[${d.toLocaleTimeString()}] startTower() dijalankan`);
-            }
+
+            targetMinutes.forEach((minute, idx) => {
+                if (m === minute && s === 20) {
+                    const level = levels[idx];
+                    startTower(level).catch(err => console.error("❌ Gagal saat interval startTower:", err));
+                    console.log(`[${d.toLocaleTimeString()}] startTower(${level}) dijalankan`);
+                }
+            });
         }, 1000);
-    }, delay);    
+    }, delay);
 }
 
 async function sendTelegramMessage(token, message) {

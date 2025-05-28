@@ -1,0 +1,63 @@
+https://api-lok-live.leagueofkingdoms.com/api/kingdom/caravan/list
+
+caravan	{ _id: "68368a756a4ec4378a7cfb53", kingdomId: "60fe237abf2c4a7781041579", time: 14400, … }
+_id	"68368a756a4ec4378a7cfb53"
+items	(28)[ {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, … ]
+0	{ code: 10101007, amount: 1, costItemCode: 10100005, … }
+1	{ code: 10601008, amount: 1, costItemCode: 10100004, … }
+2	{ code: 10603010, amount: 1, costItemCode: 10100002, … }
+3	{ code: 10101017, amount: 1, costItemCode: 10100005, … }
+4	{ code: 10103005, amount: 1, costItemCode: 10100005, … }
+5	{ code: 10102001, amount: 1, costItemCode: 10100001, … }
+6	{ code: 10102001, amount: 1, costItemCode: 10100005, … }
+7	{ code: 10101049, amount: 1, costItemCode: 10100005, … }
+8	{ code: 10101034, amount: 1, costItemCode: 10100004, … }
+9	{ code: 10101034, amount: 1, costItemCode: 10100005, … }
+10	{ code: 10103003, amount: 1, costItemCode: 10100005, … }
+11	{ code: 10601004, amount: 1, costItemCode: 10100005, … }
+12	{ code: 10102002, amount: 1, costItemCode: 10100005, … }
+13	{ code: 10102002, amount: 1, costItemCode: 10100001, … }
+14	{ code: 10101051, amount: 1, costItemCode: 10100005, … }
+15	{ code: 10101018, amount: 1, costItemCode: 10100005, … }
+16	{ code: 10101042, amount: 1, costItemCode: 10100005, … }
+17	{ code: 10101007, amount: 1, costItemCode: 10100005, … }
+18	{ code: 10601013, amount: 1, costItemCode: 10100005, … }
+19	{ code: 10103002, amount: 1, costItemCode: 10100002, … }
+20	{ code: 10601011, amount: 1, costItemCode: 10100005, … }
+21	{ code: 10101027, amount: 1, costItemCode: 10100005, … }
+22	{ code: 10101015, amount: 1, costItemCode: 10100005, … }
+23	{ code: 10101050, amount: 1, costItemCode: 10100005, … }
+24	{ code: 10101049, amount: 1, costItemCode: 10100001, … }
+25	{ code: 10101049, amount: 1, costItemCode: 10100005, … }
+26	{ code: 10601010, amount: 1, costItemCode: 10100001, … }
+27	{ code: 10601009, amount: 1, costItemCode: 10100005, … }
+kingdomId	"60fe237abf2c4a7781041579"
+time	14400
+started	"2025-05-28T04:00:53.333Z"
+expired	"2025-05-28T08:00:00.000Z"
+__v	0
+
+
+https://api-lok-live.leagueofkingdoms.com/api/kingdom/caravan/buy
+'{"caravanItemId":"68368a756a4ec4378a7cfb54"}'
+'{"caravanItemId":"68368a756a4ec4378a7cfb55"}'
+'{"caravanItemId":"68368a756a4ec4378a7cfb56"}'
+'{"caravanItemId":"68368a756a4ec4378a7cfb57"}'
+'{"caravanItemId":"68368a756a4ec4378a7cfb59"}'
+'{"caravanItemId":"68368a756a4ec4378a7cfb5a"}'
+'{"caravanItemId":"68368a756a4ec4378a7cfb5b"}'
+'{"caravanItemId":"68368a756a4ec4378a7cfb5c"}'
+'{"caravanItemId":"68368a756a4ec4378a7cfb5d"}'
+'{"caravanItemId":"68368a756a4ec4378a7cfb5e"}'
+'{"caravanItemId":"68368a756a4ec4378a7cfb5f"}'
+'{"caravanItemId":"68368a756a4ec4378a7cfb60"}'
+'{"caravanItemId":"68368a756a4ec4378a7cfb61"}'
+'{"caravanItemId":"68368a756a4ec4378a7cfb62"}'
+'{"caravanItemId":"68368a756a4ec4378a7cfb63"}'
+'{"caravanItemId":"68368a756a4ec4378a7cfb64"}'
+'{"caravanItemId":"68368a756a4ec4378a7cfb65"}'
+'{"caravanItemId":"68368a756a4ec4378a7cfb66"}'
+'{"caravanItemId":"68368a756a4ec4378a7cfb67"}'
+'{"caravanItemId":"68368a756a4ec4378a7cfb68"}'
+'{"caravanItemId":"68368a756a4ec4378a7cfb69"}'
+'{"caravanItemId":"68368a756a4ec4378a7cfb6a"}'
