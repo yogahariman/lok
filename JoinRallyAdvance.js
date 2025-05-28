@@ -577,6 +577,7 @@ async function autoJoinRally() {
 
     try {
         
+        await delay(1000);
         const rallyList = await sendRequest({
             url: "https://api-lok-live.leagueofkingdoms.com/api/alliance/battle/list/v2",
             token: token,
@@ -600,9 +601,6 @@ async function autoJoinRally() {
             console.log("✅ Semua rally sudah diikuti.");
             return;
         }
-
-        // Gunakan AP jika < 50
-        await useActionPoint();
 
 
         for (const battle of unjoinedRallies) {
@@ -653,7 +651,12 @@ async function autoJoinRally() {
             const payload = payloadJoinRally(saveTroopsGroup, battleId);
             const payload_encrypted = b64xorEnc(payload, xor_password);
 
-            await delay(1500);
+
+            // Gunakan AP jika < 50
+            await delay(1000);
+            await useActionPoint();
+
+            await delay(1000);
             await sendRequest({
                 url: "https://api-lok-live.leagueofkingdoms.com/api/alliance/info/my",
                 token: token,
@@ -661,7 +664,7 @@ async function autoJoinRally() {
                 returnResponse: false
             });
 
-            await delay(1500);
+            await delay(1000);
             await sendRequest({
                 url: "https://api-lok-live.leagueofkingdoms.com/api/alliance/battle/list/v2",
                 token: token,
@@ -669,7 +672,7 @@ async function autoJoinRally() {
                 returnResponse: false
             });
 
-            await delay(1500);
+            await delay(1000);
             const battleInfo = await sendRequest({
                 url: "https://api-lok-live.leagueofkingdoms.com/api/alliance/battle/info",
                 token: token,
@@ -684,7 +687,7 @@ async function autoJoinRally() {
                 toLoc: battleInfo.battle.fromLoc,
                 rallyMoId: battleId
             };
-            await delay(1500);
+            await delay(1000);
             const saveTroopsInfo = await sendRequest({
                 url: "https://api-lok-live.leagueofkingdoms.com/api/field/march/info",
                 token: token,
@@ -693,7 +696,7 @@ async function autoJoinRally() {
             });
             //console.log("📥 /field/march/info", saveTroopsInfo);
 
-            await delay(1500);
+            await delay(1000);
             await sendRequest({
                 url: "https://api-lok-live.leagueofkingdoms.com/api/field/rally/join",
                 token: token,
