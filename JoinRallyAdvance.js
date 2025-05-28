@@ -540,7 +540,7 @@ async function sendTelegramMessage(token, message) {
         });
 
         const data = await res.json();
-        console.log('📨 Telegram response:', data);
+        //console.log('📨 Telegram response:', data);
     }
 
     async function getChatId() {
@@ -560,7 +560,7 @@ async function sendTelegramMessage(token, message) {
 
     const stored = localStorage.getItem(localKey);
     if (stored) {
-        console.log('ℹ️ chat_id ditemukan di localStorage:', stored);
+        //console.log('ℹ️ chat_id ditemukan di localStorage:', stored);
         await send(stored);
     } else {
         console.log('ℹ️ Mencoba ambil chat_id dari getUpdates...');
@@ -692,7 +692,7 @@ async function autoJoinRally() {
                 returnResponse: true
             });
             //console.log("📥 /field/march/info", saveTroopsInfo);
-            
+
             await delay(1500);
             await sendRequest({
                 url: "https://api-lok-live.leagueofkingdoms.com/api/field/rally/join",
