@@ -476,7 +476,7 @@ async function startTower(level) {
     }
 }
 
-function scheduleStartTower(targetMinutes = [5, 32], levels = [1, 2]) {
+function scheduleStartTower(targetMinutes = [3, 10, 32], levels = [0, 1, 2]) {
     const now = new Date();
     const next = new Date();
 
