@@ -594,7 +594,7 @@ async function changeTreasure(page) {
 
         // Kirim permintaan untuk mengganti treasure
         await sendRequest({
-            url: "https://api-lok-live.leagueofkingdoms.com/api/kingdom/skin/equip",
+            url: "https://api-lok-live.leagueofkingdoms.com/api/kingdom/treasure/page",
             token: token,
             body: JSON.stringify({ page : 3 }),
             returnResponse: false
@@ -604,7 +604,7 @@ async function changeTreasure(page) {
 
         // Kirim permintaan untuk mengganti treasure
         await sendRequest({
-            url: "https://api-lok-live.leagueofkingdoms.com/api/kingdom/skin/equip",
+            url: "https://api-lok-live.leagueofkingdoms.com/api/kingdom/treasure/page",
             token: token,
             body: JSON.stringify({ page }),
             returnResponse: false
