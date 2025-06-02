@@ -529,7 +529,7 @@ function scheduleStartTower(targetMinutes = [3, 10, 32], levels = [0, 1, 2]) {
 
 // 10726001 (skin buff)
 // 10729001 (skin ap)
-async function changeSkin(skinCode) {
+async function changeSkin(skinCode = 10729001) {
     if (!token || !xor_password) {
         console.warn("⏳ Token belum tersedia.");
         return null;
@@ -566,7 +566,7 @@ async function changeSkin(skinCode) {
 }
 
 // page = 0 1 2 3
-async function changeTreasure(page) {
+async function changeTreasure(page = 3) {
     if (!token || !xor_password) {
         console.warn("⏳ Token atau xor_password belum tersedia.");
         return null;
@@ -590,8 +590,8 @@ async function changeTreasure(page) {
             returnResponse: false
         });
 
+        /*
         await delay(1000);
-
         // Kirim permintaan untuk mengganti treasure
         await sendRequest({
             url: "https://api-lok-live.leagueofkingdoms.com/api/kingdom/treasure/page",
@@ -599,9 +599,9 @@ async function changeTreasure(page) {
             body: JSON.stringify({ page : 3 }),
             returnResponse: false
         });
+        */
 
         await delay(2000);
-
         // Kirim permintaan untuk mengganti treasure
         await sendRequest({
             url: "https://api-lok-live.leagueofkingdoms.com/api/kingdom/treasure/page",
@@ -615,6 +615,46 @@ async function changeTreasure(page) {
         console.error("❌ Gagal mengganti treasure:", error);
     }
 }
+
+
+async function doInstantHarvest() {
+    try {
+        await changeSkin(10726001);
+        await delay(2000);
+
+        await changeTreasure(2);
+        await delay(2000);
+
+        await instanHarvest();
+        await delay(2000);
+
+        await changeSkin(); // Kembali ke skin default
+        await delay(2000);
+
+        await changeTreasure(); // Kembali ke treasure default
+        console.log("✅ Instant harvest selesai");
+    } catch (err) {
+        console.error("❌ Terjadi error saat instant harvest:", err);
+    }
+}
+
+function scheduleInstantHarvest(targetHours = [8, 15, 22]) {
+    const checkInterval = 60 * 1000; // 1 menit
+
+    setInterval(async () => {
+        const now = new Date();
+        const currentHour = now.getHours();
+        const currentMinute = now.getMinutes();
+
+        if (targetHours.includes(currentHour) && currentMinute === 0) {
+            console.log(`⏰ Menjalankan instant harvest pada jam ${currentHour}:00`);
+            await doInstantHarvest();
+        }
+    }, checkInterval);
+}
+
+
+
 
 
 
