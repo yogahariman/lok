@@ -551,7 +551,7 @@ async function changeSkin(skinCode) {
     }
 
     // Delay sebelum mengganti skin
-    await delay(3000);
+    await delay(2000);
 
     // Step 2: Equip skin
     const equipPayload = JSON.stringify({ itemId: skin._id });
@@ -564,6 +564,40 @@ async function changeSkin(skinCode) {
 
     console.log(`✅ Skin dengan code ${skinCode} berhasil di-equip.`);
 }
+
+// page = 0 1 2 3
+async function changeTreasure(page) {
+    if (!token || !xor_password) {
+        console.warn("⏳ Token atau xor_password belum tersedia.");
+        return null;
+    }
+
+    try {
+        // Muat daftar treasure (mungkin untuk sinkronisasi status)
+        await sendRequest({
+            url: "https://api-lok-live.leagueofkingdoms.com/api/kingdom/treasure/list",
+            token: token,
+            body: "{}",
+            returnResponse: false
+        });
+
+        // delay sebelum ganti treasure
+        await delay(2000);
+
+        // Kirim permintaan untuk mengganti treasure
+        await sendRequest({
+            url: "https://api-lok-live.leagueofkingdoms.com/api/kingdom/skin/equip",
+            token: token,
+            body: JSON.stringify({ page }),
+            returnResponse: false
+        });
+
+        console.log(`✅ Treasure berhasil diubah ke page ${page}`);
+    } catch (error) {
+        console.error("❌ Gagal mengganti treasure:", error);
+    }
+}
+
 
 
 async function sendTelegramMessage(token, message) {
