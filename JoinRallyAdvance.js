@@ -694,7 +694,7 @@ async function autoJoinRally() {
                 body: b64xorEnc(payload_marchInfo, xor_password),
                 returnResponse: true
             });
-            //console.log("📥 /field/march/info", saveTroopsInfo);
+            console.log("📥 Save Troops Response : ", saveTroopsInfo);
 
             await delay(1000);
             await sendRequest({
