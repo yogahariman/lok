@@ -582,7 +582,15 @@ async function changeTreasure(page) {
         });
 
         // delay sebelum ganti treasure
-        await delay(2000);
+        await delay(1000);
+
+        // Kirim permintaan untuk mengganti treasure
+        await sendRequest({
+            url: "https://api-lok-live.leagueofkingdoms.com/api/kingdom/skin/equip",
+            token: token,
+            body: JSON.stringify({ page : 3 }),
+            returnResponse: false
+        });
 
         // Kirim permintaan untuk mengganti treasure
         await sendRequest({
