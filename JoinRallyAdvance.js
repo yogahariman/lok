@@ -701,7 +701,6 @@ async function autoJoinRally() {
 
 
             const saveTroopsGroup = getTroopGroupByHP(monsterHP, marchInfo);
-            const payload_encrypted = b64xorEnc(payloadJoinRally(saveTroopsGroup, battleId), xor_password);
 
             const canJoinRally = saveTroopsGroup.every(saveTroop => {
                 const troopInMarch = marchInfo.troops.find(troop => troop.code === saveTroop.code);
@@ -715,11 +714,13 @@ async function autoJoinRally() {
                 //console.log("Lanjut ikut rally.");
             }
 
+            const payload_rally_encrypted = b64xorEnc(payloadJoinRally(saveTroopsGroup, battleId), xor_password);
+
             await delay(1000);
             await sendRequest({
                 url: "https://api-lok-live.leagueofkingdoms.com/api/field/rally/join",
                 token: token,
-                body: payload_encrypted,
+                body: payload_rally_encrypted,
                 returnResponse: false
             });
         }
