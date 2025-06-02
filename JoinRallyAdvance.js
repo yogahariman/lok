@@ -177,7 +177,7 @@ function decodePayloadArray(payload) {
             to: 'string'
         });
         const jsonData = JSON.parse(decompressedData);
-        console.log("✅ Decoded Payload JSON:", jsonData);
+        //console.log("✅ Decoded Payload JSON:", jsonData);
         return jsonData;
     } catch (err) {
         console.error("❌ Gagal mendekode payload:", err);
@@ -587,9 +587,9 @@ async function autoJoinRally() {
             returnResponse: true
         });
 
-        console.log("📥 Rally list response:", rallyList);
-
+        //console.log("📥 Rally list response:", rallyList);
         const rallyListJson = decodePayloadArray(rallyList.payload);
+        console.log("📥 Rally list response:", rallyListJson);
 
         if (!rallyListJson.result || !Array.isArray(rallyListJson.battles) || rallyListJson.battles.length === 0) {
             console.log("⚠️ Rally list tidak valid atau kosong.");
