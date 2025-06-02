@@ -368,7 +368,7 @@ async function autoJoinRally() {
             const isAllowed = monsterInfo && monsterLevel >= monsterInfo.minLevel;
             if (!isAllowed) {
                 console.log("❌ Tidak join rally:", monsterInfo?.name || "Unknown", "(Level:", monsterLevel, ")");
-                return; // atau continue; jika di dalam loop
+                continue; // atau continue; jika di dalam loop
             } else {
                 console.log("✅ Join rally:", monsterInfo.name, "(Level:", monsterLevel, ")");
                 // lanjut join rally
