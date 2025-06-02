@@ -590,8 +590,6 @@ async function changeTreasure(page = 3) {
             returnResponse: true
         });
 
-        if (treasure.page === page) return;
-
         await delay(1000);
         // Kirim permintaan untuk mengganti treasure
         await sendRequest({
