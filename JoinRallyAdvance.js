@@ -526,6 +526,46 @@ function scheduleStartTower(targetMinutes = [3, 10, 32], levels = [0, 1, 2]) {
     }, delay);
 }
 
+
+// 10726001 (skin buff)
+// 10729001 (skin ap)
+async function changeSkin(skinCode) {
+    if (!token || !xor_password) {
+        console.warn("⏳ Token belum tersedia.");
+        return null;
+    }
+
+    // Step 1: Ambil daftar skin
+    const response = await sendRequest({
+        url: "https://api-lok-live.leagueofkingdoms.com/api/kingdom/skin/list",
+        token: token,
+        body: JSON.stringify({ type: 0 }),
+        returnResponse: true
+    });
+
+    // Cari skin ID berdasarkan skinCode yang diberikan
+    const skin = response?.skins?.find(s => s.code === skinCode);
+    if (!skin) {
+        console.warn(`❌ Skin dengan code ${skinCode} tidak ditemukan.`);
+        return null;
+    }
+
+    // Delay sebelum mengganti skin
+    await delay(3000);
+
+    // Step 2: Equip skin
+    const equipPayload = JSON.stringify({ itemId: skin._id });
+    await sendRequest({
+        url: "https://api-lok-live.leagueofkingdoms.com/api/kingdom/skin/equip",
+        token: token,
+        body: equipPayload,
+        returnResponse: false
+    });
+
+    console.log(`✅ Skin dengan code ${skinCode} berhasil di-equip.`);
+}
+
+
 async function sendTelegramMessage(token, message) {
     const localKey = `telegram_chat_id_${token.slice(0, 10)}`;
 
