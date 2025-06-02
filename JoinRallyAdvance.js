@@ -573,6 +573,15 @@ async function changeTreasure(page) {
     }
 
     try {
+        await sendRequest({
+            url: "https://api-lok-live.leagueofkingdoms.com/api/kingdom/profile/my",
+            token: token,
+            body: b64xorEnc({}, xor_password),
+            returnResponse: false
+        });
+
+        await delay(1000);
+
         // Muat daftar treasure (mungkin untuk sinkronisasi status)
         await sendRequest({
             url: "https://api-lok-live.leagueofkingdoms.com/api/kingdom/treasure/list",
@@ -581,7 +590,6 @@ async function changeTreasure(page) {
             returnResponse: false
         });
 
-        // delay sebelum ganti treasure
         await delay(1000);
 
         // Kirim permintaan untuk mengganti treasure
@@ -591,6 +599,8 @@ async function changeTreasure(page) {
             body: JSON.stringify({ page : 3 }),
             returnResponse: false
         });
+
+        await delay(2000);
 
         // Kirim permintaan untuk mengganti treasure
         await sendRequest({
