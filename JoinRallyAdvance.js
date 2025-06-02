@@ -614,46 +614,78 @@ async function changeTreasure(page = 3) {
     }
 }
 
-
-async function doInstantHarvest() {
+async function instantHarvest() {
     try {
-        await changeSkin(10726001);
+        if (!token || !xor_password) {
+            console.warn("⏳ Token atau xor_password belum tersedia.");
+            return;
+        }
+
+        await changeSkin(10726001); // Aktifkan skin produksi
         await delay(2000);
 
-        await changeTreasure(2);
+        await changeTreasure(2); // Aktifkan treasure produksi
         await delay(2000);
 
-        await instanHarvest();
+        // Gunakan skill 10018 (increase production)
+        await sendRequest({
+            url: "https://api-lok-live.leagueofkingdoms.com/api/skill/use",
+            token,
+            body: JSON.stringify({ code: 10018 }),
+            returnResponse: false
+        });
         await delay(2000);
 
-        await changeSkin(); // Kembali ke skin default
+        // Gunakan skill 10001 (instant harvest)
+        await sendRequest({
+            url: "https://api-lok-live.leagueofkingdoms.com/api/skill/use",
+            token,
+            body: JSON.stringify({ code: 10001 }),
+            returnResponse: false
+        });
         await delay(2000);
 
-        await changeTreasure(); // Kembali ke treasure default
-        console.log("✅ Instant harvest selesai");
+        await changeSkin(); // Kembali ke skin normal
+        await delay(2000);
+
+        await changeTreasure(); // Kembali ke treasure rally/monster
+        console.log("✅ Instant Harvest selesai");
     } catch (err) {
-        console.error("❌ Terjadi error saat instant harvest:", err);
+        console.error("❌ Gagal saat proses instant harvest:", err);
     }
 }
 
-function scheduleInstantHarvest(targetHours = [8, 15, 22]) {
-    const checkInterval = 60 * 1000; // 1 menit
+async function scheduleInstantHarvest() {
+    try {
+        const { skills } = await sendRequest({
+            url: "https://api-lok-live.leagueofkingdoms.com/api/skill/list",
+            token,
+            body: "{}",
+            returnResponse: true
+        });
 
-    setInterval(async () => {
-        const now = new Date();
-        const currentHour = now.getHours();
-        const currentMinute = now.getMinutes();
-
-        if (targetHours.includes(currentHour) && currentMinute === 0) {
-            console.log(`⏰ Menjalankan instant harvest pada jam ${currentHour}:00`);
-            await doInstantHarvest();
+        const skill = skills.find(s => s.code === 10001);
+        if (!skill) {
+            console.warn("⚠️ Skill 10001 tidak ditemukan.");
+            return;
         }
-    }, checkInterval);
+
+        const waitMs = Math.max(
+            new Date(skill.nextSkillTime).getTime() + 10 * 60 * 1000 - Date.now(),
+            0
+        );
+
+        console.log(`🕒 Menunggu ${Math.round(waitMs / 1000)} detik untuk Instant Harvest`);
+
+        setTimeout(async () => {
+            await instantHarvest();
+            scheduleInstantHarvest(); // 🔁 Loop
+        }, waitMs);
+    } catch (error) {
+        console.error("❌ Error saat scheduling:", error);
+        setTimeout(scheduleInstantHarvest, 5 * 60 * 1000); // Retry in 5 minutes
+    }
 }
-
-
-
-
 
 
 async function sendTelegramMessage(token, message) {
@@ -990,6 +1022,8 @@ async function handleAuthResponse(xhr) {
             window.shouldOpenFreeChest && scheduleAutoOpenFreeChest();
             // jalankan tower tiap menit ke 2 detik ke 10
             window.shouldSearchTower && scheduleStartTower();
+
+            scheduleInstantHarvest();
 
             localStorage.setItem('autojoin_enabled', 'true');
             if (typeof updateAutoJoinButton === 'function') {
