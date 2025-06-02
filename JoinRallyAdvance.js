@@ -582,7 +582,6 @@ async function changeTreasure(page = 3) {
 
         await delay(1000);
 
-        // Muat daftar treasure (mungkin untuk sinkronisasi status)
         const treasureList = await sendRequest({
             url: "https://api-lok-live.leagueofkingdoms.com/api/kingdom/treasure/list",
             token: token,
@@ -590,17 +589,25 @@ async function changeTreasure(page = 3) {
             returnResponse: true
         });
 
+        const currentPage = treasureList.page;
+        console.log(`📦 Treasure saat ini di page ${currentPage}`);
+
+        if (currentPage === page) {
+            console.log("🛑 Treasure sudah di page yang sama, tidak melakukan perubahan.");
+            return;
+        }
+
         await delay(1000);
-        // Kirim permintaan untuk mengganti treasure
+
         await sendRequest({
             url: "https://api-lok-live.leagueofkingdoms.com/api/kingdom/treasure/page",
             token: token,
-            body: JSON.stringify({ page : treasureList.page }),
+            body: JSON.stringify({ page: currentPage }),
             returnResponse: false
         });
 
         await delay(2000);
-        // Kirim permintaan untuk mengganti treasure
+
         await sendRequest({
             url: "https://api-lok-live.leagueofkingdoms.com/api/kingdom/treasure/page",
             token: token,
@@ -766,7 +773,10 @@ async function autoJoinRally() {
             return;
         }
 
-
+        if (rallies.length === unjoinedRallies.length) {
+            // Semua rally belum diikuti
+            changeTreasure(); // Jalankan pengecekan + ubah treasure jika perlu
+        }
         for (const battle of unjoinedRallies) {
             //const battleId = battle._id;
             //const isJoined = battle.isJoined;
