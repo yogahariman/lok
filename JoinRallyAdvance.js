@@ -227,10 +227,12 @@ function payloadJoinRally(saveTroopsGroup, rallyMoId) {
     return { marchTroops, rallyMoId };
 }
 
-function getTroopGroupByHP(monsterHP) {
-    if (monsterHP <= 1000000) return kingdomData.saveTroops[0];
-    if (monsterHP <= 2000000) return kingdomData.saveTroops[1];
-    return kingdomData.saveTroops[2];
+function getTroopGroupByHP(monsterHP, marchInfo) {
+    const troops = marchInfo?.saveTroops || kingdomData.saveTroops;
+
+    if (monsterHP <= 1000000) return troops[0];
+    if (monsterHP <= 2000000) return troops[1];
+    return troops[2];
 }
 
 
@@ -647,9 +649,9 @@ async function autoJoinRally() {
 
             console.log("✅ Join rally:", monsterInfo.name, "(Level:", monsterLevel, ")");
 
-            const saveTroopsGroup = getTroopGroupByHP(monsterHP);
-            const payload = payloadJoinRally(saveTroopsGroup, battleId);
-            const payload_encrypted = b64xorEnc(payload, xor_password);
+            //const saveTroopsGroup = getTroopGroupByHP(monsterHP);
+            //const payload = payloadJoinRally(saveTroopsGroup, battleId);
+            //const payload_encrypted = b64xorEnc(payload, xor_password);
 
 
             // Gunakan AP jika < 50
@@ -688,14 +690,31 @@ async function autoJoinRally() {
                 rallyMoId: battleId
             };
             await delay(1000);
-            const saveTroopsInfo = await sendRequest({
+            const marchInfoResponse = await sendRequest({
                 url: "https://api-lok-live.leagueofkingdoms.com/api/field/march/info",
                 token: token,
                 body: b64xorEnc(payload_marchInfo, xor_password),
                 returnResponse: true
             });
-            console.log("📥 Save Troops Response : ", saveTroopsInfo);
+            const marchInfo = b64xorDec(marchInfoResponse, xor_password);
+            console.log("📥 Save Troops Response : ", marchInfo);
 
+
+            const saveTroopsGroup = getTroopGroupByHP(monsterHP, marchInfo);
+            const payload_encrypted = b64xorEnc(payloadJoinRally(saveTroopsGroup, battleId), xor_password);
+
+            const canJoinRally = saveTroopsGroup.every(saveTroop => {
+                const troopInMarch = marchInfo.troops.find(troop => troop.code === saveTroop.code);
+                return troopInMarch && saveTroop.amount <= troopInMarch.amount;
+            });
+
+            if (!canJoinRally) {
+                console.log("Tidak jadi ikut rally karena ada jumlah troops kurang.");
+                return;
+            } else {
+                //console.log("Lanjut ikut rally.");
+            }
+            
             await delay(1000);
             await sendRequest({
                 url: "https://api-lok-live.leagueofkingdoms.com/api/field/rally/join",
