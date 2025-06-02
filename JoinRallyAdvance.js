@@ -697,7 +697,7 @@ async function autoJoinRally() {
                 returnResponse: true
             });
             const marchInfo = b64xorDec(marchInfoResponse, xor_password);
-            console.log("📥 Save Troops Response : ", marchInfo);
+            //console.log("📥 Save Troops Response : ", marchInfo);
 
 
             const saveTroopsGroup = getTroopGroupByHP(monsterHP, marchInfo);
@@ -714,7 +714,7 @@ async function autoJoinRally() {
             } else {
                 //console.log("Lanjut ikut rally.");
             }
-            
+
             await delay(1000);
             await sendRequest({
                 url: "https://api-lok-live.leagueofkingdoms.com/api/field/rally/join",
