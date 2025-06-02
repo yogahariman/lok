@@ -1016,15 +1016,22 @@ async function handleAuthResponse(xhr) {
             kingdomData = json.kingdom;
             console.log("Data kingdom:", kingdomData);
 
-            marchLimit = await getMarchLimit();
-
-            // Open Free Chest
-            scheduleAutoOpenFreeChest();
-            // jalankan tower tiap menit ke 2 detik ke 10
-            scheduleStartTower();
-
+            //Instant Harvest
+            await delay(10000);
             scheduleInstantHarvest();
 
+            // Open Free Chest
+            await delay(2000);
+            scheduleAutoOpenFreeChest();
+
+            // jalankan tower tiap menit ke 2 detik ke 10
+            await delay(2000);
+            scheduleStartTower();
+
+            await delay(2000);
+            marchLimit = await getMarchLimit();
+
+            await delay(2000);
             localStorage.setItem('autojoin_enabled', 'true');
             if (typeof updateAutoJoinButton === 'function') {
                 updateAutoJoinButton();
