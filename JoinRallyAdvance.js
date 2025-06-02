@@ -1019,9 +1019,9 @@ async function handleAuthResponse(xhr) {
             marchLimit = await getMarchLimit();
 
             // Open Free Chest
-            window.shouldOpenFreeChest && scheduleAutoOpenFreeChest();
+            scheduleAutoOpenFreeChest();
             // jalankan tower tiap menit ke 2 detik ke 10
-            window.shouldSearchTower && scheduleStartTower();
+            scheduleStartTower();
 
             scheduleInstantHarvest();
 
