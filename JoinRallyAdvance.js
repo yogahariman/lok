@@ -431,8 +431,8 @@ async function scheduleAutoOpenFreeChest() {
 
     while (true) {
         try {
-        // Tunggu 10 menit (600.000 ms)
-        await delay(10 * 60 * 1000);
+        // Tunggu 30 menit
+        await delay(30 * 60 * 1000);
         const response = await sendRequest({
                 url: "https://api-lok-live.leagueofkingdoms.com/api/item/freechest",
                 token: token,
