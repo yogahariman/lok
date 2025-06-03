@@ -369,7 +369,7 @@ async function useActionPoint() {
             nAp = 1;
         }
 
-        //open silver chest
+        //open silver chest [10104024, 10104025, 10104142]
         getAmountItemList(itemList, 10104024) > 10 && await useItem(10104024, 10);
         await delay(5000);
 
@@ -380,51 +380,18 @@ async function useActionPoint() {
 }
 
 /*
-async function autoOpenChest() {
-    if (!token || !xor_password) {
-        console.warn("⏳ Token belum tersedia.");
-        return;
-    }    
-    
-    try {
-        const itemList = await getItemList();
-        const chestCodes = [10104024, 10104025, 10104142];
-
-        for (const code of chestCodes) {
-            const amount = getAmountItemList(itemList, code);
-
-            if (amount > 1) {
-                await useItem(code, 1);
-                await delay(8000);
-                console.log(`Finished opening chest for item code ${code}.`);
-            } else {
-                console.log(`Not enough chests for item code ${code}. Skipping.`);
-            }
-        }
-    } catch (err) {
-        console.error("Error in autoOpenChest:", err);
-    } finally {
-        setTimeout(autoOpenChest, 30000);
-    }
-}
-*/
-
 async function autoOpenFreeChest() {
     if (!token || !xor_password) {
         console.warn("⏳ Token belum tersedia.");
         return;
     }
     try {
-        const payload = { type: 0 };
-
-        const inputRaw = {
+        await sendRequest({
             url: "https://api-lok-live.leagueofkingdoms.com/api/item/freechest",
             token: token,
-            body: b64xorEnc(payload, xor_password),
+            body: b64xorEnc({ type: 0 }, xor_password),
             returnResponse: false
-        };
-
-        await sendRequest(inputRaw);
+        });
         console.log(`[${new Date().toLocaleTimeString()}] ✅ Free chest dibuka.`);
     } catch (err) {
         console.error(`[${new Date().toLocaleTimeString()}] ❌ Error saat buka free chest:`, err);
@@ -452,6 +419,40 @@ function scheduleAutoOpenFreeChest() {
     }, delay);
     
 }
+*/
+
+async function scheduleAutoOpenFreeChest() {
+    if (!token || !xor_password) {
+        console.warn("⏳ Token belum tersedia.");
+        return;
+    }
+
+    console.log("🚀 Auto open Silver Free Chest dimulai...");
+
+    while (true) {
+        try {
+        // Tunggu 10 menit (600.000 ms)
+        await delay(10 * 60 * 1000);
+        const response = await sendRequest({
+                url: "https://api-lok-live.leagueofkingdoms.com/api/item/freechest",
+                token: token,
+                body: b64xorEnc({ type: 0 }, xor_password),
+                returnResponse: true
+            });
+
+            if (!response?.result) {
+                console.warn("🛑 Tidak bisa membuka lagi. Loop dihentikan.");
+                break;
+            }
+
+            console.log("✅ Berhasil membuka Silver Free Chest. Menunggu 10 menit untuk percobaan berikutnya...");
+        } catch (err) {
+            console.error("❌ Gagal membuka Silver Free Chest:", err);
+        }
+
+    }
+}
+
 
 //0 is 5 minutes
 //1 is 10 minutes
