@@ -700,6 +700,59 @@ async function scheduleInstantHarvest() {
     }
 }
 
+async function resourceHarvest() {
+    try {
+        if (!token || !xor_password) {
+            console.warn("⏳ Token atau xor_password belum tersedia.");
+            return;
+        }
+
+        const desiredCodes = [
+            40100202,
+            40100203,
+            40100204,
+            40100205
+        ];
+
+        const buildingsToHarvest = kingdomData.buildings.filter(b => desiredCodes.includes(b.code));
+
+        for (const building of buildingsToHarvest) {
+            await sendRequest({
+                url: "https://api-lok-live.leagueofkingdoms.com/api/kingdom/resource/harvest",
+                token,
+                body: b64xorEnc({
+                    position: building.position
+                }, xor_password),
+                returnResponse: false
+            });
+
+            console.log(`✅ Memanen bangunan di posisi ${building.position} dengan code ${building.code}`);
+        }
+    } catch (err) {
+        console.error("❌ Gagal menjalankan resourceHarvest:", err);
+    }
+}
+
+async function scheduleResourceHarvest() {
+    try {
+        console.log("⏳ Menunggu 5 menit sebelum Resource Harvest pertama...");
+        await delay(5 * 60 * 1000); // 5 menit
+        await resourceHarvest();
+
+        setInterval(async () => {
+            try {
+                console.log("⏰ Menjalankan ulang Resource Harvest setiap 2 jam...");
+                await resourceHarvest();
+            } catch (err) {
+                console.error("❌ Error saat menjalankan ulang Resource Harvest:", err);
+            }
+        }, 2 * 60 * 60 * 1000); // 2 jam
+    } catch (error) {
+        console.error("❌ Error di Schedule Resource Harvest:", error);
+    }
+}
+
+
 async function buyCaravan() {
     try {
         if (!token || !xor_password) {
@@ -763,7 +816,6 @@ async function scheduleBuyCaravan() {
         console.error("❌ Error di scheduleBuyCaravan:", error);
     }
 }
-
 
 
 async function sendTelegramMessage(token, message) {
@@ -1101,6 +1153,8 @@ async function handleAuthResponse(xhr) {
             marchLimit = await getMarchLimit();
             //buy caravan
             scheduleBuyCaravan();
+            //resource Harvest
+            scheduleResourceHarvest()
             //Instant Harvest
             scheduleInstantHarvest();
             // Open Free Chest
