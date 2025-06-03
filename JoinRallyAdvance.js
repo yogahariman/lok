@@ -420,7 +420,7 @@ function scheduleAutoOpenFreeChest() {
     
 }
 */
-
+/*
 async function scheduleAutoOpenFreeChest() {
     if (!token || !xor_password) {
         console.warn("⏳ Token belum tersedia.");
@@ -450,6 +450,69 @@ async function scheduleAutoOpenFreeChest() {
             console.error("❌ Gagal membuka Silver Free Chest:", err);
         }
 
+    }
+}
+*/
+
+async function scheduleAutoOpenFreeChest() {
+    if (!token || !xor_password) {
+        console.warn("⏳ Token belum tersedia.");
+        return;
+    }
+
+    // 1. Ambil level Treasure House dari position 4
+    const treasureHouse = kingdomData.buildings.find(b => b.position === 4);
+    const treasureHouseLevel = treasureHouse?.level ?? 0;
+
+    // 2. Tentukan dailyfreechest berdasarkan level
+    const dailyChestMap = {
+        26: 10, 27: 10, 28: 10, 29: 10,
+        30: 12, 31: 13, 32: 14, 33: 15,
+        34: 16, 35: 20
+    };
+    const dailyFreeChestLimit = dailyChestMap[treasureHouseLevel] ?? 0;
+
+    console.log(`📦 Treasure House Level ${treasureHouseLevel}, Daily Limit: ${dailyFreeChestLimit}`);
+
+    // 3. Cek jumlah chest yang sudah dibuka
+    let currentChestNum = kingdomData.freeChest?.silver?.num ?? 0;
+
+    if (currentChestNum >= dailyFreeChestLimit) {
+        console.log("🛑 Batas harian sudah tercapai. Tidak akan membuka chest.");
+        return;
+    }
+
+    console.log("🚀 Auto open Silver Free Chest dimulai...");
+
+    // 4. Loop auto buka chest
+    while (true) {
+        try {
+            // Tunggu 10 menit
+            await delay(10 * 60 * 1000);
+
+            const response = await sendRequest({
+                url: "https://api-lok-live.leagueofkingdoms.com/api/item/freechest",
+                token: token,
+                body: b64xorEnc({ type: 0 }, xor_password),
+                returnResponse: true
+            });
+
+            if (!response?.result) {
+                console.warn("🛑 Tidak bisa membuka lagi. Loop dihentikan.");
+                break;
+            }
+
+            currentChestNum = response?.freechest?.silver?.num ?? currentChestNum + 1;
+
+            if (currentChestNum >= dailyFreeChestLimit) {
+                console.log("✅ Sudah mencapai batas harian. Loop dihentikan.");
+                break;
+            }
+
+            console.log(`✅ Silver Free Chest dibuka. Total sekarang: ${currentChestNum}/${dailyFreeChestLimit}`);
+        } catch (err) {
+            console.error("❌ Gagal membuka Silver Free Chest:", err);
+        }
     }
 }
 
