@@ -490,12 +490,14 @@ async function scheduleAutoOpenFreeChest() {
             // Tunggu 10 menit
             await delay(10 * 60 * 1000);
 
-            const response = await sendRequest({
+            const res = await sendRequest({
                 url: "https://api-lok-live.leagueofkingdoms.com/api/item/freechest",
                 token: token,
                 body: b64xorEnc({ type: 0 }, xor_password),
                 returnResponse: true
             });
+
+            const response = b64xorDec(res, xor_password);
 
             if (!response?.result) {
                 console.warn("🛑 Batas harian sudah tercapai. Tidak akan membuka chest.");
