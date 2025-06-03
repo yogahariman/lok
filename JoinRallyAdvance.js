@@ -472,13 +472,13 @@ async function scheduleAutoOpenFreeChest() {
     };
     const dailyFreeChestLimit = dailyChestMap[treasureHouseLevel] ?? 0;
 
-    console.log(`📦 Treasure House Level ${treasureHouseLevel}, Daily Limit: ${dailyFreeChestLimit}`);
-
     // 3. Cek jumlah chest yang sudah dibuka
     let currentChestNum = kingdomData.freeChest?.silver?.num ?? 0;
 
+    console.log(`📦 Treasure House Level ${treasureHouseLevel} | Silver Free Chest: ${currentChestNum}/${dailyFreeChestLimit}`);
+
     if (currentChestNum >= dailyFreeChestLimit) {
-        console.log("🛑 Batas harian sudah tercapai. Tidak akan membuka chest.");
+        //console.log("🛑 Batas harian sudah tercapai. Tidak akan membuka chest.");
         return;
     }
 
@@ -498,14 +498,14 @@ async function scheduleAutoOpenFreeChest() {
             });
 
             if (!response?.result) {
-                console.warn("🛑 Tidak bisa membuka lagi. Loop dihentikan.");
+                console.warn("🛑 Batas harian sudah tercapai. Tidak akan membuka chest.");
                 break;
             }
 
             currentChestNum = response?.freechest?.silver?.num ?? currentChestNum + 1;
 
             if (currentChestNum >= dailyFreeChestLimit) {
-                console.log("✅ Sudah mencapai batas harian. Loop dihentikan.");
+                console.log("🛑 Batas harian sudah tercapai. Tidak akan membuka chest.");
                 break;
             }
 
