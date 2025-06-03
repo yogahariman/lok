@@ -482,7 +482,7 @@ async function scheduleAutoOpenFreeChest() {
         return;
     }
 
-    console.log("🚀 Auto open Silver Free Chest dimulai...");
+    //console.log("🚀 Auto open Silver Free Chest dimulai...");
 
     // 4. Loop auto buka chest
     while (true) {
