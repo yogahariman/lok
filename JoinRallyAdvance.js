@@ -682,7 +682,13 @@ async function scheduleInstantHarvest() {
             0
         );
 
-        console.log(`🕒 Menunggu ${Math.round(waitMs / 1000)} detik untuk Instant Harvest`);
+        const totalSeconds = Math.floor(waitMs / 1000);
+        const hours = Math.floor(totalSeconds / 3600);
+        const minutes = Math.floor((totalSeconds % 3600) / 60);
+        const seconds = totalSeconds % 60;
+
+        console.log(`🕒 Menunggu ${hours} jam ${minutes} menit ${seconds} detik untuk Instant Harvest`);
+
 
         setTimeout(async () => {
             await instantHarvest();
@@ -693,6 +699,71 @@ async function scheduleInstantHarvest() {
         setTimeout(scheduleInstantHarvest, 5 * 60 * 1000); // Retry in 5 minutes
     }
 }
+
+async function buyCaravan() {
+    try {
+        if (!token || !xor_password) {
+            console.warn("⏳ Token atau xor_password belum tersedia.");
+            return;
+        }
+
+        await delay(1000);
+
+        const caravanList = await sendRequest({
+            url: "https://api-lok-live.leagueofkingdoms.com/api/kingdom/caravan/list",
+            token,
+            body: "{}",
+            returnResponse: true
+        });
+
+        const desiredCodes = [
+            10101007, 10101008, 10101009, 10101010, // VIP
+            10101049, 10101050, 10101051, 10101052, // AP
+            10103001, 10103002, 10103003, 10103004, // Speeds minutes
+            10103005, 10103006, 10103007, 10103008, // Speeds hours/days
+            10103009, 10103010
+        ];
+
+        const availableItems = (caravanList?.caravan?.items || []).filter(item => {
+            return desiredCodes.includes(item.code) && item.amount > 0;
+        });
+
+        for (const item of availableItems) {
+            console.log(`🛒 Membeli item: code=${item.code}, id=${item._id}`);
+            await delay(1000);
+            await sendRequest({
+                url: "https://api-lok-live.leagueofkingdoms.com/api/kingdom/caravan/buy",
+                token,
+                body: JSON.stringify({ caravanItemId: item._id }),
+                returnResponse: false
+            });
+        }
+
+        console.log(`✅ Selesai membeli ${availableItems.length} item.`);
+    } catch (err) {
+        console.error("❌ Gagal membeli caravan:", err);
+    }
+}
+
+async function scheduleBuyCaravan() {
+    try {
+        // Jalankan pertama kali langsung
+        await delay(5*60*1000);
+        await buyCaravan();
+
+        setInterval(async () => {
+            try {
+                console.log("⏰ Menjalankan ulang buyCaravan setiap 2 jam...");
+                await buyCaravan();
+            } catch (err) {
+                console.error("❌ Error saat menjalankan ulang buyCaravan:", err);
+            }
+        }, 2 * 60 * 60 * 1000);
+    } catch (error) {
+        console.error("❌ Error di scheduleBuyCaravan:", error);
+    }
+}
+
 
 
 async function sendTelegramMessage(token, message) {
@@ -1026,25 +1097,21 @@ async function handleAuthResponse(xhr) {
             kingdomData = json.kingdom;
             console.log("Data kingdom:", kingdomData);
 
-            //Instant Harvest
-            await delay(10000);
-            scheduleInstantHarvest();
-
-            // Open Free Chest
-            await delay(2000);
-            scheduleAutoOpenFreeChest();
-
-            // jalankan tower tiap menit ke 2 detik ke 10
-            await delay(2000);
-            scheduleStartTower();
-
-            await delay(2000);
+            //
             marchLimit = await getMarchLimit();
-
-            await delay(2000);
+            //buy caravan
+            scheduleBuyCaravan();
+            //Instant Harvest
+            scheduleInstantHarvest();
+            // Open Free Chest
+            scheduleAutoOpenFreeChest();
+            // jalankan tower tiap menit ke 2 detik ke 10
+            scheduleStartTower();
+            // jalankan auto join rally
             localStorage.setItem('autojoin_enabled', 'true');
             if (typeof updateAutoJoinButton === 'function') {
                 updateAutoJoinButton();
+                await delay(30*1000);
                 autoJoinRally();
             }
             
