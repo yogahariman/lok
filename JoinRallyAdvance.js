@@ -766,6 +766,7 @@ async function scheduleInstantHarvest() {
     }
 }
 
+/*
 async function resourceHarvest() {
     try {
         if (!token || !xor_password) {
@@ -799,6 +800,46 @@ async function resourceHarvest() {
         console.error("❌ Gagal menjalankan resourceHarvest:", err);
     }
 }
+*/
+
+async function resourceHarvest() {
+    try {
+        if (!token || !xor_password) {
+            console.warn("⏳ Token atau xor_password belum tersedia.");
+            return;
+        }
+
+        const desiredCodes = [
+            40100202,
+            40100203,
+            40100204,
+            40100205
+        ];
+
+        const harvestedCodes = new Set();
+
+        for (const building of kingdomData.buildings) {
+            if (desiredCodes.includes(building.code) && !harvestedCodes.has(building.code)) {
+                harvestedCodes.add(building.code);
+
+                await delay(2000);
+                await sendRequest({
+                    url: "https://api-lok-live.leagueofkingdoms.com/api/kingdom/resource/harvest",
+                    token,
+                    body: b64xorEnc({
+                        position: building.position
+                    }, xor_password),
+                    returnResponse: false
+                });
+
+                console.log(`✅ Memanen bangunan pertama dengan code ${building.code} di posisi ${building.position}`);
+            }
+        }
+    } catch (err) {
+        console.error("❌ Gagal menjalankan resourceHarvest:", err);
+    }
+}
+
 
 async function scheduleResourceHarvest() {
     try {
