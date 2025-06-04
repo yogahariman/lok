@@ -12,7 +12,7 @@
     'use strict';
 
     // 💡 Pastikan variabel bisa diakses oleh script eksternal
-    window.tokenTelegram = '1936285843:AAFgubrFQcbz0B7zN8hUKS2oNLPS-Nyyxyw'; // ← ganti token
+    window.tokenTelegram = 'abcd'; // ← ganti token
     //window.shouldOpenFreeChest = true;
     //window.shouldSearchTower = true;
 
