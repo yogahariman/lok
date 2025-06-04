@@ -534,10 +534,10 @@ async function autoJoinRally() {
                 amount: troopAmounts[i]
             }));
 
-            const canJoinRally = marchTroops.every(saveTroop => {
-                const troopInMarch = marchInfo.troops.find(troop => troop.code === saveTroop.code);
-                return troopInMarch && saveTroop.amount <= troopInMarch.amount;
-            });
+            const canJoinRally = troopCodes.every((code, i) => {
+                const availableAmount = marchInfo.troops.find(t => t.code === code)?.amount ?? 0;
+                return troopAmounts[i] <= availableAmount;
+              });              
 
             if (!canJoinRally) {
                 console.log("Tidak jadi ikut rally karena ada jumlah troops kurang.");
