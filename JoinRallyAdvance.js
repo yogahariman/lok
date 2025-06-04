@@ -947,7 +947,7 @@ async function autoJoinRally() {
 
         //console.log("📥 Rally list response:", rallyList);
         const rallyListJson = decodePayloadArray(rallyList.payload);
-        console.log("📥 Rally list response:", rallyListJson);
+        //console.log("📥 Rally list response:", rallyListJson);
 
         if (!rallyListJson.result || !Array.isArray(rallyListJson.battles) || rallyListJson.battles.length === 0) {
             console.log("⚠️ Rally list tidak valid atau kosong.");
@@ -955,6 +955,7 @@ async function autoJoinRally() {
         }
 
         const rallies = rallyListJson.battles;
+        console.log("📥 Rally list:", rallies);
 
         const unjoinedRallies = rallies.filter(b => !b.isJoined);
         if (unjoinedRallies.length === 0) {
@@ -975,6 +976,7 @@ async function autoJoinRally() {
             const {
                 _id: battleId,
                 isJoined,
+                endTime,
                 targetMonster: {
                     code: monsterCode,
                     level: monsterLevel,
@@ -1059,6 +1061,18 @@ async function autoJoinRally() {
             });
             const marchInfo = b64xorDec(marchInfoResponse, xor_password);
             //console.log("📥 Save Troops Response : ", marchInfo);
+
+            //Untuk menentukan apakah masih ada cukup waktu untuk ikut rally 
+            const speed = 5; // km per detik
+            const marchDurationSeconds = marchInfo.distance / speed;
+            const now = new Date();
+            const timeLeftSeconds = (endTime - now) / 1000;
+
+            if (marchDurationSeconds > timeLeftSeconds) {
+                console.log("❌ Tidak jadi ikut rally karena waktu untuk join kurang.");
+            } else {
+                //console.log("✅ Masih sempat untuk join rally.");
+            }
 
 
             const saveTroopsGroup = getTroopGroupByHP(monsterHP, marchInfo);
