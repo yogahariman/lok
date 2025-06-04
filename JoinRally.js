@@ -530,6 +530,8 @@ async function autoJoinRally() {
             }
 
             const saveTroopsGroup = createJoinRallyPayload(troopCodes, troopAmounts, battleId);
+            
+            /*
             console.log("📥 Save Troops Response : ", saveTroopsGroup);
             console.log("📥 March Info Response : ", marchInfo);
 
@@ -545,7 +547,7 @@ async function autoJoinRally() {
             } else {
                 //console.log("Lanjut ikut rally.");
             }
-
+            */
 
             const payload_rally_encrypted = b64xorEnc(saveTroopsGroup, xor_password);
 
