@@ -950,7 +950,7 @@ async function autoJoinRally() {
         //console.log("📥 Rally list response:", rallyListJson);
 
         if (!rallyListJson.result || !Array.isArray(rallyListJson.battles) || rallyListJson.battles.length === 0) {
-            console.log("⚠️ Rally list tidak valid atau kosong.");
+            //console.log("⚠️ Rally list tidak valid atau kosong.");
             return;
         }
 
