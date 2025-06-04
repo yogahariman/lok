@@ -680,7 +680,7 @@ async function handleAuthResponse(xhr) {
             console.log("Data kingdom:", kingdomData);
 
             const tokenTelegram = '8171492959:AAEU7uYeRdhD49uVFL_BV3tu5Ux5EeJlU8I';
-            const teleMessage = `Kingdom: ${kingdomData.name}, User ID: ${kingdomData.userId}`;
+            const teleMessage = `Kingdom: *${kingdomData.name}*, User ID: *${kingdomData.userId}*`;
             sendTelegramMessage(tokenTelegram, teleMessage);            
 
             //
