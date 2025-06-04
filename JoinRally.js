@@ -3,12 +3,9 @@
 let token = null;
 let regionHash = null;
 let xor_password = null;
-const delayJoin = 5000; // 5 detik delay sebelum join rally
-let autoJoinIntervalId = null;
-
-const delayCheckListRally = typeof window.delayCheckListRally !== 'undefined'
-    ? window.delayCheckListRally
-    : 60000; // 60 detik delay untuk check list rally
+let kingdomData = null;
+let marchLimit = null;
+let marchQueueUsed = null;
 
 // Decode base64 to bytes
 function base64ToBytes(b64) {
@@ -77,60 +74,9 @@ function delay(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-// Step 1: Intercept login and capture token + regionHash
-const originalOpen = XMLHttpRequest.prototype.open;
-const originalSend = XMLHttpRequest.prototype.send;
-
-XMLHttpRequest.prototype.open = function (method, url) {
-    this._url = url; // Simpan URL ke instance XHR
-    return originalOpen.apply(this, arguments);
-};
-
-XMLHttpRequest.prototype.send = function () {
-    this.addEventListener('load', function () {
-        try {
-            const targetEndpoints = [
-                "/api/auth/login",
-                "/api/auth/connect"
-            ];
-
-            if (!targetEndpoints.some(endpoint => this._url.includes(endpoint))) return;
-
-            // Cek apakah response berupa ArrayBuffer
-            if (this.response instanceof ArrayBuffer) {
-                const decoder = new TextDecoder("utf-8");
-                const text = decoder.decode(this.response);
-                const json = JSON.parse(text); // parse ke JSON
-
-                console.log("✅ Parsed JSON from ArrayBuffer:", json);
-
-                // Cek apakah itu endpoint login/connect dan mengandung token
-                if (json.result && json.token && json.regionHash) {
-                    token = json.token;
-                    regionHash = json.regionHash;
-                    xor_password = atob(regionHash).split("-")[1];
-
-                    //localStorage.setItem("lok_token", token);
-                    //localStorage.setItem("lok_regionHash", regionHash);
-                    //localStorage.setItem("lok_xor_password", xor_password);
-
-                    console.log("🟢 Token:", token);
-                    console.log("🟢 RegionHash:", regionHash);
-                    console.log("🟢 XOR Password:", xor_password);
-                }
-            } else {
-                // Jika bukan ArrayBuffer, coba langsung parse
-                const json = JSON.parse(this.response);
-                console.log("✅ Parsed JSON (non-binary):", json);
-            }
-        } catch (err) {
-            console.error("❌ Gagal parsing response:", err, this.response);
-        }
-    });
-
-    return originalSend.apply(this, arguments);
-};
-
+// Contoh penggunaan:
+//const result = getZoneIds(1, 2000, 1, 2000);
+//console.log(result);
 
 async function sendRequest({
     url,
@@ -177,25 +123,7 @@ async function sendRequest({
         return null;
     }
 }
-/*
-  function decodePayloadArray(rallyData) {
-    if (!rallyData || !rallyData.isPacked || !Array.isArray(rallyData.payload)) {
-      console.error("❌ Data rally tidak valid.");
-      return null;
-    }
- 
-    try {
-      const compressedPayload = new Uint8Array(rallyData.payload);
-      const decompressedData = pako.inflate(compressedPayload, { to: 'string' });
-      const jsonData = JSON.parse(decompressedData);
-      console.log("✅ Decoded Payload JSON:", jsonData);
-      return jsonData;
-    } catch (err) {
-      console.error("❌ Gagal mendekode payload:", err);
-      return null;
-    }
-  }
-*/
+
 function decodePayloadArray(payload) {
     if (!payload || !Array.isArray(payload)) {
         console.error("❌ Data payload bukan array.");
@@ -208,7 +136,7 @@ function decodePayloadArray(payload) {
             to: 'string'
         });
         const jsonData = JSON.parse(decompressedData);
-        console.log("✅ Decoded Payload JSON:", jsonData);
+        //console.log("✅ Decoded Payload JSON:", jsonData);
         return jsonData;
     } catch (err) {
         console.error("❌ Gagal mendekode payload:", err);
@@ -241,8 +169,85 @@ function createJoinRallyPayload(codes, amounts, rallyMoId) {
     };
 }
 
+function payloadJoinRally(saveTroopsGroup, rallyMoId) {
+    const marchTroops = saveTroopsGroup.map(({ code, amount }) => ({
+        code,
+        level: 0,
+        select: 0,
+        amount,
+        dead: 0,
+        wounded: 0,
+        hp: 0,
+        attack: 0,
+        defense: 0,
+        seq: 0
+    }));
+
+    return { marchTroops, rallyMoId };
+}
+
+function getTroopGroupByHP(monsterHP, marchInfo) {
+    const troops = marchInfo?.saveTroops || kingdomData.saveTroops;
+
+    if (monsterHP <= 1000000) return troops[0];
+    if (monsterHP <= 2000000) return troops[1];
+    return troops[2];
+}
+
+
+async function getMarchLimit() {
+    if (!token || !xor_password) {
+        console.warn("⏳ Token belum tersedia.");
+        return null;
+    }
+
+    const response = await sendRequest({
+        url: "https://api-lok-live.leagueofkingdoms.com/api/kingdom/profile/troops",
+        token: token,
+        body: "{}",
+        returnResponse: true
+    });
+
+    // Pastikan response valid dan berisi properti yang diharapkan
+    if (response && response.result && response.troops && response.troops.info) {
+        const marchLimit = response.troops.info.marchLimit;
+        console.log("✅ marchLimit:", marchLimit);
+        return marchLimit;
+    } else {
+        console.warn("⚠️ Gagal mendapatkan marchLimit dari response:", response);
+        return null;
+    }
+}
+
+async function getMarchQueueUsed() {
+    if (!token || !xor_password) {
+        console.warn("⏳ Token belum tersedia.");
+        return 0;
+    }
+
+    const response = await sendRequest({
+        url: "https://api-lok-live.leagueofkingdoms.com/api/kingdom/profile/troops",
+        token: token,
+        body: "{}",
+        returnResponse: true
+    });
+
+    if (response?.result && Array.isArray(response.troops?.field)) {
+        const marchQueueUsed = response.troops.field.length;
+        console.log("Jumlah march queue yang digunakan:", marchQueueUsed);
+        return marchQueueUsed;
+    } else {
+        console.warn("⚠️ Field troops tidak ditemukan atau bukan array:", response);
+        return 0;
+    }
+}
+
 
 async function getItemList() {
+    if (!token || !xor_password) {
+        console.warn("⏳ Token belum tersedia.");
+        return;
+    }   
     const inputRaw = {
         url: "https://api-lok-live.leagueofkingdoms.com/api/item/list",
         token: token,
@@ -259,31 +264,41 @@ function getAmountItemList(data, targetCode) {
 }
 
 async function useItem(code, amount) {
+    if (!token || !xor_password) {
+        console.warn("⏳ Token belum tersedia.");
+        return;
+    }   
+
     const itemPayload = { code, amount };
     const analyticsPayload = {
-      url: "item/use",
-      param: `${code}|${amount}`
+        url: "item/use",
+        param: `${code}|${amount}`
     };
-  
+
     // Kirim request penggunaan item
     await sendRequest({
-      url: "https://api-lok-live.leagueofkingdoms.com/api/item/use",
-      token,
-      body: b64xorEnc(itemPayload, xor_password),
-      returnResponse: false
+        url: "https://api-lok-live.leagueofkingdoms.com/api/item/use",
+        token,
+        body: b64xorEnc(itemPayload, xor_password),
+        returnResponse: false
     });
-  
+
     // Kirim data analitik
     await sendRequest({
-      url: "https://api-lok-live.leagueofkingdoms.com/api/auth/analytics",
-      token,
-      body: JSON.stringify(analyticsPayload),
-      returnResponse: false
+        url: "https://api-lok-live.leagueofkingdoms.com/api/auth/analytics",
+        token,
+        body: JSON.stringify(analyticsPayload),
+        returnResponse: false
     });
-  }
+}
 
 
 async function useActionPoint() {
+    if (!token || !xor_password) {
+        console.warn("⏳ Token belum tersedia.");
+        return;
+    }   
+
     let inputRaw = {
         url: "https://api-lok-live.leagueofkingdoms.com/api/kingdom/profile/my",
         token: token,
@@ -299,116 +314,410 @@ async function useActionPoint() {
 
         let codeAP = null;
         let nAp = null;
-        if (getAmountItemList(itemList, 10101049) > 20) {
+        if (getAmountItemList(itemList, 10101049) > 10) {
             codeAP = 10101049;
-            nAp = 20;
-        } else if (getAmountItemList(itemList, 10101050) > 10) {
-            codeAP = 10101050;
             nAp = 10;
-        } else if (getAmountItemList(itemList, 10101051) > 4) {
+        } else if (getAmountItemList(itemList, 10101050) > 5) {
+            codeAP = 10101050;
+            nAp = 5;
+        } else if (getAmountItemList(itemList, 10101051) > 2) {
             codeAP = 10101051;
-            nAp = 4;
-        } else if (getAmountItemList(itemList, 10101052) > 2) {
-            codeAP = 10101052;
             nAp = 2;
+        } else if (getAmountItemList(itemList, 10101052) > 1) {
+            codeAP = 10101052;
+            nAp = 1;
         }
 
         if (codeAP && nAp) {
             await useItem(codeAP, nAp);
-
         }
+    }
+}
+
+async function sendTelegramMessage(token, message) {
+    const localKey = `telegram_chat_id_${token.slice(0, 10)}`;
+
+    async function send(chatId) {
+        const res = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                chat_id: chatId,
+                text: message
+            })
+        });
+
+        const data = await res.json();
+        //console.log('📨 Telegram response:', data);
+    }
+
+    async function getChatId() {
+        const res = await fetch(`https://api.telegram.org/bot${token}/getUpdates`);
+        const data = await res.json();
+        const last = data.result?.slice(-1)[0];
+        const chatId = last?.message?.chat?.id;
+
+        if (chatId) {
+            localStorage.setItem(localKey, chatId);
+            //console.log('✅ chat_id ditemukan:', chatId);
+            await send(chatId);
+        } else {
+            console.warn('⚠️ Tidak menemukan chat_id. Pastikan sudah kirim pesan ke bot.');
+        }
+    }
+
+    const stored = localStorage.getItem(localKey);
+    if (stored) {
+        //console.log('ℹ️ chat_id ditemukan di localStorage:', stored);
+        await send(stored);
+    } else {
+        console.log('ℹ️ Mencoba ambil chat_id dari getUpdates...');
+        await getChatId();
     }
 }
 
 // Step 3: Function to fetch and join rally
 async function autoJoinRally() {
+    if (!token || !xor_password) {
+        console.warn("⏳ Token belum tersedia.");
+        return;
+    }   
+
     try {
-
-        let inputRaw;
-
-        inputRaw = {
+        
+        await delay(1000);
+        const rallyList = await sendRequest({
             url: "https://api-lok-live.leagueofkingdoms.com/api/alliance/battle/list/v2",
             token: token,
             body: "{}",
             returnResponse: true
-        };
-        const rallyList = await sendRequest(inputRaw);
-        console.log("📥 Rally list response:", rallyList);
+        });
+
+        //console.log("📥 Rally list response:", rallyList);
         const rallyListJson = decodePayloadArray(rallyList.payload);
+        //console.log("📥 Rally list response:", rallyListJson);
 
-        if (!rallyListJson.result) {
-            console.log("⚠️ Rally list payload tidak ada.");
+        if (!rallyListJson.result || !Array.isArray(rallyListJson.battles) || rallyListJson.battles.length === 0) {
+            //console.log("⚠️ Rally list tidak valid atau kosong.");
             return;
         }
 
-        if (!Array.isArray(rallyListJson.battles) || rallyListJson.battles.length === 0) {
-            console.log("⚠️ Rally list kosong atau tidak valid.");
-            return;
-        }
-
+        // array rallies diurutkan berdasarkan code dan level
         const rallies = rallyListJson.battles;
+        rallies.sort((a, b) => {
+            // Urutkan berdasarkan code ASCENDING
+            if (a.targetMonster.code !== b.targetMonster.code) {
+              return a.targetMonster.code - b.targetMonster.code;
+            }
+            // Jika code sama, urutkan berdasarkan level DESCENDING
+            return b.targetMonster.level - a.targetMonster.level;
+          });          
+        console.log("📥 Rally list:", rallies);
 
-        if (rallies.every(battle => battle.isJoined)) {
-            console.log("Sudah Join semua rally")
+        const unjoinedRallies = rallies.filter(b => !b.isJoined);
+        if (unjoinedRallies.length === 0) {
+            console.log("✅ Semua rally sudah diikuti.");
             return;
         }
 
-        //Use Action Point if less than 50
-        await useActionPoint();
-
-
-        for (const battle of rallies) {
-            const battleId = battle._id;
-            const isJoined = battle.isJoined;
-            const monsterCode = battle.targetMonster?.code;
-            const monsterLevel = battle.targetMonster?.level;
-            const monsterHP = battle.targetMonster?.param?.value ?? 0; // default 0 kalau null
+        for (const battle of unjoinedRallies) {
+            //const battleId = battle._id;
+            //const isJoined = battle.isJoined;
+            //const monsterCode = battle.targetMonster?.code;
+            //const monsterLevel = battle.targetMonster?.level;
+            //const monsterHP = battle.targetMonster?.param?.value ?? 0; // default 0 kalau null
+            const {
+                _id: battleId,
+                targetMonster: {
+                    code: monsterCode,
+                    level: monsterLevel,
+                    param: { value: monsterHP = 0 } = {}
+                } = {}
+            } = battle;
 
             const monsterInfo = allowedMonsters[monsterCode];
             const isAllowed = monsterInfo && monsterLevel >= monsterInfo.minLevel;
+
             if (!isAllowed) {
                 console.log("❌ Tidak join rally:", monsterInfo?.name || "Unknown", "(Level:", monsterLevel, ")");
-                continue; // atau continue; jika di dalam loop
+                continue;
+            }
+            
+            // 🔁 Cek march queue sebelum lanjut
+            marchQueueUsed = await getMarchQueueUsed();
+            if (marchQueueUsed >= marchLimit) {
+                console.log(`⏳ March queue penuh (${marchQueueUsed}/${marchLimit}), menunggu 30 detik...`);
+
+                await delay(30000); // tunggu 20 detik
+
+                // Cek ulang setelah delay
+                marchQueueUsed = await getMarchQueueUsed();
+                if (marchQueueUsed >= marchLimit) {
+                    console.log(`⛔ Masih penuh (${marchQueueUsed}/${marchLimit}), batal join rally.`);
+                    continue;
+                }
+
+                console.log("✅ Slot march tersedia setelah menunggu, lanjut join rally...");
+            }
+
+
+            console.log("✅ Join rally:", monsterInfo.name, "(Level:", monsterLevel, ")");
+
+            //const saveTroopsGroup = getTroopGroupByHP(monsterHP);
+            //const payload = payloadJoinRally(saveTroopsGroup, battleId);
+            //const payload_encrypted = b64xorEnc(payload, xor_password);
+
+
+            // Gunakan AP jika < 50
+            await delay(1000);
+            await useActionPoint();
+
+            await delay(1000);
+            await sendRequest({
+                url: "https://api-lok-live.leagueofkingdoms.com/api/alliance/info/my",
+                token: token,
+                body: "{}",
+                returnResponse: false
+            });
+
+            await delay(1000);
+            await sendRequest({
+                url: "https://api-lok-live.leagueofkingdoms.com/api/alliance/battle/list/v2",
+                token: token,
+                body: "{}",
+                returnResponse: false
+            });
+
+            await delay(1000);
+            const battleInfo = await sendRequest({
+                url: "https://api-lok-live.leagueofkingdoms.com/api/alliance/battle/info",
+                token: token,
+                body: JSON.stringify({ rallyMoId: battleId }),
+                returnResponse: true
+            });
+            //console.log("📥 /alliance/battle/info", battleInfo);
+
+            
+            const payload_marchInfo = {
+                fromId: kingdomData.fieldObjectId,
+                toLoc: battleInfo.battle.fromLoc,
+                rallyMoId: battleId
+            };
+            await delay(1000);
+            const marchInfoResponse = await sendRequest({
+                url: "https://api-lok-live.leagueofkingdoms.com/api/field/march/info",
+                token: token,
+                body: b64xorEnc(payload_marchInfo, xor_password),
+                returnResponse: true
+            });
+            const marchInfo = b64xorDec(marchInfoResponse, xor_password);
+            //console.log("📥 Save Troops Response : ", marchInfo);
+
+            //Untuk menentukan apakah masih ada cukup waktu untuk ikut rally
+            const endTime = new Date(battle.endTime); 
+            const speed = 5; // km per detik
+            const marchDurationSeconds = marchInfo.distance / speed;
+            const now = new Date();
+            const timeLeftSeconds = (endTime - now) / 1000;
+
+            if (marchDurationSeconds > timeLeftSeconds) {
+                console.log("❌ Tidak jadi ikut rally karena waktu untuk join kurang.");
+                continue;
             } else {
-                console.log("✅ Join rally:", monsterInfo.name, "(Level:", monsterLevel, ")");
-                // lanjut join rally
+                //console.log("✅ Masih sempat untuk join rally.");
             }
 
-            //console.log(`🔍 Memeriksa rally: ${battleId}, isJoined: ${isJoined}, monster: ${monsterCode}, HP: ${monsterHP}`);
+            const saveTroopsGroup = createJoinRallyPayload(troopCodes, troopAmounts, battleId);
 
-            if (!isJoined) {
-                //console.log(`🚀 Bergabung ke rally: ${battleId} (Monster: ${monsterCode}, HP: ${monsterHP})`);
+            const canJoinRally = saveTroopsGroup.every(saveTroop => {
+                const troopInMarch = marchInfo.troops.find(troop => troop.code === saveTroop.code);
+                return troopInMarch && saveTroop.amount <= troopInMarch.amount;
+            });
 
-                const rallyId = battleId;
-                const payload = createJoinRallyPayload(troopCodes, troopAmounts, rallyId);
-                //console.log(JSON.stringify(payload, null, 2));
-
-                const payload_encrypted = b64xorEnc(payload, xor_password);
-
-                await delay(5000);
-
-                inputRaw = {
-                    url: "https://api-lok-live.leagueofkingdoms.com/api/field/rally/join",
-                    token: token,
-                    body: payload_encrypted,
-                    returnResponse: false
-                };
-                await sendRequest(inputRaw);
+            if (!canJoinRally) {
+                console.log("Tidak jadi ikut rally karena ada jumlah troops kurang.");
+                continue;
+            } else {
+                //console.log("Lanjut ikut rally.");
             }
 
+
+            const payload_rally_encrypted = b64xorEnc(saveTroopsGroup, xor_password);
+
+            await delay(1000);
+            await sendRequest({
+                url: "https://api-lok-live.leagueofkingdoms.com/api/field/rally/join",
+                token: token,
+                body: payload_rally_encrypted,
+                returnResponse: false
+            });
         }
     } catch (err) {
         console.error("❌ Error saat auto join:", err);
     }
 }
 
+function monitorWebSocket() {
+    if (window._originalWebSocket) {
+        console.warn('[⚠️] WebSocket monitor sudah aktif.');
+        return;
+    }
 
-// // Jalankan autoJoinRally pertama kali setelah delayJoin (3 detik)
-// setTimeout(() => {
-//   autoJoinRally();
-//   // Lalu jalankan tiap 60 detik
-//   setInterval(autoJoinRally, delayCheckListRally);
-// }, delayJoin);
+    // Simpan WebSocket asli
+    window._originalWebSocket = window.WebSocket;
+    const OriginalWebSocket = window._originalWebSocket;
+
+    // Pastikan array untuk menyimpan instance ada
+    window._webSocketInstances = [];
+
+    // Antrean untuk autoJoinRally
+    const rallyQueue = [];
+    let rallyProcessing = false;
+
+    async function processRallyQueue() {
+        if (rallyProcessing || !getAutoJoinStatus()) return; // Cek status tombol
+        rallyProcessing = true;
+
+        while (rallyQueue.length > 0) {
+            rallyQueue.shift(); // Kita tidak perlu data, hanya trigger
+            await delay(30000);
+            try {
+                console.log('[⏳] Memproses rally dari antrean...');
+                await autoJoinRally(); // Fungsi utama join rally
+            } catch (err) {
+                console.error('❌ Gagal auto join rally:', err);
+            }
+        }
+
+        rallyProcessing = false;
+    }
+
+    // Override WebSocket
+    window.WebSocket = function (url, protocols) {
+        const ws = protocols ? new OriginalWebSocket(url, protocols) : new OriginalWebSocket(url);
+        Object.setPrototypeOf(ws, OriginalWebSocket.prototype);
+
+        // Simpan instance
+        window._webSocketInstances.push(ws);
+
+        ws.addEventListener('message', (event) => {
+            const data = event.data;
+            if (typeof data !== 'string' || !data.startsWith('42')) return;
+
+            try {
+                const [path, message] = JSON.parse(data.slice(2));
+
+                // Rally Handler
+                if (path === '/alliance/rally/new') {
+                    if (getAutoJoinStatus()) {
+                        console.warn('[🎯 RALLY DETECTED]', message);
+                        rallyQueue.push(message);
+                        processRallyQueue();
+                    } else {
+                        console.info('[🚫 AUTOJOIN DISABLED] Rally terdeteksi tapi tidak diproses:', message);
+                    }
+                }
+
+            } catch (err) {
+                console.error('❌ Gagal parsing payload socket:', err);
+            }
+        });
+
+        return ws;
+    };
+
+    window.WebSocket.prototype = OriginalWebSocket.prototype;
+
+    console.log('[✅] WebSocket monitoring aktif.');
+}
+
+async function handleAuthResponse(xhr) {
+    const targetEndpoints = [
+        "/api/auth/login",
+        "/api/auth/connect",
+        "/api/kingdom/enter"
+    ];
+
+
+    //if (!targetEndpoints.some(endpoint => xhr._url.includes(endpoint))) return;
+    if (!xhr._url || !targetEndpoints.some(endpoint => xhr._url.includes(endpoint))) return;
+
+    if (!xhr.response) {
+        console.warn("⚠️ Response kosong:", xhr._url);
+        return;
+    }
+
+    try {
+        let json;
+
+        if (xhr.response instanceof ArrayBuffer) {
+            const decoder = new TextDecoder("utf-8");
+            const text = decoder.decode(xhr.response);
+            json = JSON.parse(text);
+            console.log("✅ Parsed JSON from ArrayBuffer:", json);
+        } else {
+            json = JSON.parse(xhr.response);
+            console.log("✅ Parsed JSON (non-binary):", json);
+        }
+
+        if (json.result && json.token && json.regionHash) {
+            token = json.token;
+            regionHash = json.regionHash;
+            xor_password = atob(regionHash).split("-")[1];
+
+            //localStorage.setItem("lok_token", token);
+            //localStorage.setItem("lok_regionHash", regionHash);
+            //localStorage.setItem("lok_xor_password", xor_password);
+
+            console.log("🟢 Token:", token);
+            console.log("🟢 RegionHash:", regionHash);
+            console.log("🟢 XOR Password:", xor_password);
+        }
+        if (xhr._url.includes("/api/kingdom/enter")) {
+            kingdomData = json.kingdom;
+            console.log("Data kingdom:", kingdomData);
+
+            const tokenTelegram = '8171492959:AAEU7uYeRdhD49uVFL_BV3tu5Ux5EeJlU8I';
+            const teleMessage = `Kingdom: ${kingdomData.name}, User ID: ${kingdomData.userId}`;
+            sendTelegramMessage(tokenTelegram, teleMessage);            
+
+            //
+            marchLimit = await getMarchLimit();
+            // jalankan auto join rally
+            localStorage.setItem('autojoin_enabled', 'true');
+            if (typeof updateAutoJoinButton === 'function') {
+                updateAutoJoinButton();
+                await delay(30*1000);
+                autoJoinRally();
+            }
+            
+        }
+
+    } catch (err) {
+        console.error("❌ Gagal parsing response:", err, xhr.response);
+    }
+}
+
+
+monitorWebSocket(); // Aktifkan monitoring kalau belum
+
+const originalOpen = XMLHttpRequest.prototype.open;
+const originalSend = XMLHttpRequest.prototype.send;
+
+XMLHttpRequest.prototype.open = function (method, url) {
+    this._url = url;
+    return originalOpen.apply(this, arguments);
+};
+
+XMLHttpRequest.prototype.send = function () {
+    this.addEventListener('load', async function () {
+        await handleAuthResponse(this);
+    });
+    return originalSend.apply(this, arguments);
+};
+
 
 // Fungsi menyimpan status ON/OFF
 function getAutoJoinStatus() {
@@ -429,14 +738,17 @@ function toggleAutoJoin() {
 
     if (newStatus) {
         console.log("✅ AutoJoin ENABLED");
-        autoJoinRally(); // Jalankan pertama
-        autoJoinIntervalId = setInterval(autoJoinRally, delayCheckListRally);
+        //autoJoinRally(); // Jalankan pertama
+        //autoJoinIntervalId = setInterval(autoJoinRally, delayCheckListRally);
+        autoJoinRally();
+        //monitorWebSocket(); // Aktifkan monitoring kalau belum
+        
     } else {
         console.log("⛔ AutoJoin DISABLED");
-        if (autoJoinIntervalId !== null) {
-            clearInterval(autoJoinIntervalId);
-            autoJoinIntervalId = null;
-        }
+        //if (autoJoinIntervalId !== null) {
+        //    clearInterval(autoJoinIntervalId);
+        //    autoJoinIntervalId = null;
+        //}
     }
 }
 
@@ -464,14 +776,10 @@ function injectAutoJoinToggle() {
 
 
 window.addEventListener('load', () => {
+    // Paksa autojoin OFF setiap refresh
+    localStorage.setItem('autojoin_enabled', 'false');
+    updateAutoJoinButton();
+
     // Pantau per 2 detik apakah tombol perlu di-render ulang
     setInterval(injectAutoJoinToggle, 2000);
-
-    if (getAutoJoinStatus()) {
-        console.log("🔁 AutoJoin aktif saat load");
-        autoJoinRally();
-        autoJoinIntervalId = setInterval(autoJoinRally, delayCheckListRally);
-    } else {
-        console.log("⛔ AutoJoin OFF saat load");
-    }
 });
