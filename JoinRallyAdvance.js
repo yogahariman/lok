@@ -822,7 +822,7 @@ async function resourceHarvest() {
             if (desiredCodes.includes(building.code) && !harvestedCodes.has(building.code)) {
                 harvestedCodes.add(building.code);
 
-                await delay(2000);
+                await delay(5000);
                 await sendRequest({
                     url: "https://api-lok-live.leagueofkingdoms.com/api/kingdom/resource/harvest",
                     token,
