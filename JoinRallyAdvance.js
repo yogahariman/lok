@@ -1165,9 +1165,13 @@ function monitorWebSocket() {
 
                 // Rally Handler
                 else if (path === '/alliance/rally/new') {
-                    console.warn('[🎯 RALLY DETECTED]', message);
-                    rallyQueue.push(message);
-                    processRallyQueue();
+                    if (getAutoJoinStatus()) {
+                        console.warn('[🎯 RALLY DETECTED]', message);
+                        rallyQueue.push(message);
+                        processRallyQueue();
+                    } else {
+                        console.info('[🚫 AUTOJOIN DISABLED] Rally terdeteksi tapi tidak diproses:', message);
+                    }
                 }
 
             } catch (err) {
