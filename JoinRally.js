@@ -530,11 +530,13 @@ async function autoJoinRally() {
             }
 
             const saveTroopsGroup = createJoinRallyPayload(troopCodes, troopAmounts, battleId);
+            console.log("📥 Save Troops Response : ", saveTroopsGroup);
+            console.log("📥 March Info Response : ", marchInfo);
 
-            const canJoinRally = saveTroopsGroup.every(saveTroop => {
-                const troopInMarch = marchInfo.troops.find(troop => troop.code === saveTroop.code);
-                return troopInMarch && saveTroop.amount <= troopInMarch.amount;
-            });
+            //const canJoinRally = saveTroopsGroup.every(saveTroop => {
+            //    const troopInMarch = marchInfo.troops.find(troop => troop.code === saveTroop.code);
+            //    return troopInMarch && saveTroop.amount <= troopInMarch.amount;
+            //});
 
             if (!canJoinRally) {
                 console.log("Tidak jadi ikut rally karena ada jumlah troops kurang.");
