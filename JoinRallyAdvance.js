@@ -954,7 +954,16 @@ async function autoJoinRally() {
             return;
         }
 
+        // array rallies diurutkan berdasarkan code dan level
         const rallies = rallyListJson.battles;
+        rallies.sort((a, b) => {
+            // Urutkan berdasarkan code ASCENDING
+            if (a.targetMonster.code !== b.targetMonster.code) {
+              return a.targetMonster.code - b.targetMonster.code;
+            }
+            // Jika code sama, urutkan berdasarkan level DESCENDING
+            return b.targetMonster.level - a.targetMonster.level;
+          });          
         console.log("📥 Rally list:", rallies);
 
         const unjoinedRallies = rallies.filter(b => !b.isJoined);
