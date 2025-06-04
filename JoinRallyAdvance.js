@@ -1010,7 +1010,7 @@ async function autoJoinRally() {
                 marchQueueUsed = await getMarchQueueUsed();
                 if (marchQueueUsed >= marchLimit) {
                     console.log(`⛔ Masih penuh (${marchQueueUsed}/${marchLimit}), batal join rally.`);
-                    return;
+                    continue;
                 }
 
                 console.log("✅ Slot march tersedia setelah menunggu, lanjut join rally...");
@@ -1078,6 +1078,7 @@ async function autoJoinRally() {
 
             if (marchDurationSeconds > timeLeftSeconds) {
                 console.log("❌ Tidak jadi ikut rally karena waktu untuk join kurang.");
+                continue;
             } else {
                 //console.log("✅ Masih sempat untuk join rally.");
             }
@@ -1092,7 +1093,7 @@ async function autoJoinRally() {
 
             if (!canJoinRally) {
                 console.log("Tidak jadi ikut rally karena ada jumlah troops kurang.");
-                return;
+                continue;
             } else {
                 //console.log("Lanjut ikut rally.");
             }
