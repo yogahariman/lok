@@ -984,8 +984,6 @@ async function autoJoinRally() {
             //const monsterHP = battle.targetMonster?.param?.value ?? 0; // default 0 kalau null
             const {
                 _id: battleId,
-                isJoined,
-                endTime,
                 targetMonster: {
                     code: monsterCode,
                     level: monsterLevel,
@@ -1071,7 +1069,8 @@ async function autoJoinRally() {
             const marchInfo = b64xorDec(marchInfoResponse, xor_password);
             //console.log("📥 Save Troops Response : ", marchInfo);
 
-            //Untuk menentukan apakah masih ada cukup waktu untuk ikut rally 
+            //Untuk menentukan apakah masih ada cukup waktu untuk ikut rally
+            const endTime = new Date(battle.endTime); 
             const speed = 5; // km per detik
             const marchDurationSeconds = marchInfo.distance / speed;
             const now = new Date();
