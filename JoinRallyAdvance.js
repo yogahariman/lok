@@ -783,6 +783,7 @@ async function resourceHarvest() {
         const buildingsToHarvest = kingdomData.buildings.filter(b => desiredCodes.includes(b.code));
 
         for (const building of buildingsToHarvest) {
+            await delay(2000);
             await sendRequest({
                 url: "https://api-lok-live.leagueofkingdoms.com/api/kingdom/resource/harvest",
                 token,
@@ -849,7 +850,7 @@ async function buyCaravan() {
 
         for (const item of availableItems) {
             console.log(`🛒 Membeli item: code=${item.code}, id=${item._id}`);
-            await delay(1000);
+            await delay(2000);
             await sendRequest({
                 url: "https://api-lok-live.leagueofkingdoms.com/api/kingdom/caravan/buy",
                 token,
