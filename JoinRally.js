@@ -529,17 +529,15 @@ async function autoJoinRally() {
                 //console.log("✅ Masih sempat untuk join rally.");
             }
 
-            const saveTroopsGroup = createJoinRallyPayload(troopCodes, troopAmounts, battleId);
-            
-            /*
-            console.log("📥 Save Troops Response : ", saveTroopsGroup);
-            console.log("📥 March Info Response : ", marchInfo);
+            const marchTroops = troopCodes.map((code, i) => ({
+                code,
+                amount: troopAmounts[i]
+            }));
 
-            const canJoinRally = saveTroopsGroup.marchTroops.every(saveTroop => {
+            const canJoinRally = marchTroops.every(saveTroop => {
                 const troopInMarch = marchInfo.troops.find(troop => troop.code === saveTroop.code);
                 return troopInMarch && saveTroop.amount <= troopInMarch.amount;
             });
-            
 
             if (!canJoinRally) {
                 console.log("Tidak jadi ikut rally karena ada jumlah troops kurang.");
@@ -547,9 +545,8 @@ async function autoJoinRally() {
             } else {
                 //console.log("Lanjut ikut rally.");
             }
-            */
 
-            const payload_rally_encrypted = b64xorEnc(saveTroopsGroup, xor_password);
+            const payload_rally_encrypted = b64xorEnc(reateJoinRallyPayload(troopCodes, troopAmounts, battleId), xor_password);
 
             await delay(1000);
             await sendRequest({
