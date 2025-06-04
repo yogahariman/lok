@@ -546,7 +546,7 @@ async function autoJoinRally() {
                 //console.log("Lanjut ikut rally.");
             }
 
-            const payload_rally_encrypted = b64xorEnc(reateJoinRallyPayload(troopCodes, troopAmounts, battleId), xor_password);
+            const payload_rally_encrypted = b64xorEnc(createJoinRallyPayload(troopCodes, troopAmounts, battleId), xor_password);
 
             await delay(1000);
             await sendRequest({
