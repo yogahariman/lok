@@ -850,6 +850,84 @@ async function scheduleBuyCaravan() {
     }
 }
 
+async function scheduleAutoDonate() {
+    if (!token || !xor_password) {
+        console.warn("⏳ Token belum tersedia.");
+        return;
+    }
+
+    // Delay awal 5 menit
+    await delay(5 * 60 * 1000);
+
+    while (true) {
+        try {
+            console.log("🔄 Mengecek status donasi...");
+
+            // Trigger agar sistem memperbarui data alliance (kadang perlu)
+            await sendRequest({
+                url: "https://api-lok-live.leagueofkingdoms.com/api/alliance/info/my",
+                token: token,
+                body: "{}",
+                returnResponse: false
+            });
+
+            await delay(1000);
+
+            // Ambil status riset alliance
+            const response = await sendRequest({
+                url: "https://api-lok-live.leagueofkingdoms.com/api/alliance/research/list",
+                token: token,
+                body: "{}",
+                returnResponse: true
+            });
+
+            if (response.todayRP >= 10000) {
+                console.log("✅ Sudah mencapai batas harian RP: " + response.todayRP);
+                break;
+            }
+
+            if (response.numDonation <= 0) {
+                console.log("⚠️ Tidak ada sisa donasi, menunggu...");
+                await delay(5 * 60 * 1000); // tunggu 5 menit sebelum cek lagi
+                continue;
+            }
+
+            const researchCode = response.recommendResearch;
+            console.log("📌 Mendonasikan ke riset code:", researchCode);
+
+            await delay(1000);
+
+            // Info riset (kadang perlu sebelum donate)
+            await sendRequest({
+                url: "https://api-lok-live.leagueofkingdoms.com/api/alliance/research/info",
+                token: token,
+                body: JSON.stringify({ researchCode }),
+                returnResponse: false
+            });
+
+            await delay(1000);
+
+            // Donasi ke riset
+            await sendRequest({
+                url: "https://api-lok-live.leagueofkingdoms.com/api/alliance/research/donateAll",
+                token: token,
+                body: JSON.stringify({ code: researchCode }),
+                returnResponse: false
+            });
+
+            console.log("✅ Donasi berhasil dikirim!");
+
+            // Tunggu 1 jam sebelum donasi berikutnya
+            await delay(60 * 60 * 1000);
+
+        } catch (err) {
+            console.warn("❌ Error saat proses donasi:", err);
+            await delay(1 * 60 * 1000); // Tunggu 1 menit jika error sebelum coba lagi
+        }
+    }
+}
+
+
 
 async function sendTelegramMessage(token, message) {
     const localKey = `telegram_chat_id_${token.slice(0, 10)}`;
@@ -1219,6 +1297,8 @@ async function handleAuthResponse(xhr) {
             scheduleInstantHarvest();
             // Open Free Chest
             scheduleAutoOpenFreeChest();
+            // Donate every hour
+            scheduleAutoDonate();
             // jalankan tower tiap menit ke 2 detik ke 10
             scheduleStartTower();
             // jalankan auto join rally
