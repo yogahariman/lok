@@ -691,6 +691,53 @@ async function scheduleInstantHarvest() {
     }
 }
 
+async function scheduleSummonMonster() {
+    try {
+        if (!token || !xor_password) {
+            console.warn("⏳ Token atau xor_password belum tersedia.");
+            setTimeout(scheduleSummonMonster, 60 * 1000); // Retry dalam 1 menit
+            return;
+        }
+
+        const { skills } = await sendRequest({
+            url: "https://api-lok-live.leagueofkingdoms.com/api/skill/list",
+            token,
+            body: "{}",
+            returnResponse: true
+        });
+
+        const skill = skills.find(s => s.code === 10023);
+        if (!skill) {
+            console.warn("⚠️ Skill 10023 tidak ditemukan.");
+            return;
+        }
+
+        const nextSkillTimestamp = new Date(skill.nextSkillTime).getTime();
+        const now = Date.now();
+        if (!nextSkillTimestamp || isNaN(nextSkillTimestamp)) {
+            console.warn("⚠️ Tidak bisa membaca waktu cooldown skill.");
+            return;
+        }
+
+        const waitMs = Math.max(nextSkillTimestamp + 10 * 60 * 1000 - now, 0);
+        const totalSeconds = Math.floor(waitMs / 1000);
+        const hours = Math.floor(totalSeconds / 3600);
+        const minutes = Math.floor((totalSeconds % 3600) / 60);
+        const seconds = totalSeconds % 60;
+
+        console.log(`🕒 Menunggu ${hours} jam ${minutes} menit ${seconds} detik untuk Summon Monster`);
+
+        setTimeout(async () => {
+            await summonMonster();
+            scheduleSummonMonster(); // 🔁 Loop
+        }, waitMs);
+    } catch (error) {
+        console.error("❌ Error saat scheduling:", error);
+        setTimeout(scheduleSummonMonster, 5 * 60 * 1000); // Retry in 5 minutes
+    }
+}
+
+
 /*
 async function resourceHarvest() {
     try {
@@ -1295,6 +1342,8 @@ async function handleAuthResponse(xhr) {
             scheduleResourceHarvest()
             //Instant Harvest
             scheduleInstantHarvest();
+            //summon monster
+            scheduleSummonMonster();
             // Open Free Chest
             scheduleAutoOpenFreeChest();
             // Donate every hour
