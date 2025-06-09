@@ -701,7 +701,7 @@ async function summonMonster() {
 
         console.log("🧙‍♂️ Memulai proses Summon Monster...");
 
-        await delay(30000);
+        await delay(2000);
         await changeSkin(10726001); // Aktifkan skin produksi
         
         await delay(2000);
@@ -761,6 +761,64 @@ async function scheduleSummonMonster() {
     }
 }
 
+async function scheduleSkillActivate(codes = [10001, 10023]) {
+    try {
+        const { skills } = await sendRequest({
+            url: "https://api-lok-live.leagueofkingdoms.com/api/skill/list",
+            token,
+            body: "{}",
+            returnResponse: true
+        });
+
+        // Ambil skill yang sesuai dari daftar
+        const targetSkills = skills.filter(skill => codes.includes(skill.code));
+
+        if (targetSkills.length === 0) {
+            console.warn("⚠️ Tidak ada skill yang ditemukan dari kode:", codes);
+            return;
+        }
+
+        // Hitung waktu tunggu untuk setiap skill
+        const now = Date.now();
+        const skillTimers = targetSkills.map(skill => {
+            const nextSkillTime = new Date(skill.nextSkillTime).getTime();
+            const waitMs = Math.max(nextSkillTime + 10 * 60 * 1000 - now, 0);
+            return { code: skill.code, waitMs };
+        });
+
+        // Ambil skill dengan waktu tunggu paling kecil
+        const nextSkill = skillTimers.reduce((min, curr) => curr.waitMs < min.waitMs ? curr : min);
+
+        const totalSeconds = Math.floor(nextSkill.waitMs / 1000);
+        const hours = Math.floor(totalSeconds / 3600);
+        const minutes = Math.floor((totalSeconds % 3600) / 60);
+        const seconds = totalSeconds % 60;
+
+        console.log(`🕒 Menunggu ${hours} jam ${minutes} menit ${seconds} detik untuk skill ${nextSkill.code}`);
+
+        // Set timer untuk skill tersebut
+        setTimeout(async () => {
+            try {
+                if (nextSkill.code === 10001) {
+                    await instantHarvest();
+                } else if (nextSkill.code === 10023) {
+                    await summonMonster();
+                } else {
+                    console.warn(`⚠️ Tidak ada handler untuk skill ${nextSkill.code}`);
+                }
+            } catch (err) {
+                console.error(`❌ Gagal mengeksekusi skill ${nextSkill.code}:`, err);
+            }
+
+            // Jalankan ulang untuk mencari skill selanjutnya
+            scheduleSkillActivate(codes);
+        }, nextSkill.waitMs);
+
+    } catch (error) {
+        console.error("❌ Error saat scheduling skill:", error);
+        setTimeout(() => scheduleSkillActivate(codes), 5 * 60 * 1000); // Retry 5 menit
+    }
+}
 
 /*
 async function resourceHarvest() {
@@ -1364,10 +1422,12 @@ async function handleAuthResponse(xhr) {
             scheduleBuyCaravan();
             //resource Harvest
             scheduleResourceHarvest()
+            //instant harvest and summon monster
+            scheduleSkillActivate([10001, 10023]);
             //Instant Harvest
-            scheduleInstantHarvest();
+            //scheduleInstantHarvest();
             //summon monster
-            scheduleSummonMonster();
+            //scheduleSummonMonster();
             // Open Free Chest
             scheduleAutoOpenFreeChest();
             // Donate every hour
