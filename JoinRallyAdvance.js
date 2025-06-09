@@ -844,7 +844,7 @@ async function scheduleBuyCaravan() {
             } catch (err) {
                 console.error("❌ Error saat menjalankan ulang buyCaravan:", err);
             }
-        }, 2 * 60 * 60 * 1000);
+        }, 1 * 60 * 60 * 1000);
     } catch (error) {
         console.error("❌ Error di scheduleBuyCaravan:", error);
     }
