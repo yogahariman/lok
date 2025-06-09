@@ -768,13 +768,13 @@ async function resourceHarvest() {
 
 async function scheduleResourceHarvest() {
     try {
-        console.log("⏳ Menunggu 5 menit sebelum Resource Harvest pertama...");
+        //console.log("⏳ Menunggu 5 menit sebelum Resource Harvest pertama...");
         await delay(5 * 60 * 1000); // 5 menit
         await resourceHarvest();
 
         setInterval(async () => {
             try {
-                console.log("⏰ Menjalankan ulang Resource Harvest setiap 2 jam...");
+                //console.log("⏰ Menjalankan ulang Resource Harvest setiap 2 jam...");
                 await resourceHarvest();
             } catch (err) {
                 console.error("❌ Error saat menjalankan ulang Resource Harvest:", err);
