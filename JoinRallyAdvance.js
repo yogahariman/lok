@@ -779,7 +779,7 @@ async function scheduleResourceHarvest() {
             } catch (err) {
                 console.error("❌ Error saat menjalankan ulang Resource Harvest:", err);
             }
-        }, 2 * 60 * 60 * 1000); // 2 jam
+        }, 1 * 60 * 60 * 1000); // 2 jam
     } catch (error) {
         console.error("❌ Error di Schedule Resource Harvest:", error);
     }
