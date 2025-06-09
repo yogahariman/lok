@@ -1365,7 +1365,7 @@ async function handleAuthResponse(xhr) {
             //Instant Harvest
             scheduleInstantHarvest();
             //summon monster
-            //scheduleSummonMonster();
+            scheduleSummonMonster();
             // Open Free Chest
             scheduleAutoOpenFreeChest();
             // Donate every hour
