@@ -700,28 +700,18 @@ async function summonMonster() {
 
         console.log("🧙‍♂️ Memulai proses Summon Monster...");
 
-        const skinBefore = currentSkinId; // Jika kamu menyimpan skin saat ini
         await changeSkin(10726001); // Aktifkan skin produksi
-        console.log("🎭 Skin produksi diaktifkan.");
         await delay(2000);
 
-        const response = await sendRequest({
+        await sendRequest({
             url: "https://api-lok-live.leagueofkingdoms.com/api/skill/use",
             token,
             body: JSON.stringify({ code: 10023 }),
-            returnResponse: true
+            returnResponse: false
         });
-
-        if (response?.code !== 10023 || response?.result !== "ok") {
-            console.warn("⚠️ Gagal menggunakan skill Summon Monster:", response);
-        } else {
-            console.log("✨ Skill Summon Monster berhasil digunakan.");
-        }
 
         await delay(2000);
         await changeSkin(); // Kembali ke skin default atau sebelumnya
-        console.log("🎭 Skin dikembalikan ke semula.");
-        await delay(2000);
 
         console.log("✅ Proses Summon Monster selesai.");
     } catch (err) {
@@ -731,12 +721,6 @@ async function summonMonster() {
 
 async function scheduleSummonMonster() {
     try {
-        if (!token || !xor_password) {
-            console.warn("⏳ Token atau xor_password belum tersedia.");
-            setTimeout(scheduleSummonMonster, 60 * 1000); // Retry dalam 1 menit
-            return;
-        }
-
         const { skills } = await sendRequest({
             url: "https://api-lok-live.leagueofkingdoms.com/api/skill/list",
             token,
