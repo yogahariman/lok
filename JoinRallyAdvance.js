@@ -134,7 +134,7 @@ async function sendRequest({
                 const json = JSON.parse(text);
                 return json;
             } catch (parseErr) {
-                console.warn("⚠️ Response bukan JSON, mengembalikan sebagai teks.");
+                //console.warn("⚠️ Response bukan JSON, mengembalikan sebagai teks.");
                 return text;
             }
         } else {
