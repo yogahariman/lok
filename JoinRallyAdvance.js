@@ -1056,6 +1056,72 @@ async function scheduleAutoDonate() {
     }
 }
 
+async function helpAll() {
+    try {
+        if (!token) {
+            console.warn("⏳ Token belum tersedia.");
+            return;
+        }
+
+        await delay(1000);
+        await sendRequest({
+            url: "https://api-lok-live.leagueofkingdoms.com/api/alliance/info/my",
+            token,
+            body: "{}",
+            returnResponse: false
+        });
+
+        await delay(1000);
+        const helpList = await sendRequest({
+            url: "https://api-lok-live.leagueofkingdoms.com/api/alliance/help/list",
+            token,
+            body: "{}",
+            returnResponse: true
+        });
+
+        if (!helpList || !helpList.otherTasks || helpList.otherTasks.length === 0) {
+            console.log("✅ Tidak ada bantuan yang perlu dilakukan.");
+            return;
+        }
+
+        console.log(`🛠️ Menjalankan helpAll untuk ${helpList.otherTasks.length} task...`);
+        
+        await delay(1000);
+        await sendRequest({
+            url: "https://api-lok-live.leagueofkingdoms.com/api/alliance/help/all",
+            token,
+            body: "{}",
+            returnResponse: false
+        });
+
+        console.log("✅ Selesai membantu semua tugas.");
+        
+    } catch (err) {
+        console.error("❌ Terjadi kesalahan di helpAll:", err);
+    }
+}
+
+async function scheduleHelpAll() {
+    try {
+        // Tunggu awal 5 menit sebelum menjalankan bantuan pertama
+        await delay(5 * 60 * 1000);
+        await buyCaravan();
+
+        // Jalankan helpAll setiap 1 jam
+        setInterval(async () => {
+            try {
+                await helpAll();
+            } catch (err) {
+                console.error("❌ Gagal menjalankan helpAll dalam interval:", err);
+            }
+        }, 1 * 60 * 60 * 1000); // 1 jam
+
+    } catch (error) {
+        console.error("❌ Terjadi kesalahan di scheduleHelpAll:", error);
+    }
+}
+
+
 
 
 async function sendTelegramMessage(token, message) {
@@ -1447,6 +1513,8 @@ async function handleAuthResponse(xhr) {
             scheduleAutoOpenFreeChest();
             // Donate every hour
             scheduleAutoDonate();
+            // Help all
+            scheduleHelpAll();
             // jalankan tower tiap menit ke 2 detik ke 10
             scheduleStartTower();
             // jalankan auto join rally
