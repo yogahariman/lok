@@ -1430,7 +1430,7 @@ function monitorWebSocket() {
                 // Rally Handler
                 else if (path === '/alliance/rally/new') {
                     if (getAutoJoinStatus()) {
-                        console.warn('[🎯 RALLY DETECTED]', message);
+                        //console.warn('[🎯 RALLY DETECTED]', message);
                         rallyQueue.push(message);
                         processRallyQueue();
                     } else {
