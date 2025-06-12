@@ -422,7 +422,9 @@ async function autoJoinRally() {
             return;
         }
 
+        let joinCount = 0;
         for (const battle of unjoinedRallies) {
+            if (joinCount >= 3) break;
             //const battleId = battle._id;
             //const isJoined = battle.isJoined;
             //const monsterCode = battle.targetMonster?.code;
@@ -448,6 +450,9 @@ async function autoJoinRally() {
             // 🔁 Cek march queue sebelum lanjut
             marchQueueUsed = await getMarchQueueUsed();
             if (marchQueueUsed >= marchLimit) {
+                console.log(`⛔ March queue penuh (${marchQueueUsed}/${marchLimit}), batal join rally.`);
+                continue;
+                /*
                 console.log(`⏳ March queue penuh (${marchQueueUsed}/${marchLimit}), menunggu 30 detik...`);
 
                 await delay(30000); // tunggu 20 detik
@@ -460,6 +465,7 @@ async function autoJoinRally() {
                 }
 
                 console.log("✅ Slot march tersedia setelah menunggu, lanjut join rally...");
+                */
             }
 
 
@@ -555,6 +561,7 @@ async function autoJoinRally() {
                 body: payload_rally_encrypted,
                 returnResponse: false
             });
+            joinCount++;
         }
     } catch (err) {
         console.error("❌ Error saat auto join:", err);
@@ -579,11 +586,17 @@ function monitorWebSocket() {
     let rallyProcessing = false;
 
     async function processRallyQueue() {
-        if (rallyProcessing || !getAutoJoinStatus()) return; // Cek status tombol
+        if (rallyProcessing) return;
         rallyProcessing = true;
-
+    
         while (rallyQueue.length > 0) {
-            rallyQueue.shift(); // Kita tidak perlu data, hanya trigger
+            const rally = rallyQueue.shift(); // Ambil satu dari antrean
+    
+            if (!getAutoJoinStatus()) {
+                console.warn('[🛑] Auto Join OFF - Menghapus rally dari antrean:', rally);
+                continue; // Lewatkan rally ini tanpa diproses
+            }
+    
             await delay(30000);
             try {
                 console.log('[⏳] Memproses rally dari antrean...');
@@ -592,9 +605,10 @@ function monitorWebSocket() {
                 console.error('❌ Gagal auto join rally:', err);
             }
         }
-
+    
         rallyProcessing = false;
     }
+    
 
     // Override WebSocket
     window.WebSocket = function (url, protocols) {
