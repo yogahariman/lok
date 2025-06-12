@@ -908,7 +908,7 @@ async function scheduleResourceHarvest() {
             } catch (err) {
                 console.error("❌ Error saat menjalankan ulang Resource Harvest:", err);
             }
-        }, 1 * 60 * 60 * 1000); // 2 jam
+        }, 1 * 60 * 60 * 1000); // 1 jam
     } catch (error) {
         console.error("❌ Error di Schedule Resource Harvest:", error);
     }
@@ -968,7 +968,7 @@ async function scheduleBuyCaravan() {
 
         setInterval(async () => {
             try {
-                console.log("⏰ Menjalankan ulang buyCaravan setiap 2 jam...");
+                console.log("⏰ Menjalankan ulang buyCaravan setiap 1 jam...");
                 await buyCaravan();
             } catch (err) {
                 console.error("❌ Error saat menjalankan ulang buyCaravan:", err);
