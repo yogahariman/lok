@@ -1105,7 +1105,7 @@ async function scheduleHelpAll() {
     try {
         // Tunggu awal 5 menit sebelum menjalankan bantuan pertama
         await delay(5 * 60 * 1000);
-        await buyCaravan();
+        await helpAll();
 
         // Jalankan helpAll setiap 1 jam
         setInterval(async () => {
