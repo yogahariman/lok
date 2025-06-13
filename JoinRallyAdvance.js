@@ -897,8 +897,8 @@ async function resourceHarvest() {
 
 async function scheduleResourceHarvest() {
     try {
-        //console.log("⏳ Menunggu 5 menit sebelum Resource Harvest pertama...");
-        await delay(5 * 60 * 1000); // 5 menit
+        //console.log("⏳ Menunggu 3 menit sebelum Resource Harvest pertama...");
+        await delay(3 * 60 * 1000); // 3 menit
         await resourceHarvest();
 
         setInterval(async () => {
@@ -963,7 +963,7 @@ async function buyCaravan() {
 async function scheduleBuyCaravan() {
     try {
         // Jalankan pertama kali langsung
-        await delay(5*60*1000);
+        await delay(4*60*1000);
         await buyCaravan();
 
         setInterval(async () => {
@@ -986,7 +986,7 @@ async function scheduleAutoDonate() {
     }
 
     // Delay awal 5 menit
-    await delay(5 * 60 * 1000);
+    await delay(2 * 60 * 1000);
 
     while (true) {
         try {
@@ -1103,8 +1103,8 @@ async function helpAll() {
 
 async function scheduleHelpAll() {
     try {
-        // Tunggu awal 5 menit sebelum menjalankan bantuan pertama
-        await delay(5 * 60 * 1000);
+        // Tunggu awal 1 menit sebelum menjalankan bantuan pertama
+        await delay(1 * 60 * 1000);
         await helpAll();
 
         // Jalankan helpAll setiap 1 jam
@@ -1499,24 +1499,22 @@ async function handleAuthResponse(xhr) {
 
             //
             marchLimit = await getMarchLimit();
-            //buy caravan
-            scheduleBuyCaravan();
-            //resource Harvest
-            scheduleResourceHarvest()
-            //instant harvest and summon monster
-            scheduleSkillActivate([10001, 10023]);
-            //Instant Harvest
-            //scheduleInstantHarvest();
-            //summon monster
-            //scheduleSummonMonster();
-            // Open Free Chest
-            scheduleAutoOpenFreeChest();
-            // Donate every hour
-            scheduleAutoDonate();
-            // Help all
-            scheduleHelpAll();
+
             // jalankan tower tiap menit ke 2 detik ke 10
             scheduleStartTower();
+            //instant harvest and summon monster
+            scheduleSkillActivate([10001, 10023]);
+            // Open Free Chest
+            scheduleAutoOpenFreeChest();
+            // Help all minutes 1
+            scheduleHelpAll();
+            // Donate every hour minutes 2
+            scheduleAutoDonate();
+            //resource Harvest minutes 3
+            scheduleResourceHarvest()
+            //buy caravan minutes 4
+            scheduleBuyCaravan();
+
             // jalankan auto join rally
             localStorage.setItem('autojoin_enabled', 'true');
             if (typeof updateAutoJoinButton === 'function') {
