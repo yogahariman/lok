@@ -369,33 +369,19 @@ async function useActionPoint() {
             nAp = 1;
         }
 
-        const useItemIfEnough = async (itemId, requiredAmount, delayMs) => {
-            if (getAmountItemList(itemList, itemId) >= requiredAmount) {
-                await useItem(itemId, requiredAmount);
-                await delay(delayMs);
-                return true;
+        //open silver chest [10104024, 10104025, 10104142]
+        if (getAmountItemList(itemList, 10104024) >= 20) {
+            await useItem(10104024, 20);
+            await delay(3000);
+            if (getAmountItemList(itemList, 10104025) >= 20) {
+                await useItem(10104025, 20);
+                await delay(3000);
             }
-            return false;
-        };
-        if (await useItemIfEnough(10104024, 20, 3000)) {
-            if (await useItemIfEnough(10104025, 20, 3000)) {
-                await useItemIfEnough(10104142, 1, 1000);
+            if (getAmountItemList(itemList, 10104142) >= 1) {
+                await useItem(10104142, 1);
+                await delay(1000);
             }
         }
-
-        // //open silver chest [10104024, 10104025, 10104142]
-        // if (getAmountItemList(itemList, 10104024) >= 20) {
-        //     await useItem(10104024, 20);
-        //     await delay(3000);
-        //     if(getAmountItemList(itemList, 10104025) >= 20){
-        //         await useItem(10104025, 20);
-        //         await delay(3000);
-        //         if(getAmountItemList(itemList, 10104142) > 0){
-        //             await useItem(10104142, 1);
-        //             await delay(1000);
-        //         }
-        //     }
-        // }
 
         if (codeAP && nAp) {
             await useItem(codeAP, nAp);
