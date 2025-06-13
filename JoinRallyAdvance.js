@@ -1634,28 +1634,85 @@ window.addEventListener('load', () => {
     //}
 });
 
-//const loc = [11, 723, 1983];
-//sendMarch(loc);
-//sendMarch([11, 723, 1983]);
-async function sendMarch(toLoc) {
+//const loc = [723, 1983];
+//sendGatherCM(loc);
+//sendGatherCM([723, 1983]);
+async function sendGatherCM(loc) {
+    await sendMarch(loc, 1, 3); // marchType 1 = gathering, preset index 3
+}
+
+async function sendSupport(loc) {
+    await sendMarch(loc, 7, 2); // marchType 7 = support, preset index 2
+}
+
+async function sendMarch(loc, marchType, troopIndex) {
+    const toLoc = [kingdomData.worldId, ...loc];
+
+    const payload_marchInfo = {
+        fromId: kingdomData.fieldObjectId,
+        toLoc: toLoc
+    };
+
+    let marchInfoResponse, marchInfo;
+    try {
+        marchInfoResponse = await sendRequest({
+            url: "https://api-lok-live.leagueofkingdoms.com/api/field/march/info",
+            token: token,
+            body: b64xorEnc(payload_marchInfo, xor_password),
+            returnResponse: true
+        });
+        marchInfo = b64xorDec(marchInfoResponse, xor_password);
+    } catch (err) {
+        console.error("❌ Gagal ambil march info:", err);
+        return;
+    }
+
+    const troops = marchInfo?.saveTroops?.[troopIndex];
+    if (!troops) {
+        console.warn(`⚠️ Troops preset ke-${troopIndex} tidak ditemukan.`);
+        return;
+    }
+
+    const payload = {
+        fromId: kingdomData.fieldObjectId,
+        marchType,
+        toLoc,
+        marchTroops: troops
+    };
+
+    try {
+        await sendRequest({
+            url: "https://api-lok-live.leagueofkingdoms.com/api/field/march/start",
+            token: token,
+            body: b64xorEnc(payload, xor_password),
+            returnResponse: false
+        });
+        console.log(`✅ March dikirim: ${marchType === 1 ? 'Gathering' : 'Support'} ke (${loc[0]}, ${loc[1]})`);
+    } catch (err) {
+        console.error("❌ Gagal kirim march:", err);
+    }
+}
+/*
+async function sendGatherCM(loc) {
+    const toLoc = [kingdomData.worldId, ...loc];
+
+    const payload_marchInfo = {
+        fromId: kingdomData.fieldObjectId,
+        toLoc: toLoc
+    };
+    const marchInfoResponse = await sendRequest({
+        url: "https://api-lok-live.leagueofkingdoms.com/api/field/march/info",
+        token: token,
+        body: b64xorEnc(payload_marchInfo, xor_password),
+        returnResponse: true
+    });
+    const marchInfo = b64xorDec(marchInfoResponse, xor_password);
+
     const payload = {
         fromId: kingdomData.fieldObjectId,
         marchType: 1,
         toLoc: toLoc,
-        marchTroops: [
-            {
-                code: 50100307,
-                level: 0,
-                select: 0,
-                amount: 500,
-                dead: 0,
-                wounded: 0,
-                hp: 0,
-                attack: 0,
-                defense: 0,
-                seq: 0
-            }
-        ]
+        marchTroops: marchInfo.saveTroops[3]
     };
 
     await sendRequest({
@@ -1665,3 +1722,34 @@ async function sendMarch(toLoc) {
         returnResponse: false
     });
 }
+
+async function sendSupport(loc) {
+    const toLoc = [kingdomData.worldId, ...loc];
+
+    const payload_marchInfo = {
+        fromId: kingdomData.fieldObjectId,
+        toLoc: toLoc
+    };
+    const marchInfoResponse = await sendRequest({
+        url: "https://api-lok-live.leagueofkingdoms.com/api/field/march/info",
+        token: token,
+        body: b64xorEnc(payload_marchInfo, xor_password),
+        returnResponse: true
+    });
+    const marchInfo = b64xorDec(marchInfoResponse, xor_password);
+
+    const payload = {
+        fromId: kingdomData.fieldObjectId,
+        marchType: 7,
+        toLoc: toLoc,
+        marchTroops: marchInfo.saveTroops[2]
+    };
+
+    await sendRequest({
+        url: "https://api-lok-live.leagueofkingdoms.com/api/field/march/start",
+        token: token,
+        body: b64xorEnc(payload, xor_password),
+        returnResponse: false
+    });
+}
+*/
