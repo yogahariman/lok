@@ -1228,9 +1228,7 @@ async function autoJoinRally() {
             // Semua rally belum diikuti
             changeTreasure(); // Jalankan pengecekan + ubah treasure jika perlu
         }
-        let joinCount = 0;
         for (const battle of unjoinedRallies) {
-            if (joinCount >= 3) break;
             //const battleId = battle._id;
             //const isJoined = battle.isJoined;
             //const monsterCode = battle.targetMonster?.code;
@@ -1257,7 +1255,7 @@ async function autoJoinRally() {
             marchQueueUsed = await getMarchQueueUsed();
             if (marchQueueUsed >= marchLimit) {
                 console.log(`⛔ March queue penuh (${marchQueueUsed}/${marchLimit}), batal join rally.`);
-                continue;
+                break;
                 /*
                 console.log(`⏳ March queue penuh (${marchQueueUsed}/${marchLimit}), menunggu 30 detik...`);
 
@@ -1365,8 +1363,6 @@ async function autoJoinRally() {
                 body: payload_rally_encrypted,
                 returnResponse: false
             });
-
-            joinCount++;
         }
     } catch (err) {
         console.error("❌ Error saat auto join:", err);
