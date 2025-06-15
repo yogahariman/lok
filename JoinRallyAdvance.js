@@ -1226,7 +1226,7 @@ async function autoJoinRally() {
 
         if (rallies.length === unjoinedRallies.length) {
             // Semua rally belum diikuti
-            changeTreasure(); // Jalankan pengecekan + ubah treasure jika perlu
+            await changeTreasure(); // Jalankan pengecekan + ubah treasure jika perlu
         }
         for (const battle of unjoinedRallies) {
             //const battleId = battle._id;
