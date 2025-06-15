@@ -1513,7 +1513,8 @@ async function handleAuthResponse(xhr) {
             // jalankan tower tiap menit ke 2 detik ke 10
             scheduleStartTower();
             //instant harvest and summon monster
-            scheduleSkillActivate([10001, 10023]);
+            //scheduleSkillActivate([10001, 10023]);
+            scheduleSkillActivate([10001]);
             // Open Free Chest
             scheduleAutoOpenFreeChest();
             // Help all minutes 1
