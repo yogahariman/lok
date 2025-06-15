@@ -771,7 +771,9 @@ async function scheduleSummonMonster() {
     }
 }
 
-async function scheduleSkillActivate(codes = [10001, 10023]) {
+// 10001 instant harvest
+// 10023 summon monster
+async function scheduleSkillActivate(codes = [10001]) {
     try {
         const { skills } = await sendRequest({
             url: "https://api-lok-live.leagueofkingdoms.com/api/skill/list",
@@ -1514,7 +1516,7 @@ async function handleAuthResponse(xhr) {
             scheduleStartTower();
             //instant harvest and summon monster
             //scheduleSkillActivate([10001, 10023]);
-            scheduleSkillActivate([10001]);
+            scheduleSkillActivate();
             // Open Free Chest
             scheduleAutoOpenFreeChest();
             // Help all minutes 1
