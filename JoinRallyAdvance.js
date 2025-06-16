@@ -1350,6 +1350,9 @@ async function monitorWebSocket() {
         return;
     }
 
+    console.log('[⏳] Menunggu 3 menit sebelum memulai monitor WebSocket...');
+    await delay(2 * 60 * 1000); // 2 menit
+
     // Simpan WebSocket asli
     window._originalWebSocket = window.WebSocket;
     const OriginalWebSocket = window._originalWebSocket;
