@@ -1350,9 +1350,6 @@ async function monitorWebSocket() {
         return;
     }
 
-    console.log('[⏳] Menunggu 2 menit sebelum memulai monitor WebSocket...');
-    await delay(2 * 60 * 1000); // 2 menit
-
     // Simpan WebSocket asli
     window._originalWebSocket = window.WebSocket;
     const OriginalWebSocket = window._originalWebSocket;
@@ -1416,7 +1413,7 @@ async function monitorWebSocket() {
                 // Rally Handler
                 else if (path === '/alliance/rally/new') {
                     if (getAutoJoinStatus()) {
-                        //console.warn('[🎯 RALLY DETECTED]', message);
+                        console.log('[🎯 RALLY DETECTED]', message);
                         rallyQueue.push(message);
                         processRallyQueue();
                     } else {
@@ -1528,6 +1525,8 @@ async function handleAuthResponse(xhr) {
     }
 }
 
+monitorWebSocket(); // Aktifkan monitoring kalau belum
+
 const originalOpen = XMLHttpRequest.prototype.open;
 const originalSend = XMLHttpRequest.prototype.send;
 
@@ -1542,9 +1541,6 @@ XMLHttpRequest.prototype.send = function () {
     });
     return originalSend.apply(this, arguments);
 };
-
-monitorWebSocket(); // Aktifkan monitoring kalau belum
-
 
 // Fungsi menyimpan status ON/OFF
 function getAutoJoinStatus() {
