@@ -1475,6 +1475,9 @@ async function handleAuthResponse(xhr) {
             console.log("🟢 XOR Password:", xor_password);
         }
         if (xhr._url.includes("/api/kingdom/enter")) {
+            if (!json.result) return;
+            if (window._kingdomEnterHandled) return;
+            window._kingdomEnterHandled = true;
 
             // set tombol on
             localStorage.setItem('autojoin_enabled', 'true');
