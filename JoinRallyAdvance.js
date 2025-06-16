@@ -577,7 +577,7 @@ async function scheduleAutoDonate() {
 
             if (response.numDonation <= 0) {
                 console.log("⚠️ Tidak ada sisa donasi.");
-                //await delay(5 * 60 * 1000); // tunggu 5 menit sebelum cek lagi
+                await delay(60 * 60 * 1000); // tunggu 5 menit sebelum cek lagi
                 continue;
             }
 
@@ -601,14 +601,16 @@ async function scheduleAutoDonate() {
             });
 
             console.log("✅ Donasi berhasil dikirim!");
+            // Tunggu 1 jam sebelum donasi berikutnya
+            await delay(60 * 60 * 1000);
 
 
         } catch (err) {
             console.warn("❌ Error saat proses donasi:", err);
+            // Tunggu 1 jam sebelum donasi berikutnya
+            await delay(60 * 60 * 1000);
         }
 
-        // Tunggu 1 jam sebelum donasi berikutnya
-        await delay(60 * 60 * 1000);
 
     }
 }
@@ -1494,7 +1496,6 @@ async function handleAuthResponse(xhr) {
 
             //Join Rally
             await autoJoinRally();
-            monitorWebSocket(); // Aktifkan monitoring kalau belum
 
             await delay(5*60*1000);
 
@@ -1524,6 +1525,7 @@ async function handleAuthResponse(xhr) {
     }
 }
 
+monitorWebSocket(); // Aktifkan monitoring kalau belum
 
 const originalOpen = XMLHttpRequest.prototype.open;
 const originalSend = XMLHttpRequest.prototype.send;
