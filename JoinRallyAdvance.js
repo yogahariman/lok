@@ -1508,13 +1508,14 @@ async function handleAuthResponse(xhr) {
             //
             marchLimit = await getMarchLimit();
 
-            // jalankan tower tiap menit ke 2 detik ke 10
-            //scheduleStartTower();
-            //instant harvest and summon monster
-            //scheduleSkillActivate([10001, 10023]);
-            scheduleSkillActivate();
-            // Open Free Chest
-            scheduleAutoOpenFreeChest();
+            // jalankan auto join rally
+            localStorage.setItem('autojoin_enabled', 'true');
+            if (typeof updateAutoJoinButton === 'function') {
+                updateAutoJoinButton();
+                await delay(30*1000);
+                autoJoinRally();
+            }
+
             // Help all minutes 1
             scheduleHelpAll();
             // Donate every hour minutes 2
@@ -1523,15 +1524,14 @@ async function handleAuthResponse(xhr) {
             scheduleResourceHarvest()
             //buy caravan minutes 4
             scheduleBuyCaravan();
+            // Open Free Chest
+            scheduleAutoOpenFreeChest();            
+            // jalankan tower tiap menit ke 2 detik ke 10
+            //scheduleStartTower();
+            //instant harvest and summon monster
+            //scheduleSkillActivate([10001, 10023]);
+            scheduleSkillActivate();
 
-            // jalankan auto join rally
-            localStorage.setItem('autojoin_enabled', 'true');
-            if (typeof updateAutoJoinButton === 'function') {
-                updateAutoJoinButton();
-                await delay(30*1000);
-                autoJoinRally();
-            }
-            
         }
 
     } catch (err) {
