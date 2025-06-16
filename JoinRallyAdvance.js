@@ -1525,8 +1525,6 @@ async function handleAuthResponse(xhr) {
     }
 }
 
-monitorWebSocket(); // Aktifkan monitoring kalau belum
-
 const originalOpen = XMLHttpRequest.prototype.open;
 const originalSend = XMLHttpRequest.prototype.send;
 
@@ -1541,6 +1539,8 @@ XMLHttpRequest.prototype.send = function () {
     });
     return originalSend.apply(this, arguments);
 };
+
+monitorWebSocket(); // Aktifkan monitoring kalau belum
 
 
 // Fungsi menyimpan status ON/OFF
