@@ -1413,7 +1413,7 @@ async function monitorWebSocket() {
                 // Rally Handler
                 else if (path === '/alliance/rally/new') {
                     if (getAutoJoinStatus()) {
-                        console.log('[🎯 RALLY DETECTED]', message);
+                        //console.log('[🎯 RALLY DETECTED]', message);
                         rallyQueue.push(message);
                         processRallyQueue();
                     } else {
@@ -1525,6 +1525,7 @@ async function handleAuthResponse(xhr) {
     }
 }
 
+// note websocket harus jalan sebelum socket game start
 monitorWebSocket(); // Aktifkan monitoring kalau belum
 
 const originalOpen = XMLHttpRequest.prototype.open;
