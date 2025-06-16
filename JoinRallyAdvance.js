@@ -1473,11 +1473,6 @@ async function handleAuthResponse(xhr) {
             console.log("🟢 Token:", token);
             console.log("🟢 RegionHash:", regionHash);
             console.log("🟢 XOR Password:", xor_password);
-        }
-        if (xhr._url.includes("/api/kingdom/enter")) {
-            if (!json.result) return;
-            if (window._kingdomEnterHandled) return;
-            window._kingdomEnterHandled = true;
 
             // set tombol on
             localStorage.setItem('autojoin_enabled', 'true');
@@ -1485,12 +1480,18 @@ async function handleAuthResponse(xhr) {
                 updateAutoJoinButton();
             }
 
+        }
+        if (xhr._url.includes("/api/kingdom/enter")) {
+            if (!json.result) return;
+
             kingdomData = json.kingdom;
             console.log("Data kingdom:", kingdomData);
 
+            if (window._kingdomEnterHandled) return;
+            window._kingdomEnterHandled = true;
+
             // get march limit
             marchLimit = await getMarchLimit();
-
 
             // jalankan tower tiap menit ke 2 detik ke 10
             //scheduleStartTower();
