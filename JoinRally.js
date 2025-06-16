@@ -422,9 +422,7 @@ async function autoJoinRally() {
             return;
         }
 
-        let joinCount = 0;
         for (const battle of unjoinedRallies) {
-            if (joinCount >= 3) break;
             //const battleId = battle._id;
             //const isJoined = battle.isJoined;
             //const monsterCode = battle.targetMonster?.code;
@@ -561,7 +559,6 @@ async function autoJoinRally() {
                 body: payload_rally_encrypted,
                 returnResponse: false
             });
-            joinCount++;
         }
     } catch (err) {
         console.error("❌ Error saat auto join:", err);
