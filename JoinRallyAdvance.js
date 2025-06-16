@@ -607,11 +607,8 @@ async function scheduleAutoDonate() {
 
         } catch (err) {
             console.warn("❌ Error saat proses donasi:", err);
-            // Tunggu 1 jam sebelum donasi berikutnya
-            await delay(60 * 60 * 1000);
+            break;
         }
-
-
     }
 }
 
@@ -764,6 +761,7 @@ async function scheduleAutoOpenFreeChest() {
             console.log(`✅ Silver Free Chest dibuka. Total sekarang: ${currentChestNum}/${dailyFreeChestLimit}`);
         } catch (err) {
             console.error("❌ Gagal membuka Silver Free Chest:", err);
+            break;
         }
     }
 }
