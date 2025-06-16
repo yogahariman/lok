@@ -1509,7 +1509,7 @@ async function handleAuthResponse(xhr) {
             marchLimit = await getMarchLimit();
 
             // jalankan tower tiap menit ke 2 detik ke 10
-            scheduleStartTower();
+            //scheduleStartTower();
             //instant harvest and summon monster
             //scheduleSkillActivate([10001, 10023]);
             scheduleSkillActivate();
