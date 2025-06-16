@@ -413,7 +413,7 @@ async function changeSkin(skinCode = 10729001) {
     }
 
     // Delay sebelum mengganti skin
-    await delay(2000);
+    await delay(1000);
 
     // Step 2: Equip skin
     const equipPayload = JSON.stringify({ itemId: skin._id });
@@ -907,13 +907,12 @@ async function instantHarvest() {
             return;
         }
 
-        await delay(30000);
         await changeSkin(10726001); // Aktifkan skin produksi
-
         await delay(2000);
+
         await changeTreasure(2); // Aktifkan treasure produksi
-
         await delay(2000);
+
         // Gunakan skill 10018 (increase production)
         await sendRequest({
             url: "https://api-lok-live.leagueofkingdoms.com/api/skill/use",
@@ -921,8 +920,8 @@ async function instantHarvest() {
             body: JSON.stringify({ code: 10018 }),
             returnResponse: false
         });
-
         await delay(2000);
+
         // Gunakan skill 10001 (instant harvest)
         await sendRequest({
             url: "https://api-lok-live.leagueofkingdoms.com/api/skill/use",
@@ -930,12 +929,14 @@ async function instantHarvest() {
             body: JSON.stringify({ code: 10001 }),
             returnResponse: false
         });
-
         await delay(2000);
+
         await changeSkin(); // Kembali ke skin normal
-
         await delay(2000);
+
         await changeTreasure(); // Kembali ke treasure rally/monster
+        await delay(2000);
+
         console.log("✅ Instant Harvest selesai");
     } catch (err) {
         console.error("❌ Gagal saat proses instant harvest:", err);
@@ -958,7 +959,7 @@ async function scheduleInstantHarvest() {
         }
 
         const waitMs = Math.max(
-            new Date(skill.nextSkillTime).getTime() + 10 * 60 * 1000 - Date.now(),
+            new Date(skill.nextSkillTime).getTime() + 3 * 60 * 1000 - Date.now(),
             0
         );
 
@@ -976,7 +977,7 @@ async function scheduleInstantHarvest() {
         }, waitMs);
     } catch (error) {
         console.error("❌ Error saat scheduling:", error);
-        setTimeout(scheduleInstantHarvest, 5 * 60 * 1000); // Retry in 5 minutes
+        setTimeout(scheduleInstantHarvest, 3 * 60 * 1000); // Retry in 3 minutes
     }
 }
 
@@ -989,21 +990,21 @@ async function summonMonster() {
 
         console.log("🧙‍♂️ Memulai proses Summon Monster...");
 
+        await changeSkin(10726001); // Aktifkan skin produksi       
         await delay(2000);
-        await changeSkin(10726001); // Aktifkan skin produksi
-        
-        await delay(2000);
+
         await sendRequest({
             url: "https://api-lok-live.leagueofkingdoms.com/api/skill/use",
             token,
             body: JSON.stringify({ code: 10023 }),
             returnResponse: false
         });
-
         await delay(2000);
-        await changeSkin(); // Kembali ke skin default atau sebelumnya
 
-        console.log("✅ Proses Summon Monster selesai.");
+        await changeSkin(); // Kembali ke skin default atau sebelumnya
+        await delay(2000);
+
+        console.log("✅ Aktif skill Summon Monster selesai.");
     } catch (err) {
         console.error("❌ Gagal saat proses summon monster:", err);
     }
@@ -1020,7 +1021,7 @@ async function scheduleSummonMonster() {
 
         const skill = skills.find(s => s.code === 10023);
         if (!skill) {
-            console.warn("⚠️ Skill 10023 tidak ditemukan.");
+            console.warn("⚠️ Skill summon monster tidak ditemukan.");
             return;
         }
 
@@ -1031,7 +1032,7 @@ async function scheduleSummonMonster() {
             return;
         }
 
-        const waitMs = Math.max(nextSkillTimestamp + 10 * 60 * 1000 - now, 0);
+        const waitMs = Math.max(nextSkillTimestamp + 3 * 60 * 1000 - now, 0);
         const totalSeconds = Math.floor(waitMs / 1000);
         const hours = Math.floor(totalSeconds / 3600);
         const minutes = Math.floor((totalSeconds % 3600) / 60);
@@ -1045,7 +1046,7 @@ async function scheduleSummonMonster() {
         }, waitMs);
     } catch (error) {
         console.error("❌ Error saat scheduling:", error);
-        setTimeout(scheduleSummonMonster, 5 * 60 * 1000); // Retry in 5 minutes
+        setTimeout(scheduleSummonMonster, 3 * 60 * 1000); // Retry in 3 minutes
     }
 }
 
@@ -1072,7 +1073,7 @@ async function scheduleSkillActivate(codes = [10001]) {
         const now = Date.now();
         const skillTimers = targetSkills.map(skill => {
             const nextSkillTime = new Date(skill.nextSkillTime).getTime();
-            const waitMs = Math.max(nextSkillTime + 10 * 60 * 1000 - now, 0);
+            const waitMs = Math.max(nextSkillTime + 3 * 60 * 1000 - now, 0);
             return { code: skill.code, waitMs };
         });
 
@@ -1106,7 +1107,7 @@ async function scheduleSkillActivate(codes = [10001]) {
 
     } catch (error) {
         console.error("❌ Error saat scheduling skill:", error);
-        setTimeout(() => scheduleSkillActivate(codes), 5 * 60 * 1000); // Retry 5 menit
+        setTimeout(() => scheduleSkillActivate(codes), 3 * 60 * 1000); // Retry 3 menit
     }
 }
 
