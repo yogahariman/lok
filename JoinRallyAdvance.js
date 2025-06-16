@@ -389,145 +389,6 @@ async function useActionPoint() {
     }
 }
 
-async function scheduleAutoOpenFreeChest() {
-    if (!token || !xor_password) {
-        console.warn("⏳ Token belum tersedia.");
-        return;
-    }
-
-    // 1. Ambil level Treasure House dari position 4
-    const treasureHouse = kingdomData.buildings.find(b => b.position === 4);
-    const treasureHouseLevel = treasureHouse?.level ?? 0;
-
-    // 2. Tentukan dailyfreechest berdasarkan level
-    const dailyChestMap = {
-        26: 10, 27: 10, 28: 10, 29: 10,
-        30: 12, 31: 13, 32: 14, 33: 15,
-        34: 16, 35: 20
-    };
-    const dailyFreeChestLimit = dailyChestMap[treasureHouseLevel] ?? 0;
-
-    // 3. Cek jumlah chest yang sudah dibuka
-    let currentChestNum = kingdomData.freeChest?.silver?.num ?? 0;
-
-    console.log(`📦 Treasure House Level ${treasureHouseLevel} | Silver Free Chest: ${currentChestNum}/${dailyFreeChestLimit}`);
-
-    if (currentChestNum >= dailyFreeChestLimit) {
-        //console.log("🛑 Batas harian sudah tercapai. Tidak akan membuka chest.");
-        return;
-    }
-
-    //console.log("🚀 Auto open Silver Free Chest dimulai...");
-
-    // 4. Loop auto buka chest
-    while (true) {
-        try {
-            // Tunggu 6 menit
-            await delay(6 * 60 * 1000);
-
-            const res = await sendRequest({
-                url: "https://api-lok-live.leagueofkingdoms.com/api/item/freechest",
-                token: token,
-                body: b64xorEnc({ type: 0 }, xor_password),
-                returnResponse: true
-            });
-
-            const response = b64xorDec(res, xor_password);
-
-            if (!response?.result) {
-                console.warn("🛑 Batas harian sudah tercapai. Tidak akan membuka chest.");
-                break;
-            }
-
-            currentChestNum = response?.freechest?.silver?.num ?? currentChestNum + 1;
-
-            if (currentChestNum >= dailyFreeChestLimit) {
-                console.log("🛑 Batas harian sudah tercapai. Tidak akan membuka chest.");
-                break;
-            }
-
-            console.log(`✅ Silver Free Chest dibuka. Total sekarang: ${currentChestNum}/${dailyFreeChestLimit}`);
-        } catch (err) {
-            console.error("❌ Gagal membuka Silver Free Chest:", err);
-        }
-    }
-}
-
-
-//0 is 5 minutes
-//1 is 10 minutes
-//2 is 30 minutes
-async function startTower(level) {
-    if (!token || !xor_password) {
-        console.warn("⏳ Token belum tersedia.");
-        return;
-    }    
-
-    try {
-        const payload = JSON.stringify({ searchType: 0, level });
-
-        await sendRequest({
-            url: "https://api-lok-live.leagueofkingdoms.com/api/kingdom/watchtower/search",
-            token,
-            body: payload,
-            returnResponse: false
-        });
-
-        console.log(`[${new Date().toLocaleTimeString()}] ✅ startTower (level ${level}) berhasil.`);
-    } catch (err) {
-        console.error(`[${new Date().toLocaleTimeString()}] ❌ startTower gagal (level ${level}):`, err);
-    }
-}
-
-function scheduleStartTower(targetMinutes = [3, 10, 32], levels = [0, 1, 2]) {
-    const now = new Date();
-    const next = new Date();
-
-    if (targetMinutes.length !== levels.length) {
-        console.error("❌ Jumlah targetMinutes dan levels harus sama.");
-        return;
-    }
-
-    // Cari target menit berikutnya dan indeksnya
-    let nextIndex = targetMinutes.findIndex(m => now.getMinutes() < m);
-
-    if (nextIndex === -1) {
-        // Semua target menit sudah lewat, pakai yang pertama di jam berikutnya
-        nextIndex = 0;
-        next.setHours(now.getHours() + 1);
-    }
-
-    const nextMinute = targetMinutes[nextIndex];
-    const nextLevel = levels[nextIndex];
-
-    next.setMinutes(nextMinute, 20, 0); // menit + detik + ms
-    const delay = next - now;
-
-    console.log(`startTower(level ${nextLevel}) akan dijalankan pada: ${next.toLocaleTimeString()} (dalam ${(delay / 1000).toFixed(1)} detik)`);
-
-    // Pertama kali jalan
-    setTimeout(() => {
-        startTower(nextLevel).catch(err => console.error("❌ Gagal saat setTimeout startTower:", err));
-        console.log(`[${new Date().toLocaleTimeString()}] startTower(${nextLevel}) dijalankan`);
-
-        // Setiap detik cek apakah waktunya menjalankan startTower
-        setInterval(() => {
-            const d = new Date();
-            const m = d.getMinutes();
-            const s = d.getSeconds();
-
-            targetMinutes.forEach((minute, idx) => {
-                if (m === minute && s === 20) {
-                    const level = levels[idx];
-                    startTower(level).catch(err => console.error("❌ Gagal saat interval startTower:", err));
-                    console.log(`[${d.toLocaleTimeString()}] startTower(${level}) dijalankan`);
-                }
-            });
-        }, 1000);
-    }, delay);
-}
-
-
 // 10726001 (skin buff)
 // 10729001 (skin ap)
 async function changeSkin(skinCode = 10729001) {
@@ -621,6 +482,423 @@ async function changeTreasure(page = 3) {
         console.error("❌ Gagal mengganti treasure:", error);
     }
 }
+
+async function helpAll() {
+    try {
+        if (!token) {
+            console.warn("⏳ Token belum tersedia.");
+            return;
+        }
+
+        await sendRequest({
+            url: "https://api-lok-live.leagueofkingdoms.com/api/alliance/info/my",
+            token,
+            body: "{}",
+            returnResponse: false
+        });
+
+        const helpList = await sendRequest({
+            url: "https://api-lok-live.leagueofkingdoms.com/api/alliance/help/list",
+            token,
+            body: "{}",
+            returnResponse: true
+        });
+
+        if (!helpList || !helpList.otherTasks || helpList.otherTasks.length === 0) {
+            console.log("✅ Tidak ada bantuan yang perlu dilakukan.");
+            return;
+        }
+
+        console.log(`🛠️ Menjalankan helpAll untuk ${helpList.otherTasks.length} task...`);
+        
+        await sendRequest({
+            url: "https://api-lok-live.leagueofkingdoms.com/api/alliance/help/all",
+            token,
+            body: "{}",
+            returnResponse: false
+        });
+
+        console.log("✅ Selesai membantu semua tugas.");
+        
+    } catch (err) {
+        console.error("❌ Terjadi kesalahan di helpAll:", err);
+    }
+}
+
+async function scheduleHelpAll() {
+    try {
+
+        await helpAll();
+
+        // Jalankan helpAll setiap 1 jam
+        setInterval(async () => {
+            try {
+                await helpAll();
+            } catch (err) {
+                console.error("❌ Gagal menjalankan helpAll dalam interval:", err);
+            }
+        }, 1 * 60 * 60 * 1000); // 1 jam
+
+    } catch (error) {
+        console.error("❌ Terjadi kesalahan di schedule Help All:", error);
+    }
+}
+
+async function scheduleAutoDonate() {
+    if (!token) {
+        console.warn("⏳ Token belum tersedia.");
+        return;
+    }
+
+    while (true) {
+        try {
+            console.log("🔄 Mengecek status donasi...");
+
+            // Trigger agar sistem memperbarui data alliance (kadang perlu)
+            await sendRequest({
+                url: "https://api-lok-live.leagueofkingdoms.com/api/alliance/info/my",
+                token: token,
+                body: "{}",
+                returnResponse: false
+            });
+
+            // Ambil status riset alliance
+            const response = await sendRequest({
+                url: "https://api-lok-live.leagueofkingdoms.com/api/alliance/research/list",
+                token: token,
+                body: "{}",
+                returnResponse: true
+            });
+
+            if (response.todayRP >= 10000) {
+                console.log("✅ Sudah mencapai batas harian RP: " + response.todayRP);
+                break;
+            }
+
+            if (response.numDonation <= 0) {
+                console.log("⚠️ Tidak ada sisa donasi.");
+                //await delay(5 * 60 * 1000); // tunggu 5 menit sebelum cek lagi
+                continue;
+            }
+
+            const researchCode = response.recommendResearch;
+            console.log("📌 Mendonasikan ke riset code:", researchCode);
+
+            // Info riset (kadang perlu sebelum donate)
+            await sendRequest({
+                url: "https://api-lok-live.leagueofkingdoms.com/api/alliance/research/info",
+                token: token,
+                body: JSON.stringify({ researchCode }),
+                returnResponse: false
+            });
+
+            // Donasi ke riset
+            await sendRequest({
+                url: "https://api-lok-live.leagueofkingdoms.com/api/alliance/research/donateAll",
+                token: token,
+                body: JSON.stringify({ code: researchCode }),
+                returnResponse: false
+            });
+
+            console.log("✅ Donasi berhasil dikirim!");
+
+
+        } catch (err) {
+            console.warn("❌ Error saat proses donasi:", err);
+        }
+
+        // Tunggu 1 jam sebelum donasi berikutnya
+        await delay(60 * 60 * 1000);
+
+    }
+}
+
+/*
+async function resourceHarvest() {
+    try {
+        if (!token || !xor_password) {
+            console.warn("⏳ Token atau xor_password belum tersedia.");
+            return;
+        }
+
+        const desiredCodes = [
+            40100202,
+            40100203,
+            40100204,
+            40100205
+        ];
+
+        const buildingsToHarvest = kingdomData.buildings.filter(b => desiredCodes.includes(b.code));
+
+        for (const building of buildingsToHarvest) {
+            await delay(2000);
+            await sendRequest({
+                url: "https://api-lok-live.leagueofkingdoms.com/api/kingdom/resource/harvest",
+                token,
+                body: b64xorEnc({
+                    position: building.position
+                }, xor_password),
+                returnResponse: false
+            });
+
+            console.log(`✅ Memanen bangunan di posisi ${building.position} dengan code ${building.code}`);
+        }
+    } catch (err) {
+        console.error("❌ Gagal menjalankan resourceHarvest:", err);
+    }
+}
+*/
+
+async function resourceHarvest() {
+    try {
+        if (!token || !xor_password) {
+            console.warn("⏳ Token atau xor_password belum tersedia.");
+            return;
+        }
+
+        const desiredCodes = [
+            40100202,
+            40100203,
+            40100204,
+            40100205
+        ];
+
+        const harvestedCodes = new Set();
+
+        for (const building of kingdomData.buildings) {
+            if (desiredCodes.includes(building.code) && !harvestedCodes.has(building.code)) {
+                harvestedCodes.add(building.code);
+
+                await delay(2000);
+                await sendRequest({
+                    url: "https://api-lok-live.leagueofkingdoms.com/api/kingdom/resource/harvest",
+                    token,
+                    body: b64xorEnc({
+                        position: building.position
+                    }, xor_password),
+                    returnResponse: false
+                });
+
+                console.log(`✅ Memanen bangunan pertama dengan code ${building.code} di posisi ${building.position}`);
+            }
+        }
+    } catch (err) {
+        console.error("❌ Gagal menjalankan resourceHarvest:", err);
+    }
+}
+
+
+async function scheduleResourceHarvest() {
+    try {
+        await resourceHarvest();
+
+        setInterval(async () => {
+            try {
+                //console.log("⏰ Menjalankan ulang Resource Harvest setiap 1 jam...");
+                await resourceHarvest();
+            } catch (err) {
+                console.error("❌ Error saat menjalankan ulang Resource Harvest:", err);
+            }
+        }, 1 * 60 * 60 * 1000); // 1 jam
+    } catch (error) {
+        console.error("❌ Error di Schedule Resource Harvest:", error);
+    }
+}
+
+async function scheduleAutoOpenFreeChest() {
+    if (!token || !xor_password) {
+        console.warn("⏳ Token belum tersedia.");
+        return;
+    }
+
+    // 1. Ambil level Treasure House dari position 4
+    const treasureHouse = kingdomData.buildings.find(b => b.position === 4);
+    const treasureHouseLevel = treasureHouse?.level ?? 0;
+
+    // 2. Tentukan dailyfreechest berdasarkan level
+    const dailyChestMap = {
+        26: 10, 27: 10, 28: 10, 29: 10,
+        30: 12, 31: 13, 32: 14, 33: 15,
+        34: 16, 35: 20
+    };
+    const dailyFreeChestLimit = dailyChestMap[treasureHouseLevel] ?? 0;
+
+    // 3. Cek jumlah chest yang sudah dibuka
+    let currentChestNum = kingdomData.freeChest?.silver?.num ?? 0;
+
+    console.log(`📦 Treasure House Level ${treasureHouseLevel} | Silver Free Chest: ${currentChestNum}/${dailyFreeChestLimit}`);
+
+    if (currentChestNum >= dailyFreeChestLimit) {
+        //console.log("🛑 Batas harian sudah tercapai. Tidak akan membuka chest.");
+        return;
+    }
+
+    //console.log("🚀 Auto open Silver Free Chest dimulai...");
+
+    // 4. Loop auto buka chest
+    while (true) {
+        try {
+            const res = await sendRequest({
+                url: "https://api-lok-live.leagueofkingdoms.com/api/item/freechest",
+                token: token,
+                body: b64xorEnc({ type: 0 }, xor_password),
+                returnResponse: true
+            });
+
+            const response = b64xorDec(res, xor_password);
+
+            if (!response?.result) {
+                console.warn("🛑 Batas harian sudah tercapai. Tidak akan membuka chest.");
+                break;
+            }
+
+            currentChestNum = response?.freechest?.silver?.num ?? currentChestNum + 1;
+
+            if (currentChestNum >= dailyFreeChestLimit) {
+                console.log("🛑 Batas harian sudah tercapai. Tidak akan membuka chest.");
+                break;
+            }
+
+            console.log(`✅ Silver Free Chest dibuka. Total sekarang: ${currentChestNum}/${dailyFreeChestLimit}`);
+        } catch (err) {
+            console.error("❌ Gagal membuka Silver Free Chest:", err);
+        }
+    }
+}
+
+async function buyCaravan() {
+    try {
+        if (!token || !xor_password) {
+            console.warn("⏳ Token atau xor_password belum tersedia.");
+            return;
+        }
+
+        const caravanList = await sendRequest({
+            url: "https://api-lok-live.leagueofkingdoms.com/api/kingdom/caravan/list",
+            token,
+            body: "{}",
+            returnResponse: true
+        });
+
+        const desiredCodes = [
+            10101007, 10101008, 10101009, 10101010, // VIP
+            10101049, 10101050, 10101051, 10101052, // AP
+            10103001, 10103002, 10103003, 10103004, // Speeds minutes
+            10103005, 10103006, 10103007, 10103008, // Speeds hours/days
+            10103009, 10103010
+        ];
+
+        const availableItems = (caravanList?.caravan?.items || []).filter(item => {
+            return desiredCodes.includes(item.code) && item.amount > 0;
+        });
+
+        for (const item of availableItems) {
+            console.log(`🛒 Membeli item: code=${item.code}, id=${item._id}`);
+            await delay(1000);
+            await sendRequest({
+                url: "https://api-lok-live.leagueofkingdoms.com/api/kingdom/caravan/buy",
+                token,
+                body: JSON.stringify({ caravanItemId: item._id }),
+                returnResponse: false
+            });
+        }
+
+        console.log(`✅ Selesai membeli ${availableItems.length} item.`);
+    } catch (err) {
+        console.error("❌ Gagal membeli caravan:", err);
+    }
+}
+
+async function scheduleBuyCaravan() {
+    try {
+        await buyCaravan();
+
+        setInterval(async () => {
+            try {
+                console.log("⏰ Menjalankan ulang buyCaravan setiap 1 jam...");
+                await buyCaravan();
+            } catch (err) {
+                console.error("❌ Error saat menjalankan ulang buyCaravan:", err);
+            }
+        }, 1 * 60 * 60 * 1000);
+    } catch (error) {
+        console.error("❌ Error di scheduleBuyCaravan:", error);
+    }
+}
+
+//0 is 5 minutes
+//1 is 10 minutes
+//2 is 30 minutes
+async function startTower(level) {
+    if (!token || !xor_password) {
+        console.warn("⏳ Token belum tersedia.");
+        return;
+    }    
+
+    try {
+        const payload = JSON.stringify({ searchType: 0, level });
+
+        await sendRequest({
+            url: "https://api-lok-live.leagueofkingdoms.com/api/kingdom/watchtower/search",
+            token,
+            body: payload,
+            returnResponse: false
+        });
+
+        console.log(`[${new Date().toLocaleTimeString()}] ✅ startTower (level ${level}) berhasil.`);
+    } catch (err) {
+        console.error(`[${new Date().toLocaleTimeString()}] ❌ startTower gagal (level ${level}):`, err);
+    }
+}
+
+function scheduleStartTower(targetMinutes = [3, 10, 32], levels = [0, 1, 2]) {
+    const now = new Date();
+    const next = new Date();
+
+    if (targetMinutes.length !== levels.length) {
+        console.error("❌ Jumlah targetMinutes dan levels harus sama.");
+        return;
+    }
+
+    // Cari target menit berikutnya dan indeksnya
+    let nextIndex = targetMinutes.findIndex(m => now.getMinutes() < m);
+
+    if (nextIndex === -1) {
+        // Semua target menit sudah lewat, pakai yang pertama di jam berikutnya
+        nextIndex = 0;
+        next.setHours(now.getHours() + 1);
+    }
+
+    const nextMinute = targetMinutes[nextIndex];
+    const nextLevel = levels[nextIndex];
+
+    next.setMinutes(nextMinute, 20, 0); // menit + detik + ms
+    const delay = next - now;
+
+    console.log(`startTower(level ${nextLevel}) akan dijalankan pada: ${next.toLocaleTimeString()} (dalam ${(delay / 1000).toFixed(1)} detik)`);
+
+    // Pertama kali jalan
+    setTimeout(() => {
+        startTower(nextLevel).catch(err => console.error("❌ Gagal saat setTimeout startTower:", err));
+        console.log(`[${new Date().toLocaleTimeString()}] startTower(${nextLevel}) dijalankan`);
+
+        // Setiap detik cek apakah waktunya menjalankan startTower
+        setInterval(() => {
+            const d = new Date();
+            const m = d.getMinutes();
+            const s = d.getSeconds();
+
+            targetMinutes.forEach((minute, idx) => {
+                if (m === minute && s === 20) {
+                    const level = levels[idx];
+                    startTower(level).catch(err => console.error("❌ Gagal saat interval startTower:", err));
+                    console.log(`[${d.toLocaleTimeString()}] startTower(${level}) dijalankan`);
+                }
+            });
+        }, 1000);
+    }, delay);
+}
+
 
 async function instantHarvest() {
     try {
@@ -831,310 +1109,6 @@ async function scheduleSkillActivate(codes = [10001]) {
         setTimeout(() => scheduleSkillActivate(codes), 5 * 60 * 1000); // Retry 5 menit
     }
 }
-
-/*
-async function resourceHarvest() {
-    try {
-        if (!token || !xor_password) {
-            console.warn("⏳ Token atau xor_password belum tersedia.");
-            return;
-        }
-
-        const desiredCodes = [
-            40100202,
-            40100203,
-            40100204,
-            40100205
-        ];
-
-        const buildingsToHarvest = kingdomData.buildings.filter(b => desiredCodes.includes(b.code));
-
-        for (const building of buildingsToHarvest) {
-            await delay(2000);
-            await sendRequest({
-                url: "https://api-lok-live.leagueofkingdoms.com/api/kingdom/resource/harvest",
-                token,
-                body: b64xorEnc({
-                    position: building.position
-                }, xor_password),
-                returnResponse: false
-            });
-
-            console.log(`✅ Memanen bangunan di posisi ${building.position} dengan code ${building.code}`);
-        }
-    } catch (err) {
-        console.error("❌ Gagal menjalankan resourceHarvest:", err);
-    }
-}
-*/
-
-async function resourceHarvest() {
-    try {
-        if (!token || !xor_password) {
-            console.warn("⏳ Token atau xor_password belum tersedia.");
-            return;
-        }
-
-        const desiredCodes = [
-            40100202,
-            40100203,
-            40100204,
-            40100205
-        ];
-
-        const harvestedCodes = new Set();
-
-        for (const building of kingdomData.buildings) {
-            if (desiredCodes.includes(building.code) && !harvestedCodes.has(building.code)) {
-                harvestedCodes.add(building.code);
-
-                await delay(5000);
-                await sendRequest({
-                    url: "https://api-lok-live.leagueofkingdoms.com/api/kingdom/resource/harvest",
-                    token,
-                    body: b64xorEnc({
-                        position: building.position
-                    }, xor_password),
-                    returnResponse: false
-                });
-
-                console.log(`✅ Memanen bangunan pertama dengan code ${building.code} di posisi ${building.position}`);
-            }
-        }
-    } catch (err) {
-        console.error("❌ Gagal menjalankan resourceHarvest:", err);
-    }
-}
-
-
-async function scheduleResourceHarvest() {
-    try {
-        //console.log("⏳ Menunggu 3 menit sebelum Resource Harvest pertama...");
-        await delay(3 * 60 * 1000); // 3 menit
-        await resourceHarvest();
-
-        setInterval(async () => {
-            try {
-                //console.log("⏰ Menjalankan ulang Resource Harvest setiap 2 jam...");
-                await resourceHarvest();
-            } catch (err) {
-                console.error("❌ Error saat menjalankan ulang Resource Harvest:", err);
-            }
-        }, 1 * 60 * 60 * 1000); // 1 jam
-    } catch (error) {
-        console.error("❌ Error di Schedule Resource Harvest:", error);
-    }
-}
-
-
-async function buyCaravan() {
-    try {
-        if (!token || !xor_password) {
-            console.warn("⏳ Token atau xor_password belum tersedia.");
-            return;
-        }
-
-        await delay(1000);
-
-        const caravanList = await sendRequest({
-            url: "https://api-lok-live.leagueofkingdoms.com/api/kingdom/caravan/list",
-            token,
-            body: "{}",
-            returnResponse: true
-        });
-
-        const desiredCodes = [
-            10101007, 10101008, 10101009, 10101010, // VIP
-            10101049, 10101050, 10101051, 10101052, // AP
-            10103001, 10103002, 10103003, 10103004, // Speeds minutes
-            10103005, 10103006, 10103007, 10103008, // Speeds hours/days
-            10103009, 10103010
-        ];
-
-        const availableItems = (caravanList?.caravan?.items || []).filter(item => {
-            return desiredCodes.includes(item.code) && item.amount > 0;
-        });
-
-        for (const item of availableItems) {
-            console.log(`🛒 Membeli item: code=${item.code}, id=${item._id}`);
-            await delay(2000);
-            await sendRequest({
-                url: "https://api-lok-live.leagueofkingdoms.com/api/kingdom/caravan/buy",
-                token,
-                body: JSON.stringify({ caravanItemId: item._id }),
-                returnResponse: false
-            });
-        }
-
-        console.log(`✅ Selesai membeli ${availableItems.length} item.`);
-    } catch (err) {
-        console.error("❌ Gagal membeli caravan:", err);
-    }
-}
-
-async function scheduleBuyCaravan() {
-    try {
-        // Jalankan pertama kali langsung
-        await delay(4*60*1000);
-        await buyCaravan();
-
-        setInterval(async () => {
-            try {
-                console.log("⏰ Menjalankan ulang buyCaravan setiap 1 jam...");
-                await buyCaravan();
-            } catch (err) {
-                console.error("❌ Error saat menjalankan ulang buyCaravan:", err);
-            }
-        }, 1 * 60 * 60 * 1000);
-    } catch (error) {
-        console.error("❌ Error di scheduleBuyCaravan:", error);
-    }
-}
-
-async function scheduleAutoDonate() {
-    if (!token || !xor_password) {
-        console.warn("⏳ Token belum tersedia.");
-        return;
-    }
-
-    // Delay awal 5 menit
-    await delay(2 * 60 * 1000);
-
-    while (true) {
-        try {
-            console.log("🔄 Mengecek status donasi...");
-
-            // Trigger agar sistem memperbarui data alliance (kadang perlu)
-            await sendRequest({
-                url: "https://api-lok-live.leagueofkingdoms.com/api/alliance/info/my",
-                token: token,
-                body: "{}",
-                returnResponse: false
-            });
-
-            await delay(1000);
-
-            // Ambil status riset alliance
-            const response = await sendRequest({
-                url: "https://api-lok-live.leagueofkingdoms.com/api/alliance/research/list",
-                token: token,
-                body: "{}",
-                returnResponse: true
-            });
-
-            if (response.todayRP >= 10000) {
-                console.log("✅ Sudah mencapai batas harian RP: " + response.todayRP);
-                break;
-            }
-
-            if (response.numDonation <= 0) {
-                console.log("⚠️ Tidak ada sisa donasi, menunggu...");
-                await delay(5 * 60 * 1000); // tunggu 5 menit sebelum cek lagi
-                continue;
-            }
-
-            const researchCode = response.recommendResearch;
-            console.log("📌 Mendonasikan ke riset code:", researchCode);
-
-            await delay(1000);
-
-            // Info riset (kadang perlu sebelum donate)
-            await sendRequest({
-                url: "https://api-lok-live.leagueofkingdoms.com/api/alliance/research/info",
-                token: token,
-                body: JSON.stringify({ researchCode }),
-                returnResponse: false
-            });
-
-            await delay(1000);
-
-            // Donasi ke riset
-            await sendRequest({
-                url: "https://api-lok-live.leagueofkingdoms.com/api/alliance/research/donateAll",
-                token: token,
-                body: JSON.stringify({ code: researchCode }),
-                returnResponse: false
-            });
-
-            console.log("✅ Donasi berhasil dikirim!");
-
-            // Tunggu 1 jam sebelum donasi berikutnya
-            await delay(60 * 60 * 1000);
-
-        } catch (err) {
-            console.warn("❌ Error saat proses donasi:", err);
-            await delay(1 * 60 * 1000); // Tunggu 1 menit jika error sebelum coba lagi
-        }
-    }
-}
-
-async function helpAll() {
-    try {
-        if (!token) {
-            console.warn("⏳ Token belum tersedia.");
-            return;
-        }
-
-        await delay(1000);
-        await sendRequest({
-            url: "https://api-lok-live.leagueofkingdoms.com/api/alliance/info/my",
-            token,
-            body: "{}",
-            returnResponse: false
-        });
-
-        await delay(1000);
-        const helpList = await sendRequest({
-            url: "https://api-lok-live.leagueofkingdoms.com/api/alliance/help/list",
-            token,
-            body: "{}",
-            returnResponse: true
-        });
-
-        if (!helpList || !helpList.otherTasks || helpList.otherTasks.length === 0) {
-            console.log("✅ Tidak ada bantuan yang perlu dilakukan.");
-            return;
-        }
-
-        console.log(`🛠️ Menjalankan helpAll untuk ${helpList.otherTasks.length} task...`);
-        
-        await delay(1000);
-        await sendRequest({
-            url: "https://api-lok-live.leagueofkingdoms.com/api/alliance/help/all",
-            token,
-            body: "{}",
-            returnResponse: false
-        });
-
-        console.log("✅ Selesai membantu semua tugas.");
-        
-    } catch (err) {
-        console.error("❌ Terjadi kesalahan di helpAll:", err);
-    }
-}
-
-async function scheduleHelpAll() {
-    try {
-        // Tunggu awal 1 menit sebelum menjalankan bantuan pertama
-        await delay(1 * 60 * 1000);
-        await helpAll();
-
-        // Jalankan helpAll setiap 1 jam
-        setInterval(async () => {
-            try {
-                await helpAll();
-            } catch (err) {
-                console.error("❌ Gagal menjalankan helpAll dalam interval:", err);
-            }
-        }, 1 * 60 * 60 * 1000); // 1 jam
-
-    } catch (error) {
-        console.error("❌ Terjadi kesalahan di scheduleHelpAll:", error);
-    }
-}
-
-
-
 
 async function sendTelegramMessage(token, message) {
     const localKey = `telegram_chat_id_${token.slice(0, 10)}`;
@@ -1369,7 +1343,7 @@ async function autoJoinRally() {
     }
 }
 
-function monitorWebSocket() {
+async function monitorWebSocket() {
     if (window._originalWebSocket) {
         console.warn('[⚠️] WebSocket monitor sudah aktif.');
         return;
@@ -1502,32 +1476,44 @@ async function handleAuthResponse(xhr) {
             console.log("🟢 XOR Password:", xor_password);
         }
         if (xhr._url.includes("/api/kingdom/enter")) {
-            kingdomData = json.kingdom;
-            console.log("Data kingdom:", kingdomData);
 
-            //
-            marchLimit = await getMarchLimit();
-
-            // jalankan auto join rally
+            // set tombol on
             localStorage.setItem('autojoin_enabled', 'true');
             if (typeof updateAutoJoinButton === 'function') {
                 updateAutoJoinButton();
-                await delay(30*1000);
-                autoJoinRally();
             }
 
-            // Help all minutes 1
-            scheduleHelpAll();
-            // Donate every hour minutes 2
-            scheduleAutoDonate();
-            //resource Harvest minutes 3
-            scheduleResourceHarvest()
-            //buy caravan minutes 4
-            scheduleBuyCaravan();
-            // Open Free Chest
-            scheduleAutoOpenFreeChest();            
+            kingdomData = json.kingdom;
+            console.log("Data kingdom:", kingdomData);
+
+            // get march limit
+            marchLimit = await getMarchLimit();
+
+
             // jalankan tower tiap menit ke 2 detik ke 10
             //scheduleStartTower();
+
+            //Join Rally
+            await autoJoinRally();
+            monitorWebSocket(); // Aktifkan monitoring kalau belum
+
+            await delay(5*60*1000);
+
+            // Help all
+            scheduleHelpAll();
+            await delay(1*60*1000);
+            // Donate
+            scheduleAutoDonate();
+            await delay(1*60*1000);
+            //resource Harvest
+            scheduleResourceHarvest()
+            await delay(1*60*1000);
+            // Open Free Chest
+            scheduleAutoOpenFreeChest();
+            await delay(1*60*1000);
+            //buy caravan
+            scheduleBuyCaravan();
+            await delay(1*60*1000);
             //instant harvest and summon monster
             //scheduleSkillActivate([10001, 10023]);
             scheduleSkillActivate();
@@ -1539,8 +1525,6 @@ async function handleAuthResponse(xhr) {
     }
 }
 
-
-monitorWebSocket(); // Aktifkan monitoring kalau belum
 
 const originalOpen = XMLHttpRequest.prototype.open;
 const originalSend = XMLHttpRequest.prototype.send;
