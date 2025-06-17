@@ -577,7 +577,7 @@ async function scheduleAutoDonate() {
 
             if (response.numDonation <= 0) {
                 console.log("⚠️ Tidak ada sisa donasi.");
-                await delay(60 * 60 * 1000); // tunggu 5 menit sebelum cek lagi
+                await delay(60 * 60 * 1000);
                 continue;
             }
 
@@ -593,12 +593,18 @@ async function scheduleAutoDonate() {
             });
 
             // Donasi ke riset
-            await sendRequest({
+            const response_donate_all = await sendRequest({
                 url: "https://api-lok-live.leagueofkingdoms.com/api/alliance/research/donateAll",
                 token: token,
                 body: JSON.stringify({ code: researchCode }),
-                returnResponse: false
+                returnResponse: true
             });
+
+            if(!response_donate_all.result){
+                console.log("⚠️ Donasi tidak terkirim!");
+                await delay(60 * 60 * 1000);
+                continue;
+            }
 
             console.log("✅ Donasi berhasil dikirim!");
             // Tunggu 1 jam sebelum donasi berikutnya
@@ -607,7 +613,7 @@ async function scheduleAutoDonate() {
 
         } catch (err) {
             console.warn("❌ Error saat proses donasi:", err);
-            await delay(60 * 60 * 1000);
+            break;
         }
     }
 }
@@ -737,7 +743,7 @@ async function scheduleAutoOpenFreeChest() {
     // 4. Loop auto buka chest
     while (true) {
         try {
-            await delay(6 * 60 * 1000);
+            await delay(7 * 60 * 1000);
 
             const res = await sendRequest({
                 url: "https://api-lok-live.leagueofkingdoms.com/api/item/freechest",
@@ -763,7 +769,7 @@ async function scheduleAutoOpenFreeChest() {
             console.log(`✅ Silver Free Chest dibuka. Total sekarang: ${currentChestNum}/${dailyFreeChestLimit}`);
         } catch (err) {
             console.error("❌ Gagal membuka Silver Free Chest:", err);
-            await delay(6 * 60 * 1000);
+            break;
         }
     }
 }
