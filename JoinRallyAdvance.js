@@ -773,7 +773,7 @@ async function scheduleAutoOpenFreeChest() {
         }
     }
 }
-
+/*
 async function buyCaravan() {
     try {
         if (!token || !xor_password) {
@@ -833,6 +833,74 @@ async function scheduleBuyCaravan() {
         console.error("❌ Error di scheduleBuyCaravan:", error);
     }
 }
+*/
+async function buyCaravan() {
+    if (!token || !xor_password) {
+        console.warn("⏳ Token atau xor_password belum tersedia.");
+        return null;
+    }
+
+    try {
+        const caravanList = await sendRequest({
+            url: "https://api-lok-live.leagueofkingdoms.com/api/kingdom/caravan/list",
+            token,
+            body: "{}",
+            returnResponse: true
+        });
+
+        const desiredCodes = [
+            10101007, 10101008, 10101009, 10101010, // VIP
+            10101049, 10101050, 10101051, 10101052, // AP
+            10103001, 10103002, 10103003, 10103004, // Speed minutes
+            10103005, 10103006, 10103007, 10103008, // Speed hours/days
+            10103009, 10103010
+        ];
+
+        const availableItems = (caravanList?.caravan?.items || []).filter(item => {
+            return desiredCodes.includes(item.code) && item.amount > 0;
+        });
+
+        for (const item of availableItems) {
+            console.log(`🛒 Membeli item: code=${item.code}, id=${item._id}`);
+            await delay(1000);
+            await sendRequest({
+                url: "https://api-lok-live.leagueofkingdoms.com/api/kingdom/caravan/buy",
+                token,
+                body: JSON.stringify({ caravanItemId: item._id }),
+                returnResponse: false
+            });
+        }
+
+        console.log(`✅ Selesai membeli ${availableItems.length} item.`);
+
+        return caravanList.caravan?.expired ?? null;
+
+    } catch (err) {
+        console.error("❌ Gagal membeli caravan:", err);
+        return null;
+    }
+}
+
+async function scheduleBuyCaravan() {
+    while (true) {
+        const expired = await buyCaravan();
+        
+        let delayMs;
+
+        if (expired) {
+            const nextTime = new Date(expired).getTime() + 10 * 60 * 1000;
+            const now = Date.now();
+            delayMs = Math.max(nextTime - now, 60 * 1000); // minimal 1 menit jika waktu terlalu dekat
+            console.log(`🕒 Menunggu ${Math.round(delayMs / 60000)} menit sebelum pembelian berikutnya...`);
+        } else {
+            delayMs = 10 * 60 * 1000; // fallback 10 menit jika gagal
+            console.warn(`⚠️ Tidak dapat mengambil expired time. Menunggu default 10 menit.`);
+        }
+
+        await delay(delayMs);
+    }
+}
+
 
 //0 is 5 minutes
 //1 is 10 minutes
