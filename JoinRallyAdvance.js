@@ -890,10 +890,16 @@ async function scheduleBuyCaravan() {
         if (expired) {
             const nextTime = new Date(expired).getTime() + 10 * 60 * 1000;
             const now = Date.now();
-            delayMs = Math.max(nextTime - now, 60 * 1000); // minimal 1 menit jika waktu terlalu dekat
-            console.log(`🕒 Menunggu ${Math.round(delayMs / 60000)} menit sebelum pembelian berikutnya...`);
+            delayMs = Math.max(nextTime - now, 60 * 1000);
+
+            const delayMinutes = Math.round(delayMs / 60000);
+            const hours = Math.floor(delayMinutes / 60);
+            const minutes = delayMinutes % 60;
+            const readableTime = `${hours > 0 ? `${hours} jam ` : ''}${minutes} menit`;
+
+            console.log(`🕒 Menunggu ${readableTime} sebelum pembelian berikutnya...`);
         } else {
-            delayMs = 10 * 60 * 1000; // fallback 10 menit jika gagal
+            delayMs = 10 * 60 * 1000;
             console.warn(`⚠️ Tidak dapat mengambil expired time. Menunggu default 10 menit.`);
         }
 
