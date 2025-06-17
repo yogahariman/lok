@@ -607,7 +607,7 @@ async function scheduleAutoDonate() {
 
         } catch (err) {
             console.warn("❌ Error saat proses donasi:", err);
-            break;
+            await delay(60 * 60 * 1000);
         }
     }
 }
@@ -737,6 +737,8 @@ async function scheduleAutoOpenFreeChest() {
     // 4. Loop auto buka chest
     while (true) {
         try {
+            await delay(6 * 60 * 1000);
+
             const res = await sendRequest({
                 url: "https://api-lok-live.leagueofkingdoms.com/api/item/freechest",
                 token: token,
@@ -761,7 +763,7 @@ async function scheduleAutoOpenFreeChest() {
             console.log(`✅ Silver Free Chest dibuka. Total sekarang: ${currentChestNum}/${dailyFreeChestLimit}`);
         } catch (err) {
             console.error("❌ Gagal membuka Silver Free Chest:", err);
-            break;
+            await delay(6 * 60 * 1000);
         }
     }
 }
