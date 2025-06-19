@@ -541,7 +541,7 @@ async function claimDSAVIP() {
             return;
         }
 
-        if (response.vip?.isClaimed) {
+        if (response.dsaVip?.isClaimed) {
             console.log("✅ DSA VIP reward sudah diklaim.");
             return;
         }
