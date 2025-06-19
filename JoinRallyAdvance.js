@@ -1848,11 +1848,36 @@ async function sendMarch(loc, marchType, troopIndex) {
     }
 }
 
-function exportCvCRankToCSV(data, filename = 'CvC_Rank.csv') {
+async function exportCvCRankToCSV(eventId, filename = 'CvC_Rank.csv') {
+    if (!token || !xor_password) {
+        console.warn("⏳ Token belum tersedia.");
+        return;
+    } 
+
+    if (!eventId) {
+        console.error("Missing eventId");
+        return;
+    }
+
+    const worldId = kingdomData.worldId;
+
+    // Fetch data
+    const data = await sendRequest({
+        url: "https://api-lok-live.leagueofkingdoms.com/api/event/cvc/ranking/continent",
+        token: token,
+        body: JSON.stringify({ eventId, worldId }),
+        returnResponse: true
+    });
+
+    if (!data?.result || !Array.isArray(data.ranking)) {
+        console.error("Invalid data format received", data);
+        return;
+    }
+
+    // Prepare CSV
     const header = ['Rank', 'Point', 'Kingdom ID', 'Kingdom Name'];
     const rows = [];
 
-    // Kumpulkan data dari ranking
     const seenIds = new Set();
     data.ranking.forEach(entry => {
         const { rank, point, kingdom } = entry;
@@ -1860,19 +1885,17 @@ function exportCvCRankToCSV(data, filename = 'CvC_Rank.csv') {
         seenIds.add(kingdom._id);
     });
 
-    // Tambahkan myRanking jika belum ada
     const my = data.myRanking;
-    if (!seenIds.has(my.kingdom._id)) {
+    if (my && !seenIds.has(my.kingdom._id)) {
         rows.push([my.rank, my.point, my.kingdom._id, `"${my.kingdom.name}"`]);
     }
 
-    // Buat CSV string
     const csvContent = [
         header.join(','),
         ...rows.map(row => row.join(','))
     ].join('\n');
 
-    // Buat Blob dan download
+    // Trigger download
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement('a');
     link.href = URL.createObjectURL(blob);
@@ -1881,4 +1904,5 @@ function exportCvCRankToCSV(data, filename = 'CvC_Rank.csv') {
     link.click();
     document.body.removeChild(link);
 }
+      
   
