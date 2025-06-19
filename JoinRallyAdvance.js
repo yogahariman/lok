@@ -483,6 +483,86 @@ async function changeTreasure(page = 3) {
     }
 }
 
+async function claimVIP() {
+    if (!token || !xor_password) {
+        console.warn("⏳ Token atau xor_password belum tersedia.");
+        return;
+    }
+
+    try {
+        const response = await sendRequest({
+            url: "https://api-lok-live.leagueofkingdoms.com/api/kingdom/vip/info",
+            token,
+            body: "{}",
+            returnResponse: true
+        });
+
+        if (!response?.result) {
+            console.warn("❌ Gagal mengambil info VIP.");
+            return;
+        }
+
+        if (response.vip?.isClaimed) {
+            console.log("✅ VIP reward sudah diklaim.");
+            return;
+        }
+
+        console.log("🎁 Mengklaim VIP reward...");
+
+        await sendRequest({
+            url: "https://api-lok-live.leagueofkingdoms.com/api/kingdom/vip/claim",
+            token,
+            body: b64xorEnc({}, xor_password),
+            returnResponse: false
+        });
+
+        console.log("🏆 VIP reward berhasil diklaim.");
+    } catch (error) {
+        console.error("🔥 Terjadi kesalahan saat klaim VIP:", error);
+    }
+}
+
+async function claimDSAVIP() {
+    if (!token || !xor_password) {
+        console.warn("⏳ Token atau xor_password belum tersedia.");
+        return;
+    }
+
+    try {
+        const response = await sendRequest({
+            url: "https://api-lok-live.leagueofkingdoms.com/api/kingdom/dsavip/info",
+            token,
+            body: "{}",
+            returnResponse: true
+        });
+
+        if (!response?.result) {
+            console.warn("❌ Gagal mengambil info DSA VIP.");
+            return;
+        }
+
+        if (response.vip?.isClaimed) {
+            console.log("✅ DSA VIP reward sudah diklaim.");
+            return;
+        }
+
+        console.log("🎁 Mengklaim DSA VIP reward...");
+
+        await sendRequest({
+            url: "https://api-lok-live.leagueofkingdoms.com/api/kingdom/dsavip/claim",
+            token,
+            body: "{}",
+            returnResponse: false
+        });
+
+        console.log("🏆 DSA VIP reward berhasil diklaim.");
+    } catch (error) {
+        console.error("🔥 Terjadi kesalahan saat klaim DSA VIP:", error);
+    }
+}
+
+
+
 async function helpAll() {
     try {
         if (!token) {
@@ -1581,26 +1661,31 @@ async function handleAuthResponse(xhr) {
             //Join Rally
             await autoJoinRally();
 
-            await delay(5*60*1000);
+            //claim VIP reward
+            await claimVIP();
+            await delay(10*1000);
+            await claimDSAVIP();
+            await delay(10*1000);
 
             // Help all
             scheduleHelpAll();
-            await delay(1*60*1000);
+            await delay(10*1000);
             // Donate
             scheduleAutoDonate();
-            await delay(1*60*1000);
-            //resource Harvest
-            scheduleResourceHarvest()
-            await delay(1*60*1000);
+            await delay(10*1000);
             // Open Free Chest
             scheduleAutoOpenFreeChest();
-            await delay(1*60*1000);
-            //buy caravan
-            scheduleBuyCaravan();
-            await delay(1*60*1000);
+            await delay(10*1000);
             //instant harvest and summon monster
             //scheduleSkillActivate([10001, 10023]);
             scheduleSkillActivate();
+            await delay(10*1000);
+            //buy caravan
+            scheduleBuyCaravan();
+            //resource Harvest
+            await delay(3*60*1000);
+            scheduleResourceHarvest()
+            
 
         }
 
