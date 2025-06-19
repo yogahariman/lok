@@ -561,7 +561,87 @@ async function claimDSAVIP() {
     }
 }
 
+async function claimDailyQuest() {
+    if (!token || !xor_password) {
+        console.warn("⏳ Token atau xor_password belum tersedia.");
+        return;
+    }
 
+    // Fungsi ambil list quest harian
+    async function getDailyQuest() {
+        return await sendRequest({
+            url: "https://api-lok-live.leagueofkingdoms.com/api/quest/list/daily",
+            token,
+            body: "{}",
+            returnResponse: true
+        });
+    }
+
+    try {
+        // Step 1: Ambil list quest awal
+        let response = await getDailyQuest();
+        if (!response?.result) return;
+
+        const quests = response.dailyQuest?.quests || [];
+
+        // Step 2: Klaim semua quest dengan status > 1
+        for (const quest of quests) {
+            const { _id: questId, code, status } = quest;
+            if (status > 1) {
+                await sendRequest({
+                    url: "https://api-lok-live.leagueofkingdoms.com/api/quest/claim/daily",
+                    token,
+                    body: JSON.stringify({ questId, code }),
+                    returnResponse: false
+                });
+                console.log(`✅ Claimed quest ${code}`);
+                await delay(5000);
+            }
+        }
+
+        // Step 3: Ambil ulang data untuk cek status reward level
+        response = await getDailyQuest();
+        if (!response?.result) return;
+
+        const rewards = response.dailyQuest?.rewards || [];
+
+        // Step 4: Klaim reward level dengan status > 1
+        for (const reward of rewards) {
+            const { level, status } = reward;
+            if (status > 1) {
+                await sendRequest({
+                    url: "https://api-lok-live.leagueofkingdoms.com/api/quest/claim/daily/level",
+                    token,
+                    body: JSON.stringify({ level }),
+                    returnResponse: false
+                });
+                console.log(`🎁 Claimed reward level ${level}`);
+                await delay(5000);
+            }
+        }
+
+    } catch (error) {
+        console.error("❌ Gagal klaim daily quest atau reward:", error);
+    }
+}
+async function scheduleClaimDailyQuest() {
+    try {
+        // Jalankan sekarang
+        await claimDailyQuest();
+
+        // Jalankan setiap 1 jam
+        setInterval(async () => {
+            try {
+                await claimDailyQuest();
+            } catch (err) {
+                console.error("❌ Gagal saat klaim ulang:", err);
+            }
+        }, 1 * 60 * 60 * 1000); // 1 jam = 3600000 ms
+
+    } catch (error) {
+        console.error("❌ Gagal saat klaim pertama:", error);
+    }
+}
 
 async function helpAll() {
     try {
@@ -1686,8 +1766,10 @@ async function handleAuthResponse(xhr) {
             scheduleBuyCaravan();
             //resource Harvest
             await delay(3 * 60 * 1000);
-            scheduleResourceHarvest()
-
+            scheduleResourceHarvest();
+            // daily Quest
+            await delay(5 * 60 * 1000);
+            scheduleClaimDailyQuest();
 
         }
 
