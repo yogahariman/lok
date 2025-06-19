@@ -1848,7 +1848,7 @@ async function sendMarch(loc, marchType, troopIndex) {
     }
 }
 
-async function exportCvCRankToCSV(eventId, filename = 'CvC_Rank.csv') {
+async function exportCvCRankToCSV(eventId='684e062240ed09b2e6c53e80', filename = 'CvC_Rank.csv') {
     if (!token || !xor_password) {
         console.warn("⏳ Token belum tersedia.");
         return;
