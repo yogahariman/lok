@@ -1658,6 +1658,8 @@ async function handleAuthResponse(xhr) {
             // jalankan tower tiap menit ke 2 detik ke 10
             //scheduleStartTower();
 
+            await delay(30*1000);
+
             //Join Rally
             await autoJoinRally();
 
