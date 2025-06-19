@@ -288,7 +288,7 @@ async function getItemList() {
     if (!token || !xor_password) {
         console.warn("⏳ Token belum tersedia.");
         return;
-    }   
+    }
     const inputRaw = {
         url: "https://api-lok-live.leagueofkingdoms.com/api/item/list",
         token: token,
@@ -308,7 +308,7 @@ async function useItem(code, amount) {
     if (!token || !xor_password) {
         console.warn("⏳ Token belum tersedia.");
         return;
-    }   
+    }
 
     const itemPayload = { code, amount };
     const analyticsPayload = {
@@ -338,7 +338,7 @@ async function useActionPoint() {
     if (!token || !xor_password) {
         console.warn("⏳ Token belum tersedia.");
         return;
-    }   
+    }
 
     let inputRaw = {
         url: "https://api-lok-live.leagueofkingdoms.com/api/kingdom/profile/my",
@@ -590,7 +590,7 @@ async function helpAll() {
         }
 
         console.log(`🛠️ Menjalankan helpAll untuk ${helpList.otherTasks.length} task...`);
-        
+
         await sendRequest({
             url: "https://api-lok-live.leagueofkingdoms.com/api/alliance/help/all",
             token,
@@ -599,7 +599,7 @@ async function helpAll() {
         });
 
         console.log("✅ Selesai membantu semua tugas.");
-        
+
     } catch (err) {
         console.error("❌ Terjadi kesalahan di helpAll:", err);
     }
@@ -680,7 +680,7 @@ async function scheduleAutoDonate() {
                 returnResponse: true
             });
 
-            if(!response_donate_all.result){
+            if (!response_donate_all.result) {
                 console.log("⚠️ Donasi tidak terkirim!");
                 await delay(60 * 60 * 1000);
                 continue;
@@ -964,7 +964,7 @@ async function buyCaravan() {
 async function scheduleBuyCaravan() {
     while (true) {
         const expired = await buyCaravan();
-        
+
         let delayMs;
 
         if (expired) {
@@ -995,7 +995,7 @@ async function startTower(level) {
     if (!token || !xor_password) {
         console.warn("⏳ Token belum tersedia.");
         return;
-    }    
+    }
 
     try {
         const payload = JSON.stringify({ searchType: 0, level });
@@ -1322,7 +1322,7 @@ async function autoJoinRally() {
     if (!token || !xor_password) {
         console.warn("⏳ Token belum tersedia.");
         return;
-    }   
+    }
 
     try {
         const rallyList = await sendRequest({
@@ -1346,11 +1346,11 @@ async function autoJoinRally() {
         rallies.sort((a, b) => {
             // Urutkan berdasarkan code ASCENDING
             if (a.targetMonster.code !== b.targetMonster.code) {
-              return a.targetMonster.code - b.targetMonster.code;
+                return a.targetMonster.code - b.targetMonster.code;
             }
             // Jika code sama, urutkan berdasarkan level DESCENDING
             return b.targetMonster.level - a.targetMonster.level;
-          });          
+        });
         console.log("📥 Rally list:", rallies);
 
         const unjoinedRallies = rallies.filter(b => !b.isJoined);
@@ -1385,7 +1385,7 @@ async function autoJoinRally() {
                 console.log("❌ Tidak join rally:", monsterInfo?.name || "Unknown", "(Level:", monsterLevel, ")");
                 continue;
             }
-            
+
             // 🔁 Cek march queue sebelum lanjut
             marchQueueUsed = await getMarchQueueUsed();
             if (marchQueueUsed >= marchLimit) {
@@ -1444,7 +1444,7 @@ async function autoJoinRally() {
             await delay(1000);
             //console.log("📥 /alliance/battle/info", battleInfo);
 
-            
+
             const payload_marchInfo = {
                 fromId: kingdomData.fieldObjectId,
                 toLoc: battleInfo.battle.fromLoc,
@@ -1461,7 +1461,7 @@ async function autoJoinRally() {
             //console.log("📥 Save Troops Response : ", marchInfo);
 
             //Untuk menentukan apakah masih ada cukup waktu untuk ikut rally
-            const endTime = new Date(battle.endTime); 
+            const endTime = new Date(battle.endTime);
             const speed = 5; // km per detik
             const marchDurationSeconds = marchInfo.distance / speed;
             const now = new Date();
@@ -1524,15 +1524,15 @@ async function monitorWebSocket() {
     async function processRallyQueue() {
         if (rallyProcessing) return;
         rallyProcessing = true;
-    
+
         while (rallyQueue.length > 0) {
             const rally = rallyQueue.shift(); // Ambil satu dari antrean
-    
+
             if (!getAutoJoinStatus()) {
                 console.warn('[🛑] Auto Join OFF - Menghapus rally dari antrean:', rally);
                 continue; // Lewatkan rally ini tanpa diproses
             }
-    
+
             await delay(30000);
             try {
                 console.log('[⏳] Memproses rally dari antrean...');
@@ -1541,10 +1541,10 @@ async function monitorWebSocket() {
                 console.error('❌ Gagal auto join rally:', err);
             }
         }
-    
+
         rallyProcessing = false;
     }
-    
+
 
     // Override WebSocket
     window.WebSocket = function (url, protocols) {
@@ -1658,36 +1658,36 @@ async function handleAuthResponse(xhr) {
             // jalankan tower tiap menit ke 2 detik ke 10
             //scheduleStartTower();
 
-            await delay(30*1000);
+            await delay(30 * 1000);
 
             //Join Rally
             await autoJoinRally();
 
             //claim VIP reward
             await claimVIP();
-            await delay(10*1000);
+            await delay(10 * 1000);
             await claimDSAVIP();
-            await delay(10*1000);
+            await delay(10 * 1000);
 
             // Help all
             scheduleHelpAll();
-            await delay(10*1000);
+            await delay(10 * 1000);
             // Donate
             scheduleAutoDonate();
-            await delay(10*1000);
+            await delay(10 * 1000);
             // Open Free Chest
             scheduleAutoOpenFreeChest();
-            await delay(10*1000);
+            await delay(10 * 1000);
             //instant harvest and summon monster
             //scheduleSkillActivate([10001, 10023]);
             scheduleSkillActivate();
-            await delay(10*1000);
+            await delay(10 * 1000);
             //buy caravan
             scheduleBuyCaravan();
             //resource Harvest
-            await delay(3*60*1000);
+            await delay(3 * 60 * 1000);
             scheduleResourceHarvest()
-            
+
 
         }
 
@@ -1737,7 +1737,7 @@ function toggleAutoJoin() {
         //autoJoinIntervalId = setInterval(autoJoinRally, delayCheckListRally);
         autoJoinRally();
         //monitorWebSocket(); // Aktifkan monitoring kalau belum
-        
+
     } else {
         console.log("⛔ AutoJoin DISABLED");
         //if (autoJoinIntervalId !== null) {
@@ -1848,11 +1848,11 @@ async function sendMarch(loc, marchType, troopIndex) {
     }
 }
 
-async function exportCvCRankToCSV(eventId='684e062240ed09b2e6c53e80', filename = 'CvC_Rank.csv') {
+async function exportCvCRankToCSV(eventId = '684e062240ed09b2e6c53e80', filename = 'CvC_Rank.csv') {
     if (!token || !xor_password) {
         console.warn("⏳ Token belum tersedia.");
         return;
-    } 
+    }
 
     if (!eventId) {
         console.error("Missing eventId");
@@ -1874,26 +1874,15 @@ async function exportCvCRankToCSV(eventId='684e062240ed09b2e6c53e80', filename =
         return;
     }
 
-    // Prepare CSV
+    // Buat CSV dari data.ranking
     const header = ['Rank', 'Point', 'Kingdom ID', 'Kingdom Name'];
-    const rows = [];
-
-    const seenIds = new Set();
-    data.ranking.forEach(entry => {
+    const rows = data.ranking.map(entry => {
         const { rank, point, kingdom } = entry;
-        rows.push([rank, point, kingdom._id, `"${kingdom.name}"`]);
-        seenIds.add(kingdom._id);
+        return [rank, point, kingdom._id, `"${kingdom.name}"`];
     });
 
-    const my = data.myRanking;
-    if (my && !seenIds.has(my.kingdom._id)) {
-        rows.push([my.rank, my.point, my.kingdom._id, `"${my.kingdom.name}"`]);
-    }
+    const csvContent = [header.join(','), ...rows.map(row => row.join(','))].join('\n');
 
-    const csvContent = [
-        header.join(','),
-        ...rows.map(row => row.join(','))
-    ].join('\n');
 
     // Trigger download
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
@@ -1904,5 +1893,5 @@ async function exportCvCRankToCSV(eventId='684e062240ed09b2e6c53e80', filename =
     link.click();
     document.body.removeChild(link);
 }
-      
-  
+
+
