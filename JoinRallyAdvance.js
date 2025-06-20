@@ -1930,20 +1930,37 @@ async function sendMarch(loc, marchType, troopIndex) {
     }
 }
 
-async function exportCvCRankToCSV(eventId = '684e062240ed09b2e6c53e80', filename = 'CvC_Rank.csv') {
+async function exportCvCRankToCSV(eventId, filename = 'CvC_Rank.csv') {
     if (!token || !xor_password) {
         console.warn("⏳ Token belum tersedia.");
         return;
     }
 
-    if (!eventId) {
-        console.error("Missing eventId");
+    const worldId = kingdomData.worldId;
+
+    // Fetch list of CvC events
+    const eventListCvC = await sendRequest({
+        url: "https://api-lok-live.leagueofkingdoms.com/api/event/list/cvc",
+        token: token,
+        body: "{}",
+        returnResponse: true
+    });
+
+    if (!eventListCvC?.result || !Array.isArray(eventListCvC.events)) {
+        console.error("❌ Gagal mengambil daftar event CvC.");
         return;
     }
 
-    const worldId = kingdomData.worldId;
+    // Jika eventId tidak diberikan, ambil default dari indeks ke-2
+    if (!eventId) {
+        eventId = eventListCvC.events?.[2]?._id;
+        if (!eventId) {
+            console.error("❌ eventId tidak tersedia.");
+            return;
+        }
+    }
 
-    // Fetch data
+    // Fetch ranking data
     const data = await sendRequest({
         url: "https://api-lok-live.leagueofkingdoms.com/api/event/cvc/ranking/continent",
         token: token,
@@ -1952,11 +1969,11 @@ async function exportCvCRankToCSV(eventId = '684e062240ed09b2e6c53e80', filename
     });
 
     if (!data?.result || !Array.isArray(data.ranking)) {
-        console.error("Invalid data format received", data);
+        console.error("❌ Format data ranking tidak valid", data);
         return;
     }
 
-    // Buat CSV dari data.ranking
+    // Generate CSV
     const header = ['Rank', 'Point', 'Kingdom ID', 'Kingdom Name'];
     const rows = data.ranking.map(entry => {
         const { rank, point, kingdom } = entry;
@@ -1965,8 +1982,7 @@ async function exportCvCRankToCSV(eventId = '684e062240ed09b2e6c53e80', filename
 
     const csvContent = [header.join(','), ...rows.map(row => row.join(','))].join('\n');
 
-
-    // Trigger download
+    // Download CSV
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement('a');
     link.href = URL.createObjectURL(blob);
@@ -1975,5 +1991,6 @@ async function exportCvCRankToCSV(eventId = '684e062240ed09b2e6c53e80', filename
     link.click();
     document.body.removeChild(link);
 }
+
 
 
