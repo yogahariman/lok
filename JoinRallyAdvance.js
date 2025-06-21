@@ -605,10 +605,10 @@ async function claimDailyQuest() {
 
         const rewards = response.dailyQuest?.rewards || [];
 
-        // Step 4: Klaim reward level dengan status > 1
+        // Step 4: Klaim reward level dengan status == 2, 3->claimed
         for (const reward of rewards) {
             const { level, status } = reward;
-            if (status > 1) {
+            if (status == 2) {
                 await sendRequest({
                     url: "https://api-lok-live.leagueofkingdoms.com/api/quest/claim/daily/level",
                     token,
