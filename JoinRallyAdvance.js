@@ -1992,5 +1992,96 @@ async function exportCvCRankToCSV(eventId, filename = 'CvC_Rank.csv') {
     document.body.removeChild(link);
 }
 
+async function exportCvCWeek1ToCSV(eventId, filename = 'CvC_Week1_Rank.csv') {
+    if (!token || !xor_password) {
+        console.warn("⏳ Token belum tersedia.");
+        return;
+    }
+
+    const worldId = kingdomData.worldId;
+
+    // Ambil daftar event CvC
+    const eventListCvC = await sendRequest({
+        url: "https://api-lok-live.leagueofkingdoms.com/api/event/list/cvc",
+        token: token,
+        body: "{}",
+        returnResponse: true
+    });
+
+    if (!eventListCvC?.result || !Array.isArray(eventListCvC.events)) {
+        console.error("❌ Gagal mengambil daftar event CvC.");
+        return;
+    }
+
+    // Gunakan eventId dari argumen atau ambil default dari index ke-2
+    if (!eventId) {
+        eventId = eventListCvC.events?.[2]?._id;
+        if (!eventId) {
+            console.error("❌ eventId tidak tersedia.");
+            return;
+        }
+    }
+
+    // Ambil data ranking
+    const data = await sendRequest({
+        url: "https://api-lok-live.leagueofkingdoms.com/api/event/cvc/ranking/continent",
+        token: token,
+        body: JSON.stringify({ eventId, worldId }),
+        returnResponse: true
+    });
+
+    if (!data?.result || !Array.isArray(data.ranking)) {
+        console.error("❌ Format data ranking tidak valid", data);
+        return;
+    }
+
+    const header = ['Rank', 'Point', 'Kingdom ID', 'Kingdom Name', 'Kill', 'Death'];
+    const rows = [];
+
+    for (const entry of data.ranking) {
+        const { rank, point, kingdom } = entry;
+        const kingdomId = kingdom._id;
+        let kill = 0;
+        let death = 0;
+
+        try {
+            const historyRes = await sendRequest({
+                url: "https://api-lok-live.leagueofkingdoms.com/api/kingdom/profile/other/history",
+                token: token,
+                body: JSON.stringify({ kingdomId }),
+                returnResponse: true
+            });
+
+            if (historyRes?.result) {
+                kill = historyRes.history?.stats?.battle?.kill || 0;
+                death = historyRes.history?.stats?.battle?.death || 0;
+            }
+        } catch (err) {
+            console.warn(`⚠️ Gagal mengambil data history untuk kingdom ${kingdomId}`, err);
+        }
+
+        rows.push([
+            rank,
+            point,
+            kingdomId,
+            `"${kingdom.name}"`,
+            kill,
+            death
+        ]);
+    }
+
+    const csvContent = [header.join(','), ...rows.map(row => row.join(','))].join('\n');
+
+    // Download CSV
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.setAttribute('download', filename);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+}
+
+
 
 
