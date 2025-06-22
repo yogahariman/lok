@@ -421,6 +421,8 @@ async function handleAuthResponse(xhr) {
     }
 }
 
+monitorWebSocket()
+
 const originalOpen = XMLHttpRequest.prototype.open;
 const originalSend = XMLHttpRequest.prototype.send;
 
