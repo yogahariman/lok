@@ -178,7 +178,7 @@ async function sendSupport(loc) {
 }
 
 async function sendMarch(loc, marchType, troopIndex) {
-    const toLoc = [kingdomData.worldId, ...loc];
+    const toLoc = [kingdomData.loc[0], ...loc];
 
     const payload_marchInfo = {
         fromId: kingdomData.fieldObjectId,
