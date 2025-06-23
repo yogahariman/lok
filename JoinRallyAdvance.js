@@ -1883,6 +1883,13 @@ async function sendSupport(loc) {
 }
 
 async function sendMarch(loc, marchType, troopIndex) {
+
+    // 🔁 Cek march queue sebelum lanjut
+    marchQueueUsed = await getMarchQueueUsed();
+    if (marchQueueUsed >= marchLimit) {
+        console.log(`⛔ March queue penuh (${marchQueueUsed}/${marchLimit}), batal ${marchType === 1 ? 'Gathering' : 'Support'} ke (${loc[0]}, ${loc[1]})`);
+        return;
+    }
     //const toLoc = [kingdomData.worldId, ...loc];
     const toLoc = [kingdomData.loc[0], ...loc];
 
@@ -1908,6 +1915,16 @@ async function sendMarch(loc, marchType, troopIndex) {
     const troops = marchInfo?.saveTroops?.[troopIndex];
     if (!troops) {
         console.warn(`⚠️ Troops preset ke-${troopIndex} tidak ditemukan.`);
+        return;
+    }
+
+    const canSendMarch = troops.every(saveTroop => {
+        const troopInMarch = marchInfo.troops.find(troop => troop.code === saveTroop.code);
+        return troopInMarch && saveTroop.amount <= troopInMarch.amount;
+    });
+
+    if (!canSendMarch) {
+        console.log(`❌ Gagal (${marchQueueUsed}/${marchLimit}), batal ${marchType === 1 ? 'Gathering' : 'Support'} ke (${loc[0]}, ${loc[1]})`);
         return;
     }
 
