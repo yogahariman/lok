@@ -1924,7 +1924,7 @@ async function sendMarch(loc, marchType, troopIndex) {
     });
 
     if (!canSendMarch) {
-        console.log(`❌ Gagal (${marchQueueUsed}/${marchLimit}), batal ${marchType === 1 ? 'Gathering' : 'Support'} ke (${loc[0]}, ${loc[1]})`);
+        console.log(`❌ Gagal ${marchType === 1 ? 'Gathering' : 'Support'} ke (${loc[0]}, ${loc[1]}) karena jumlah troops kurang`);
         return;
     }
 
