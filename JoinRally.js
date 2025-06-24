@@ -566,8 +566,6 @@ async function autoJoinRally() {
     }
 }
 
-let rallyProcessCount = 0; // Global counter
-
 function monitorWebSocket() {
     if (window._originalWebSocket) {
         console.warn('[⚠️] WebSocket monitor sudah aktif.');
