@@ -6,7 +6,7 @@ let xor_password = null;
 let kingdomData = null;
 let marchLimit = null;
 let marchQueueUsed = null;
-let nJoin = 0;
+let rallyProcessCount = 0; // Global counter
 
 // Decode base64 to bytes
 function base64ToBytes(b64) {
@@ -475,8 +475,7 @@ async function autoJoinRally() {
             //const payload_encrypted = b64xorEnc(payload, xor_password);
 
 
-            // Gunakan AP jika < 50
-            nJoin = nJoin + 1; if (nJoin > 100) continue;
+            // Gunakan AP jika < 50            
             await delay(1000);
             await useActionPoint();
 
@@ -567,6 +566,8 @@ async function autoJoinRally() {
     }
 }
 
+let rallyProcessCount = 0; // Global counter
+
 function monitorWebSocket() {
     if (window._originalWebSocket) {
         console.warn('[⚠️] WebSocket monitor sudah aktif.');
@@ -577,44 +578,46 @@ function monitorWebSocket() {
     window._originalWebSocket = window.WebSocket;
     const OriginalWebSocket = window._originalWebSocket;
 
-    // Pastikan array untuk menyimpan instance ada
     window._webSocketInstances = [];
 
-    // Antrean untuk autoJoinRally
     const rallyQueue = [];
     let rallyProcessing = false;
 
     async function processRallyQueue() {
         if (rallyProcessing) return;
+        if (rallyProcessCount >= 100) {
+            //console.warn('[🚫] Batas maksimal pemrosesan rally telah tercapai.');
+            return;
+        }
+
         rallyProcessing = true;
-    
+        rallyProcessCount++; // Tambah counter
+        console.log(`[🔁] Memproses antrean rally ke-${rallyProcessCount}`);
+
         while (rallyQueue.length > 0) {
-            const rally = rallyQueue.shift(); // Ambil satu dari antrean
-    
+            const rally = rallyQueue.shift();
+
             if (!getAutoJoinStatus()) {
                 console.warn('[🛑] Auto Join OFF - Menghapus rally dari antrean:', rally);
-                continue; // Lewatkan rally ini tanpa diproses
+                continue;
             }
-    
+
             await delay(30000);
             try {
                 console.log('[⏳] Memproses rally dari antrean...');
-                await autoJoinRally(); // Fungsi utama join rally
+                await autoJoinRally();
             } catch (err) {
                 console.error('❌ Gagal auto join rally:', err);
             }
         }
-    
+
         rallyProcessing = false;
     }
-    
 
-    // Override WebSocket
     window.WebSocket = function (url, protocols) {
         const ws = protocols ? new OriginalWebSocket(url, protocols) : new OriginalWebSocket(url);
         Object.setPrototypeOf(ws, OriginalWebSocket.prototype);
 
-        // Simpan instance
         window._webSocketInstances.push(ws);
 
         ws.addEventListener('message', (event) => {
@@ -624,12 +627,11 @@ function monitorWebSocket() {
             try {
                 const [path, message] = JSON.parse(data.slice(2));
 
-                // Rally Handler
                 if (path === '/alliance/rally/new') {
                     if (getAutoJoinStatus()) {
                         console.warn('[🎯 RALLY DETECTED]', message);
                         rallyQueue.push(message);
-                        processRallyQueue();
+                        processRallyQueue(); // Ini dibatasi maksimal 100x
                     } else {
                         console.info('[🚫 AUTOJOIN DISABLED] Rally terdeteksi tapi tidak diproses:', message);
                     }
@@ -647,6 +649,7 @@ function monitorWebSocket() {
 
     console.log('[✅] WebSocket monitoring aktif.');
 }
+
 
 async function handleAuthResponse(xhr) {
     const targetEndpoints = [
