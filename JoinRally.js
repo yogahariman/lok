@@ -6,6 +6,7 @@ let xor_password = null;
 let kingdomData = null;
 let marchLimit = null;
 let marchQueueUsed = null;
+let nJoin = 0;
 
 // Decode base64 to bytes
 function base64ToBytes(b64) {
@@ -475,6 +476,7 @@ async function autoJoinRally() {
 
 
             // Gunakan AP jika < 50
+            nJoin = nJoin + 1; if (nJoin > 100) continue;
             await delay(1000);
             await useActionPoint();
 
