@@ -121,10 +121,10 @@
           const [path, message] = JSON.parse(data.slice(2));
 
           if (path === '/field/objects/v4') {
-            const fieldData = message.packs;
-            // Tambahkan logika pemrosesan fieldData di sini jika dibutuhkan
+            //const fieldData = message.packs;
+            // Tambahkan logika pemrosesan fieldData di sini jika dibutuhkan            
+            const fieldData = decodePayloadArray(message.packs);
             console.log('Field Data:', fieldData);
-            const rallyListJson = decodePayloadArray(rallyList.payload);
           }
 
         } catch (err) {
