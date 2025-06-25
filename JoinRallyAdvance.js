@@ -1774,8 +1774,8 @@ async function monitorWebSocket() {
                 }
                 else if (path === '/field/objects/v4') {
                     if (window.allowedBookmark){
-                        const fieldData = b64xorDec(decodePayloadArray(message.packs), xor_password);
-                        bookmarkFromFieldData(allowedBookmark, fieldData); // ✅ pakai await
+                        //const fieldData = b64xorDec(decodePayloadArray(message.packs), xor_password);
+                        bookmarkFromFieldData(allowedBookmark, b64xorDec(decodePayloadArray(message.packs), xor_password)); // ✅ pakai await
                         //console.log('Field Data:', fieldData);
                     }
                 }
