@@ -1538,7 +1538,7 @@ async function autoJoinRally() {
 
         const unjoinedRallies = rallies.filter(b => !b.isJoined);
         if (unjoinedRallies.length === 0) {
-            console.log("✅ Semua rally sudah diikuti.");
+            //console.log("✅ Semua rally sudah diikuti.");
             return;
         }
 
