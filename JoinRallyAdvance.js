@@ -319,7 +319,7 @@ async function getMarchQueueUsed() {
 
     if (response?.result && Array.isArray(response.troops?.field)) {
         const marchQueueUsed = response.troops.field.length;
-        console.log("Jumlah march queue yang digunakan:", marchQueueUsed);
+        //console.log("Jumlah march queue yang digunakan:", marchQueueUsed);
         return marchQueueUsed;
     } else {
         console.warn("⚠️ Field troops tidak ditemukan atau bukan array:", response);
@@ -1595,8 +1595,13 @@ async function autoJoinRally() {
             //console.log(`[🔁] Memproses antrean rally ke-${getRallyCount()}`);    
             //console.log("✅ Join rally:", monsterInfo.name, "(Level:", monsterLevel, ")");
             console.log(
-                `[🎯 RALLY JOINED] #${getRallyCount()} | ${monsterInfo.name.toUpperCase()} [LVL ${monsterLevel}]`
-              );
+                `%c[🎯 RALLY JOINED] %c#${getRallyCount()} %c| %c${monsterInfo.name.toUpperCase()} [LVL ${monsterLevel}] %c| 🪖 ${marchQueueUsed}/${marchLimit}`,
+                'color: green; font-weight: bold;',
+                'color: cyan;',
+                'color: gray;',
+                'color: orange; font-weight: bold;',
+                'color: blue;'
+            );
               
 
             //const saveTroopsGroup = getTroopGroupByHP(monsterHP);
