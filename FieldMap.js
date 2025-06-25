@@ -124,6 +124,7 @@
             const fieldData = message.packs;
             // Tambahkan logika pemrosesan fieldData di sini jika dibutuhkan
             console.log('Field Data:', fieldData);
+            const rallyListJson = decodePayloadArray(rallyList.payload);
           }
 
         } catch (err) {

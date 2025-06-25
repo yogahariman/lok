@@ -80,6 +80,45 @@ try {
 }
 */
 
+/*
+  function decodePayloadArray(rallyData) {
+    if (!rallyData || !rallyData.isPacked || !Array.isArray(rallyData.payload)) {
+      console.error("❌ Data rally tidak valid.");
+      return null;
+    }
+ 
+    try {
+      const compressedPayload = new Uint8Array(rallyData.payload);
+      const decompressedData = pako.inflate(compressedPayload, { to: 'string' });
+      const jsonData = JSON.parse(decompressedData);
+      console.log("✅ Decoded Payload JSON:", jsonData);
+      return jsonData;
+    } catch (err) {
+      console.error("❌ Gagal mendekode payload:", err);
+      return null;
+    }
+  }
+*/
+function decodePayloadArray(payload) {
+    if (!payload || !Array.isArray(payload)) {
+        console.error("❌ Data payload bukan array.");
+        return null;
+    }
+
+    try {
+        const compressedPayload = new Uint8Array(payload);
+        const decompressedData = pako.inflate(compressedPayload, {
+            to: 'string'
+        });
+        const jsonData = JSON.parse(decompressedData);
+        //console.log("✅ Decoded Payload JSON:", jsonData);
+        return jsonData;
+    } catch (err) {
+        console.error("❌ Gagal mendekode payload:", err);
+        return null;
+    }
+}
+
 function delay(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
@@ -179,44 +218,7 @@ async function sendRequest({
         return null;
     }
 }
-/*
-  function decodePayloadArray(rallyData) {
-    if (!rallyData || !rallyData.isPacked || !Array.isArray(rallyData.payload)) {
-      console.error("❌ Data rally tidak valid.");
-      return null;
-    }
- 
-    try {
-      const compressedPayload = new Uint8Array(rallyData.payload);
-      const decompressedData = pako.inflate(compressedPayload, { to: 'string' });
-      const jsonData = JSON.parse(decompressedData);
-      console.log("✅ Decoded Payload JSON:", jsonData);
-      return jsonData;
-    } catch (err) {
-      console.error("❌ Gagal mendekode payload:", err);
-      return null;
-    }
-  }
-*/
-function decodePayloadArray(payload) {
-    if (!payload || !Array.isArray(payload)) {
-        console.error("❌ Data payload bukan array.");
-        return null;
-    }
 
-    try {
-        const compressedPayload = new Uint8Array(payload);
-        const decompressedData = pako.inflate(compressedPayload, {
-            to: 'string'
-        });
-        const jsonData = JSON.parse(decompressedData);
-        //console.log("✅ Decoded Payload JSON:", jsonData);
-        return jsonData;
-    } catch (err) {
-        console.error("❌ Gagal mendekode payload:", err);
-        return null;
-    }
-}
 
 function createJoinRallyPayload(codes, amounts, rallyMoId) {
     if (!Array.isArray(codes) || !Array.isArray(amounts) || codes.length !== amounts.length) {
@@ -1521,7 +1523,13 @@ async function autoJoinRally() {
             }
 
 
-            console.log("✅ Join rally:", monsterInfo.name, "(Level:", monsterLevel, ")");
+            incrementRallyCount();
+            //console.log(`[🔁] Memproses antrean rally ke-${getRallyCount()}`);    
+            //console.log("✅ Join rally:", monsterInfo.name, "(Level:", monsterLevel, ")");
+            console.log(
+                `[🎯 RALLY JOINED] #${getRallyCount()} | ${monsterInfo.name.toUpperCase()} [LVL ${monsterLevel}]`
+              );
+              
 
             //const saveTroopsGroup = getTroopGroupByHP(monsterHP);
             //const payload = payloadJoinRally(saveTroopsGroup, battleId);
@@ -1640,9 +1648,6 @@ async function monitorWebSocket() {
         rallyProcessing = true;
 
         checkAndResetRallyCount(); // Cek dan reset jika perlu
-        incrementRallyCount();
-        console.log(`[🔁] Memproses antrean rally ke-${getRallyCount()}`);
-    
 
         while (rallyQueue.length > 0) {
             const rally = rallyQueue.shift(); // Ambil satu dari antrean
