@@ -692,7 +692,7 @@ async function handleAuthResponse(xhr) {
             //localStorage.setItem("lok_token", token);
             //localStorage.setItem("lok_regionHash", regionHash);
             //localStorage.setItem("lok_xor_password", xor_password);
-
+            rallyProcessCount = 0;
             console.log("🟢 Token:", token);
             console.log("🟢 RegionHash:", regionHash);
             console.log("🟢 XOR Password:", xor_password);
