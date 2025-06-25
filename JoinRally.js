@@ -6,7 +6,8 @@ let xor_password = null;
 let kingdomData = null;
 let marchLimit = null;
 let marchQueueUsed = null;
-let rallyProcessCount = 0; // Global counter
+let rallyProcessCount = 0;
+const rallyProcessLimit = 100;
 
 // Decode base64 to bytes
 function base64ToBytes(b64) {
@@ -468,7 +469,14 @@ async function autoJoinRally() {
             }
 
 
-            console.log("✅ Join rally:", monsterInfo.name, "(Level:", monsterLevel, ")");
+            //console.log("✅ Join rally:", monsterInfo.name, "(Level:", monsterLevel, ")");
+            rallyProcessCount++;
+            if (rallyProcessCount >= rallyProcessLimit) {
+                continue;
+            }
+            console.log(
+                `[🎯 RALLY JOINED] #${rallyProcessCount} | ${monsterInfo.name.toUpperCase()} [LVL ${monsterLevel}]`
+              );              
 
             //const saveTroopsGroup = getTroopGroupByHP(monsterHP);
             //const payload = payloadJoinRally(saveTroopsGroup, battleId);
@@ -583,14 +591,8 @@ function monitorWebSocket() {
 
     async function processRallyQueue() {
         if (rallyProcessing) return;
-        if (rallyProcessCount >= 100) {
-            //console.warn('[🚫] Batas maksimal pemrosesan rally telah tercapai.');
-            return;
-        }
 
         rallyProcessing = true;
-        rallyProcessCount++; // Tambah counter
-        console.log(`[🔁] Memproses antrean rally ke-${rallyProcessCount}`);
 
         while (rallyQueue.length > 0) {
             const rally = rallyQueue.shift();
