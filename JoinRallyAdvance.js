@@ -84,6 +84,39 @@ function delay(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
 
+function getTodayKey() {
+    const now = new Date();
+    return `${now.getFullYear()}-${now.getMonth() + 1}-${now.getDate()}`;
+}
+
+function getCurrentHour() {
+    return new Date().getHours();
+}
+
+function checkAndResetRallyCount() {
+    const todayKey = getTodayKey();
+    const lastResetDate = localStorage.getItem('rallyCountResetDate');
+    const currentHour = getCurrentHour();
+
+    // Hanya reset jika jam sudah lewat dari 7 pagi dan belum reset hari ini
+    if (currentHour >= 7 && lastResetDate !== todayKey) {
+        console.log('[🔄] Reset rallyCount karena hari baru dimulai.');
+        localStorage.setItem('rallyCount', '0');
+        localStorage.setItem('rallyCountResetDate', todayKey);
+    }
+}
+
+function getRallyCount() {
+    return parseInt(localStorage.getItem('rallyCount') || '0', 10);
+}
+
+function incrementRallyCount() {
+    const count = getRallyCount() + 1;
+    localStorage.setItem('rallyCount', count.toString());
+    return count;
+}
+
+
 function getZoneIds(minX, maxX, minY, maxY) {
     const zoneIds = new Set();
 
@@ -1603,7 +1636,13 @@ async function monitorWebSocket() {
 
     async function processRallyQueue() {
         if (rallyProcessing) return;
+
         rallyProcessing = true;
+
+        checkAndResetRallyCount(); // Cek dan reset jika perlu
+        incrementRallyCount();
+        console.log(`[🔁] Memproses antrean rally ke-${getRallyCount()}`);
+    
 
         while (rallyQueue.length > 0) {
             const rally = rallyQueue.shift(); // Ambil satu dari antrean
