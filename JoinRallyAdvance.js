@@ -1595,7 +1595,7 @@ async function autoJoinRally() {
             //console.log(`[🔁] Memproses antrean rally ke-${getRallyCount()}`);    
             //console.log("✅ Join rally:", monsterInfo.name, "(Level:", monsterLevel, ")");
             console.log(
-                `%c[🎯 RALLY JOINED] %c#${getRallyCount()} %c| 🦖 %c${monsterInfo.name.toUpperCase()} [Lv.${monsterLevel}] %c| 🪖 ${marchQueueUsed+1}/${marchLimit}`,
+                `%c[🎯 RALLY JOINED] %c#${getRallyCount()} %c🦖 %c${monsterInfo.name.toUpperCase()} [Lv.${monsterLevel}] %c🪖 ${marchQueueUsed+1}/${marchLimit}`,
                 'color: green; font-weight: bold;',
                 'color: cyan;',
                 'color: gray;',
