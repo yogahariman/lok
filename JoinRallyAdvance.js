@@ -1600,7 +1600,7 @@ async function autoJoinRally() {
                 'color: cyan;',
                 'color: gray;',
                 'color: orange; font-weight: bold;',
-                'color: blue;'
+                'color: red;'
             );
               
 
