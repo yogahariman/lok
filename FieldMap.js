@@ -11,6 +11,12 @@
 (function () {
   'use strict';
 
+  // Deklarasi awal variabel sebagai null
+  let token = null;
+  let regionHash = null;
+  let xor_password = null;
+  let kingdomData = null;
+
   // Decode base64 to bytes
   function base64ToBytes(b64) {
     const binaryStr = atob(b64);
@@ -53,6 +59,34 @@
     const xoredBytes = xorBytes(plainBytes, password);
     return bytesToBase64(xoredBytes);
   }
+
+  function decodePayloadArray(payload) {
+    if (!payload || !Array.isArray(payload)) {
+      console.error("❌ Data payload bukan array.");
+      return null;
+    }
+  
+    try {
+      const compressedPayload = new Uint8Array(payload);
+      console.log("📦 Compressed payload:", compressedPayload);
+  
+      const decompressedData = pako.inflate(compressedPayload, { to: 'string' });
+      console.log("📤 Decompressed string:", decompressedData);
+  
+      // Coba validasi apakah string ini JSON
+      if (!decompressedData.trim().startsWith('{') && !decompressedData.trim().startsWith('[')) {
+        console.warn("⚠️ Decompressed string bukan JSON:", decompressedData);
+        return decompressedData; // Kembalikan sebagai string biasa
+      }
+  
+      const jsonData = JSON.parse(decompressedData);
+      return jsonData;
+    } catch (err) {
+      console.error("❌ Gagal mendekode payload:", err);
+      return null;
+    }
+  }
+  
 
   function getZoneIds(minX, maxX, minY, maxY) {
     const zoneIds = new Set();
@@ -123,6 +157,7 @@
           if (path === '/field/objects/v4') {
             //const fieldData = message.packs;
             // Tambahkan logika pemrosesan fieldData di sini jika dibutuhkan            
+            //const fieldData = b64xorDec(decodePayloadArray(message.packs), xor_password);
             const fieldData = decodePayloadArray(message.packs);
             console.log('Field Data:', fieldData);
           }

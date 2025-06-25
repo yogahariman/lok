@@ -79,26 +79,7 @@ try {
   console.error("Gagal decode atau encode:", e.message);
 }
 */
-
 /*
-  function decodePayloadArray(rallyData) {
-    if (!rallyData || !rallyData.isPacked || !Array.isArray(rallyData.payload)) {
-      console.error("❌ Data rally tidak valid.");
-      return null;
-    }
- 
-    try {
-      const compressedPayload = new Uint8Array(rallyData.payload);
-      const decompressedData = pako.inflate(compressedPayload, { to: 'string' });
-      const jsonData = JSON.parse(decompressedData);
-      console.log("✅ Decoded Payload JSON:", jsonData);
-      return jsonData;
-    } catch (err) {
-      console.error("❌ Gagal mendekode payload:", err);
-      return null;
-    }
-  }
-*/
 function decodePayloadArray(payload) {
     if (!payload || !Array.isArray(payload)) {
         console.error("❌ Data payload bukan array.");
@@ -118,6 +99,34 @@ function decodePayloadArray(payload) {
         return null;
     }
 }
+*/
+
+function decodePayloadArray(payload) {
+    if (!payload || !Array.isArray(payload)) {
+      console.error("❌ Data payload bukan array.");
+      return null;
+    }
+  
+    try {
+      const compressedPayload = new Uint8Array(payload);
+      console.log("📦 Compressed payload:", compressedPayload);
+  
+      const decompressedData = pako.inflate(compressedPayload, { to: 'string' });
+      console.log("📤 Decompressed string:", decompressedData);
+  
+      // Coba validasi apakah string ini JSON
+      if (!decompressedData.trim().startsWith('{') && !decompressedData.trim().startsWith('[')) {
+        console.warn("⚠️ Decompressed string bukan JSON:", decompressedData);
+        return decompressedData; // Kembalikan sebagai string biasa
+      }
+  
+      const jsonData = JSON.parse(decompressedData);
+      return jsonData;
+    } catch (err) {
+      console.error("❌ Gagal mendekode payload:", err);
+      return null;
+    }
+  }
 
 function delay(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
