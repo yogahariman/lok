@@ -1534,7 +1534,7 @@ async function autoJoinRally() {
             // Jika code sama, urutkan berdasarkan level DESCENDING
             return b.targetMonster.level - a.targetMonster.level;
         });
-        console.log("📥 Rally list:", rallies);
+        //console.log("📥 Rally list:", rallies);
 
         const unjoinedRallies = rallies.filter(b => !b.isJoined);
         if (unjoinedRallies.length === 0) {
@@ -1727,7 +1727,7 @@ async function monitorWebSocket() {
 
             await delay(30000);
             try {
-                console.log('[⏳] Memproses rally dari antrean...');
+                //console.log('[⏳] Memproses rally dari antrean...');
                 await autoJoinRally(); // Fungsi utama join rally
             } catch (err) {
                 console.error('❌ Gagal auto join rally:', err);
