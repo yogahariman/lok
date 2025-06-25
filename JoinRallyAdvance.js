@@ -109,14 +109,14 @@ function decodePayloadArray(payload) {
   
     try {
       const compressedPayload = new Uint8Array(payload);
-      console.log("📦 Compressed payload:", compressedPayload);
+      //console.log("📦 Compressed payload:", compressedPayload);
   
       const decompressedData = pako.inflate(compressedPayload, { to: 'string' });
-      console.log("📤 Decompressed string:", decompressedData);
+      //console.log("📤 Decompressed string:", decompressedData);
   
       // Coba validasi apakah string ini JSON
       if (!decompressedData.trim().startsWith('{') && !decompressedData.trim().startsWith('[')) {
-        console.warn("⚠️ Decompressed string bukan JSON:", decompressedData);
+        //console.warn("⚠️ Decompressed string bukan JSON:", decompressedData);
         return decompressedData; // Kembalikan sebagai string biasa
       }
   

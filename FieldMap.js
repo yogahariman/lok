@@ -157,8 +157,8 @@
           if (path === '/field/objects/v4') {
             //const fieldData = message.packs;
             // Tambahkan logika pemrosesan fieldData di sini jika dibutuhkan            
-            //const fieldData = b64xorDec(decodePayloadArray(message.packs), xor_password);
-            const fieldData = decodePayloadArray(message.packs);
+            const fieldData = b64xorDec(decodePayloadArray(message.packs), xor_password);
+            //const fieldData = decodePayloadArray(message.packs);
             console.log('Field Data:', fieldData);
           }
 
