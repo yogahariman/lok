@@ -11,11 +11,26 @@
 (function () {
   'use strict';
 
+  const allowedBookmark = {
+    "20200201": { name: "DeathKar", minLevel: 4 },
+    //"20200202": { name: "Green Dragon", minLevel: 99 },
+    //"20200203": { name: "Red Dragon", minLevel: 1 },
+    //"20200204": { name: "Yellow Dragon", minLevel: 99 },
+    //"20200206": { name: "Panta", minLevel: 1 },
+    //"20200207": { name: "Gargantua", minLevel: 1 },
+    //"20700505": { name: "Magdar", minLevel: 1 },
+    //"20700506": { name: "Spartoi", minLevel: 4 },
+    "20100105": { name: "Crystal Mine", minLevel: 2 },
+    "20100106": { name: "Dragon Soul Cavern", minLevel: 3 }
+  };
+
+
   // Deklarasi awal variabel sebagai null
   let token = null;
   let regionHash = null;
   let xor_password = null;
   let kingdomData = null;
+  window.bookmarkResults = [];
 
   // Decode base64 to bytes
   function base64ToBytes(b64) {
@@ -65,20 +80,20 @@
       console.error("❌ Data payload bukan array.");
       return null;
     }
-  
+
     try {
       const compressedPayload = new Uint8Array(payload);
-      console.log("📦 Compressed payload:", compressedPayload);
-  
+      //console.log("📦 Compressed payload:", compressedPayload);
+
       const decompressedData = pako.inflate(compressedPayload, { to: 'string' });
-      console.log("📤 Decompressed string:", decompressedData);
-  
+      //console.log("📤 Decompressed string:", decompressedData);
+
       // Coba validasi apakah string ini JSON
       if (!decompressedData.trim().startsWith('{') && !decompressedData.trim().startsWith('[')) {
-        console.warn("⚠️ Decompressed string bukan JSON:", decompressedData);
+        //console.warn("⚠️ Decompressed string bukan JSON:", decompressedData);
         return decompressedData; // Kembalikan sebagai string biasa
       }
-  
+
       const jsonData = JSON.parse(decompressedData);
       return jsonData;
     } catch (err) {
@@ -86,7 +101,7 @@
       return null;
     }
   }
-  
+
 
   function getZoneIds(minX, maxX, minY, maxY) {
     const zoneIds = new Set();
@@ -100,6 +115,111 @@
 
     return Array.from(zoneIds);
   }
+
+  async function sendRequest({
+    url,
+    token,
+    body,
+    returnResponse = false
+  }) {
+    try {
+      const response = await fetch(url, {
+        method: "POST",
+        mode: "cors",
+        credentials: "omit",
+        referrer: "https://play.leagueofkingdoms.com/",
+        headers: {
+          "User-Agent": navigator.userAgent,
+          "Accept": "*/*",
+          "Accept-Language": "en-US,en;q=0.5",
+          "x-access-token": token,
+          "Content-Type": "application/x-www-form-urlencoded",
+          "Sec-Fetch-Dest": "empty",
+          "Sec-Fetch-Mode": "cors",
+          "Sec-Fetch-Site": "same-site"
+        },
+        body: `json=${encodeURIComponent(body)}`
+        //body: `json=${encodeURIComponent(JSON.stringify(body))}`
+      });
+
+      if (returnResponse) {
+        const text = await response.text();
+
+        try {
+          const json = JSON.parse(text);
+          return json;
+        } catch (parseErr) {
+          //console.warn("⚠️ Response bukan JSON, mengembalikan sebagai teks.");
+          return text;
+        }
+      } else {
+        // Jika tidak perlu response, cukup kirim request
+        //console.log("✅ Request sent (no response returned)");
+      }
+    } catch (err) {
+      console.error("❌ Gagal mengirim request:", err);
+      return null;
+    }
+  }
+
+  async function bookmarkFromFieldData(allowedBookmark, fieldData) {
+    for (const obj of fieldData.objects) {
+      // Lewati objek yang sudah occupied
+      if (obj.occupied) continue;
+
+      const codeStr = String(obj.code);
+      const bookmarkData = allowedBookmark[codeStr];
+
+      // Cek apakah objek diizinkan dan level cukup
+      if (bookmarkData && obj.level >= bookmarkData.minLevel) {
+        const result = {
+          name: bookmarkData.name,
+          level: obj.level,
+          loc: obj.loc
+        };
+        bookmarkResults.push(result);
+
+        //console.log(`📍 Bookmarked: ${bookmarkData.name} Lv.${obj.level} at ${obj.loc.join(",")}`);
+      }
+    }
+  }
+
+  window.bookmarkSave = async function bookmarkSave() {
+    if (!Array.isArray(window.bookmarkResults)) {
+      console.warn("❗ bookmarkResults tidak ditemukan.");
+      return;
+    }
+
+    const seen = new Set();
+    const uniqueResults = window.bookmarkResults.filter(item => {
+      const key = item.loc.join(",");
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+
+    for (const item of uniqueResults) {
+      const body = JSON.stringify({
+        name: `${item.name} Lv.${item.level}`,
+        loc: item.loc,
+        mark: 1
+      });
+
+      await sendRequest({
+        url: "https://api-lok-live.leagueofkingdoms.com/api/kingdom/bookmark/add",
+        token: token,
+        body: body,
+        returnResponse: false
+      });
+
+      console.log(`✅ Saved bookmark: ${item.name} Lv.${item.level} at ${item.loc.join(",")}`);
+    }
+
+    // Kosongkan setelah disimpan
+    window.bookmarkResults = [];
+    console.log("🧹 bookmarkResults dikosongkan setelah disimpan.");
+  }
+
 
   function getFieldObject() {
     if (window._originalWebSocket) {
@@ -121,14 +241,18 @@
 
       window._webSocketInstances.push(ws);
 
-      // ws.addEventListener("open", () => {
+      // ws.addEventListener("open", async () => {
+      //   if (!ws.url.includes("socf-lok-live.leagueofkingdoms.com")) return;
+
       //   const payloadEncryptedArray = [];
 
       //   const stepX = 32;
       //   const stepY = 16;
 
-      //   for (let x = 4; x <= 2040; x += stepX) {
-      //     for (let y = 4; y <= 2040; y += stepY) {
+      //   // for (let x = 4; x <= 2040; x += stepX) {
+      //   //   for (let y = 4; y <= 2040; y += stepY) {
+      //   for (let x = 900; x <= 1100; x += stepX) {
+      //     for (let y = 1000; y <= 1200; y += stepY) {
       //       const minX = x;
       //       const minY = y;
       //       const maxX = minX + stepX;
@@ -140,14 +264,16 @@
       //     }
       //   }
 
+      //   // Kirim dengan jeda 100ms antar pesan
       //   for (const payload of payloadEncryptedArray) {
       //     const message = `42["/zone/enter/list/v4", ${JSON.stringify(payload)}]`;
       //     ws.send(message);
-      //     console.log("Terkirim:", message);
+      //     console.log("📨 Terkirim ke WebSocket:", message);
+      //     await delay(3000);
       //   }
       // });
 
-      ws.addEventListener('message', (event) => {
+      ws.addEventListener('message', async (event) => {
         const data = event.data;
         if (typeof data !== 'string' || !data.startsWith('42')) return;
 
@@ -155,17 +281,16 @@
           const [path, message] = JSON.parse(data.slice(2));
 
           if (path === '/field/objects/v4') {
-            //const fieldData = message.packs;
-            // Tambahkan logika pemrosesan fieldData di sini jika dibutuhkan            
             const fieldData = b64xorDec(decodePayloadArray(message.packs), xor_password);
-            //const fieldData = decodePayloadArray(message.packs);
-            console.log('Field Data:', fieldData);
+            await bookmarkFromFieldData(allowedBookmark, fieldData); // ✅ pakai await
+            //console.log('Field Data:', fieldData);
           }
 
         } catch (err) {
           console.error('❌ Gagal parsing payload socket:', err);
         }
       });
+
 
       return ws;
     };

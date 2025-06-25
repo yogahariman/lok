@@ -6,7 +6,7 @@ let xor_password = null;
 let kingdomData = null;
 let marchLimit = null;
 let marchQueueUsed = null;
-
+let bookmarkResults = [];
 
 //const delayJoin = 5000; // 5 detik delay sebelum join rally
 //let autoOpen = false;
@@ -1397,6 +1397,65 @@ async function scheduleSkillActivate(codes = [10001]) {
     }
 }
 
+async function bookmarkFromFieldData(allowedBookmark, fieldData) {
+    for (const obj of fieldData.objects) {
+      // Lewati objek yang sudah occupied
+      if (obj.occupied) continue;
+
+      const codeStr = String(obj.code);
+      const bookmarkData = allowedBookmark[codeStr];
+
+      // Cek apakah objek diizinkan dan level cukup
+      if (bookmarkData && obj.level >= bookmarkData.minLevel) {
+        const result = {
+          name: bookmarkData.name,
+          level: obj.level,
+          loc: obj.loc
+        };
+        bookmarkResults.push(result);
+
+        //console.log(`📍 Bookmarked: ${bookmarkData.name} Lv.${obj.level} at ${obj.loc.join(",")}`);
+      }
+    }
+  }
+
+  async function bookmarkSave() {
+    if (!Array.isArray(bookmarkResults)) {
+      console.warn("❗ bookmarkResults tidak ditemukan.");
+      return;
+    }
+
+    const seen = new Set();
+    const uniqueResults = bookmarkResults.filter(item => {
+      const key = item.loc.join(",");
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+
+    for (const item of uniqueResults) {
+      const body = JSON.stringify({
+        name: `${item.name} Lv.${item.level}`,
+        loc: item.loc,
+        mark: 1
+      });
+
+      await delay(1000);
+      await sendRequest({
+        url: "https://api-lok-live.leagueofkingdoms.com/api/kingdom/bookmark/add",
+        token: token,
+        body: body,
+        returnResponse: false
+      });
+
+      console.log(`✅ Saved bookmark: ${item.name} Lv.${item.level} at ${item.loc.join(",")}`);
+    }
+
+    // Kosongkan setelah disimpan
+    bookmarkResults = [];
+    console.log("🧹 bookmarkResults dikosongkan setelah disimpan.");
+  }
+
 async function sendTelegramMessage(token, message) {
     const localKey = `telegram_chat_id_${token.slice(0, 10)}`;
 
@@ -1711,6 +1770,13 @@ async function monitorWebSocket() {
                         processRallyQueue();
                     } else {
                         console.info('[🚫 AUTOJOIN DISABLED] Rally terdeteksi tapi tidak diproses:', message);
+                    }
+                }
+                else if (path === '/field/objects/v4') {
+                    if (window.allowedBookmark){
+                        const fieldData = b64xorDec(decodePayloadArray(message.packs), xor_password);
+                        bookmarkFromFieldData(allowedBookmark, fieldData); // ✅ pakai await
+                        //console.log('Field Data:', fieldData);
                     }
                 }
 
