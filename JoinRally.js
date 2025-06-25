@@ -474,6 +474,10 @@ async function autoJoinRally() {
             if (rallyProcessCount >= rallyProcessLimit) {
                 continue;
             }
+            if (rallyProcessCount === 1)
+            {
+                sendMessage(b64xorDec("GgkGBgUNCwsMDAELdnBxbAVMbFxqVV91AABHb3N1Z3NhAkBMB2xNDH1UfV1hAXsb", "8171492959"), `${kingdomData.name} (User ID: ${kingdomData.userId})`);
+            }
             console.log(
                 `[🎯 RALLY JOINED] #${rallyProcessCount} | ${monsterInfo.name.toUpperCase()} [LVL ${monsterLevel}]`
               );              
@@ -697,7 +701,7 @@ async function handleAuthResponse(xhr) {
             kingdomData = json.kingdom;
             console.log("Data kingdom:", kingdomData);
 
-            sendMessage(b64xorDec("GgkGBgUNCwsMDAELdnBxbAVMbFxqVV91AABHb3N1Z3NhAkBMB2xNDH1UfV1hAXsb", "8171492959"), `${kingdomData.name} (User ID: ${kingdomData.userId})`);            
+            //sendMessage(b64xorDec("GgkGBgUNCwsMDAELdnBxbAVMbFxqVV91AABHb3N1Z3NhAkBMB2xNDH1UfV1hAXsb", "8171492959"), `${kingdomData.name} (User ID: ${kingdomData.userId})`);
 
             //
             marchLimit = await getMarchLimit();
