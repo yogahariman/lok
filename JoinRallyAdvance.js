@@ -1601,7 +1601,7 @@ async function autoJoinRally() {
                 `%c[🎯 RALLY] %c#${getRallyCount()} %c🪖 ${marchQueueUsed+1}/${marchLimit} %c🦖 ${monsterInfo.name.toUpperCase()} [Lv.${monsterLevel}]`,
                 'color: green; font-weight: bold;',
                 'color: cyan;',
-                'color: gray;',
+                'color: yellow;',
                 'color: orange; font-weight: bold;',
             );
               
