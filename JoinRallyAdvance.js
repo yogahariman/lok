@@ -1450,8 +1450,8 @@ async function bookmarkFromFieldData(allowedBookmark, fieldData) {
 */
 
 async function bookmarkFromFieldData(allowedBookmark, fieldData) {
-    const existingLocs = new Set(bookmarkResults.map(b => b.loc.join(","))); // inisialisasi dengan loc yang sudah ada
-    let index = bookmarkResults.length + 1; // mulai index dari jumlah bookmark yang sudah ada + 1
+    const existingLocs = new Set(bookmarkResults.map(b => b.loc.join(","))); // lokasi yang sudah ada
+    let index = bookmarkResults.length + 1; // index global berdasarkan jumlah sebelumnya
 
     for (const obj of fieldData.objects) {
         if (obj.occupied) continue;
@@ -1465,7 +1465,10 @@ async function bookmarkFromFieldData(allowedBookmark, fieldData) {
             (bookmarkData.maxLevel === undefined || obj.level <= bookmarkData.maxLevel)
         ) {
             const locKey = obj.loc.join(",");
-            if (existingLocs.has(locKey)) continue; // skip jika lokasi sudah ada
+            if (existingLocs.has(locKey)) {
+                console.log(`${index++}. ⚠️ Already bookmarked: ${bookmarkData.name} Lv.${obj.level} at ${locKey}`);
+                continue; // skip penambahan data
+            }
 
             existingLocs.add(locKey);
 
