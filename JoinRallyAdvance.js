@@ -2018,7 +2018,7 @@ function toggleAutoJoin() {
         //}
     }
 }
-
+/*
 function injectAutoJoinToggle() {
     const existingBtn = document.getElementById('autoJoinToggleBtn');
     if (existingBtn) return; // tombol sudah ada
@@ -2041,8 +2041,46 @@ function injectAutoJoinToggle() {
     btn.addEventListener('click', toggleAutoJoin);
     document.body.appendChild(btn);
 }
+*/
 
+function injectAutoJoinToggle() {
+    const existingBtn = document.getElementById('autoJoinToggleBtn');
+    if (existingBtn) return;
 
+    const btn = document.createElement('button');
+    btn.id = 'autoJoinToggleBtn';
+    btn.textContent = getAutoJoinStatus() ? '▶️ ON' : '⛔ OFF';
+
+    // Gaya tombol pojok kanan atas dengan animasi dan shadow
+    btn.style.position = 'fixed';
+    btn.style.top = '10px';
+    btn.style.right = '10px';
+    btn.style.zIndex = 9999;
+    btn.style.padding = '8px 12px';
+    btn.style.backgroundColor = '#333';
+    btn.style.color = '#fff';
+    btn.style.border = 'none';
+    btn.style.borderRadius = '6px';
+    btn.style.cursor = 'pointer';
+    btn.style.fontSize = '14px';
+    btn.style.opacity = '0';
+    btn.style.boxShadow = '0 4px 8px rgba(0,0,0,0.2)';
+    btn.style.transition = 'opacity 0.5s ease, transform 0.3s ease';
+    btn.style.transform = 'translateY(-10px)';
+
+    // Efek muncul animasi
+    setTimeout(() => {
+        btn.style.opacity = '0.7';
+        btn.style.transform = 'translateY(0)';
+    }, 100);
+
+    btn.onmouseenter = () => btn.style.opacity = '1';
+    btn.onmouseleave = () => btn.style.opacity = '0.7';
+
+    btn.addEventListener('click', toggleAutoJoin);
+    document.body.appendChild(btn);
+}
+/*
 window.addEventListener('load', () => {
     // Paksa autojoin OFF setiap refresh
     localStorage.setItem('autojoin_enabled', 'false');
@@ -2050,17 +2088,28 @@ window.addEventListener('load', () => {
 
     // Pantau per 2 detik apakah tombol perlu di-render ulang
     setInterval(injectAutoJoinToggle, 2000);
-
-    //if (getAutoJoinStatus()) {
-    //    console.log("🔁 AutoJoin aktif saat load");
-    //    //autoJoinRally();
-    //    //autoJoinIntervalId = setInterval(autoJoinRally, delayCheckListRally);
-    //    autoJoinRally();
-    //    monitorWebSocket();
-    //} else {
-    //    console.log("⛔ AutoJoin OFF saat load");
-    //}
 });
+*/
+window.addEventListener('load', () => {
+    // Paksa autojoin OFF setiap refresh
+    localStorage.setItem('autojoin_enabled', 'false');
+    updateAutoJoinButton();
+    injectAutoJoinToggle(); // panggil sekali saat load
+
+    // Jalankan ulang max 5x jika tombol belum muncul karena delay render
+    let retryCount = 0;
+    const maxRetry = 5;
+    const retryInterval = setInterval(() => {
+        if (document.getElementById('autoJoinToggleBtn')) {
+            clearInterval(retryInterval); // sudah muncul, berhenti
+        } else {
+            injectAutoJoinToggle(); // coba sisipkan lagi
+            retryCount++;
+            if (retryCount >= maxRetry) clearInterval(retryInterval);
+        }
+    }, 1000); // cek setiap 1 detik sampai 5x
+});
+
 
 //const loc = [723, 1983];
 //sendGatherCM(loc);
