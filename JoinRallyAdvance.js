@@ -2093,9 +2093,9 @@ async function exportCvCRankToCSV(eventId, filename = `CvC_Rank_${getTodayKey()}
         return;
     }
 
-    // Jika eventId tidak diberikan, ambil default dari indeks ke-2
+    // Jika eventId tidak diberikan, ambil default dari indeks ke-4
     if (!eventId) {
-        eventId = eventListCvC.events?.[2]?._id;
+        eventId = eventListCvC.events?.[3]?._id;
         if (!eventId) {
             console.error("❌ eventId tidak tersedia.");
             return;
