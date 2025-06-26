@@ -1546,6 +1546,9 @@ async function autoJoinRally() {
             // Semua rally belum diikuti
             await changeTreasure(); // Jalankan pengecekan + ubah treasure jika perlu
         }
+
+        checkAndResetRallyCount(); // Cek dan reset jumlah rally pukul 0 UTC
+
         for (const battle of unjoinedRallies) {
             //const battleId = battle._id;
             //const isJoined = battle.isJoined;
@@ -1719,8 +1722,6 @@ async function monitorWebSocket() {
         if (rallyProcessing) return;
 
         rallyProcessing = true;
-
-        checkAndResetRallyCount(); // Cek dan reset jika perlu
 
         while (rallyQueue.length > 0) {
             const rally = rallyQueue.shift(); // Ambil satu dari antrean
