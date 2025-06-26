@@ -1414,7 +1414,7 @@ async function bookmarkFromFieldData(allowedBookmark, fieldData) {
         };
         bookmarkResults.push(result);
 
-        //console.log(`📍 Bookmarked: ${bookmarkData.name} Lv.${obj.level} at ${obj.loc.join(",")}`);
+        console.log(`📍 Bookmarked: ${bookmarkData.name} Lv.${obj.level} at ${obj.loc.join(",")}`);
       }
     }
   }
