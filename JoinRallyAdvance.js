@@ -1993,7 +1993,8 @@ function getAutoJoinStatus() {
 function updateAutoJoinButton() {
     const btn = document.getElementById('autoJoinToggleBtn');
     if (!btn) return;
-    btn.textContent = getAutoJoinStatus() ? '⛔ AutoJoin: ON (Click to OFF)' : '▶️ AutoJoin: OFF (Click to ON)';
+    btn.textContent = getAutoJoinStatus() ? '▶️ ON' : '⛔ OFF';
+    //btn.textContent = getAutoJoinStatus() ? '⛔ AutoJoin: ON (Click to OFF)' : '▶️ AutoJoin: OFF (Click to ON)';
 }
 
 function toggleAutoJoin() {
@@ -2024,7 +2025,8 @@ function injectAutoJoinToggle() {
 
     const btn = document.createElement('button');
     btn.id = 'autoJoinToggleBtn';
-    btn.textContent = getAutoJoinStatus() ? '⛔ AutoJoin: ON (Click to OFF)' : '▶️ AutoJoin: OFF (Click to ON)';
+    //btn.textContent = getAutoJoinStatus() ? '⛔ AutoJoin: ON (Click to OFF)' : '▶️ AutoJoin: OFF (Click to ON)';
+    btn.textContent = getAutoJoinStatus() ? '▶️ ON' : '⛔ OFF';
     btn.style.position = 'fixed';
     btn.style.bottom = '10px';
     btn.style.right = '10px';
