@@ -103,30 +103,30 @@ function decodePayloadArray(payload) {
 
 function decodePayloadArray(payload) {
     if (!payload || !Array.isArray(payload)) {
-      console.error("❌ Data payload bukan array.");
-      return null;
+        console.error("❌ Data payload bukan array.");
+        return null;
     }
-  
+
     try {
-      const compressedPayload = new Uint8Array(payload);
-      //console.log("📦 Compressed payload:", compressedPayload);
-  
-      const decompressedData = pako.inflate(compressedPayload, { to: 'string' });
-      //console.log("📤 Decompressed string:", decompressedData);
-  
-      // Coba validasi apakah string ini JSON
-      if (!decompressedData.trim().startsWith('{') && !decompressedData.trim().startsWith('[')) {
-        //console.warn("⚠️ Decompressed string bukan JSON:", decompressedData);
-        return decompressedData; // Kembalikan sebagai string biasa
-      }
-  
-      const jsonData = JSON.parse(decompressedData);
-      return jsonData;
+        const compressedPayload = new Uint8Array(payload);
+        //console.log("📦 Compressed payload:", compressedPayload);
+
+        const decompressedData = pako.inflate(compressedPayload, { to: 'string' });
+        //console.log("📤 Decompressed string:", decompressedData);
+
+        // Coba validasi apakah string ini JSON
+        if (!decompressedData.trim().startsWith('{') && !decompressedData.trim().startsWith('[')) {
+            //console.warn("⚠️ Decompressed string bukan JSON:", decompressedData);
+            return decompressedData; // Kembalikan sebagai string biasa
+        }
+
+        const jsonData = JSON.parse(decompressedData);
+        return jsonData;
     } catch (err) {
-      console.error("❌ Gagal mendekode payload:", err);
-      return null;
+        console.error("❌ Gagal mendekode payload:", err);
+        return null;
     }
-  }
+}
 
 function delay(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
@@ -1396,65 +1396,94 @@ async function scheduleSkillActivate(codes = [10001]) {
         setTimeout(() => scheduleSkillActivate(codes), 3 * 60 * 1000); // Retry 3 menit
     }
 }
-
+/*
 async function bookmarkFromFieldData(allowedBookmark, fieldData) {
     for (const obj of fieldData.objects) {
-      // Lewati objek yang sudah occupied
-      if (obj.occupied) continue;
+        // Lewati objek yang sudah occupied
+        if (obj.occupied) continue;
 
-      const codeStr = String(obj.code);
-      const bookmarkData = allowedBookmark[codeStr];
+        const codeStr = String(obj.code);
+        const bookmarkData = allowedBookmark[codeStr];
 
-      // Cek apakah objek diizinkan dan level cukup
-      if (bookmarkData && obj.level >= bookmarkData.minLevel) {
-        const result = {
-          name: bookmarkData.name,
-          level: obj.level,
-          loc: obj.loc
-        };
-        bookmarkResults.push(result);
+        // Cek apakah objek diizinkan dan level cukup
+        if (bookmarkData && obj.level >= bookmarkData.minLevel) {
+            const result = {
+                name: bookmarkData.name,
+                level: obj.level,
+                loc: obj.loc
+            };
+            bookmarkResults.push(result);
 
-        console.log(`📍 Bookmarked: ${bookmarkData.name} Lv.${obj.level} at ${obj.loc.join(",")}`);
-      }
+            console.log(`📍 Bookmarked: ${bookmarkData.name} Lv.${obj.level} at ${obj.loc.join(",")}`);
+        }
     }
-  }
+}
+*/
+async function bookmarkFromFieldData(allowedBookmark, fieldData) {
+    //const bookmarkResults = []; // pastikan ini ada di dalam fungsi kalau bukan variabel global
 
-  async function bookmarkSave() {
+    for (const obj of fieldData.objects) {
+        if (obj.occupied) continue;
+
+        const codeStr = String(obj.code);
+        const bookmarkData = allowedBookmark[codeStr];
+
+        if (
+            bookmarkData &&
+            obj.level >= bookmarkData.minLevel &&
+            (bookmarkData.maxLevel === undefined || obj.level <= bookmarkData.maxLevel)
+        ) {
+            const result = {
+                name: bookmarkData.name,
+                level: obj.level,
+                loc: obj.loc
+            };
+            bookmarkResults.push(result);
+
+            console.log(`📍 Bookmarked: ${bookmarkData.name} Lv.${obj.level} at ${obj.loc.join(",")}`);
+        }
+    }
+
+    //return bookmarkResults;
+}
+
+
+async function bookmarkSave() {
     if (!Array.isArray(bookmarkResults)) {
-      console.warn("❗ bookmarkResults tidak ditemukan.");
-      return;
+        console.warn("❗ bookmarkResults tidak ditemukan.");
+        return;
     }
 
     const seen = new Set();
     const uniqueResults = bookmarkResults.filter(item => {
-      const key = item.loc.join(",");
-      if (seen.has(key)) return false;
-      seen.add(key);
-      return true;
+        const key = item.loc.join(",");
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
     });
 
     for (const item of uniqueResults) {
-      const body = JSON.stringify({
-        name: `${item.name} Lv.${item.level}`,
-        loc: item.loc,
-        mark: 1
-      });
+        const body = JSON.stringify({
+            name: `${item.name} Lv.${item.level}`,
+            loc: item.loc,
+            mark: 1
+        });
 
-      await delay(1000);
-      await sendRequest({
-        url: "https://api-lok-live.leagueofkingdoms.com/api/kingdom/bookmark/add",
-        token: token,
-        body: body,
-        returnResponse: false
-      });
+        await delay(1000);
+        await sendRequest({
+            url: "https://api-lok-live.leagueofkingdoms.com/api/kingdom/bookmark/add",
+            token: token,
+            body: body,
+            returnResponse: false
+        });
 
-      console.log(`✅ Saved bookmark: ${item.name} Lv.${item.level} at ${item.loc.join(",")}`);
+        console.log(`✅ Saved bookmark: ${item.name} Lv.${item.level} at ${item.loc.join(",")}`);
     }
 
     // Kosongkan setelah disimpan
     bookmarkResults = [];
     console.log("🧹 bookmarkResults dikosongkan setelah disimpan.");
-  }
+}
 
 async function sendTelegramMessage(token, message) {
     const localKey = `telegram_chat_id_${token.slice(0, 10)}`;
@@ -1598,13 +1627,13 @@ async function autoJoinRally() {
             //console.log(`[🔁] Memproses antrean rally ke-${getRallyCount()}`);    
             //console.log("✅ Join rally:", monsterInfo.name, "(Level:", monsterLevel, ")");
             console.log(
-                `%c[🎯 RALLY] %c#${getRallyCount()} %c🪖 ${marchQueueUsed+1}/${marchLimit} %c🦖 ${monsterInfo.name.toUpperCase()} [Lv.${monsterLevel}]`,
+                `%c[🎯 RALLY] %c#${getRallyCount()} %c🪖 ${marchQueueUsed + 1}/${marchLimit} %c🦖 ${monsterInfo.name.toUpperCase()} [Lv.${monsterLevel}]`,
                 'color: green; font-weight: bold;',
                 'color: cyan;',
                 'color: yellow;',
                 'color: orange; font-weight: bold;',
             );
-              
+
 
             //const saveTroopsGroup = getTroopGroupByHP(monsterHP);
             //const payload = payloadJoinRally(saveTroopsGroup, battleId);
@@ -1778,7 +1807,7 @@ async function monitorWebSocket() {
                     }
                 }
                 else if (path === '/field/objects/v4') {
-                    if (window.allowedBookmark && Object.keys(window.allowedBookmark).length > 0){
+                    if (window.allowedBookmark && Object.keys(window.allowedBookmark).length > 0) {
                         //const fieldData = b64xorDec(decodePayloadArray(message.packs), xor_password);
                         bookmarkFromFieldData(allowedBookmark, b64xorDec(decodePayloadArray(message.packs), xor_password)); // ✅ pakai await
                         //console.log('Field Data:', fieldData);
