@@ -2072,7 +2072,7 @@ async function sendMarch(loc, marchType, troopIndex) {
     }
 }
 
-async function exportCvCRankToCSV(eventId, filename = 'CvC_Rank.csv') {
+async function exportCvCRankToCSV(eventId, filename = `CvC_Rank_${getTodayKey()}.csv`) {
     if (!token || !xor_password) {
         console.warn("⏳ Token belum tersedia.");
         return;
@@ -2134,7 +2134,7 @@ async function exportCvCRankToCSV(eventId, filename = 'CvC_Rank.csv') {
     document.body.removeChild(link);
 }
 
-async function exportCvCWeek1ToCSV(eventId, filename = 'CvC_Week1_Rank.csv') {
+async function exportCvCWeek1ToCSV(eventId, filename = `CvC_Week1_Rank_${getTodayKey()}.csv`) {
     if (!token || !xor_password) {
         console.warn("⏳ Token belum tersedia.");
         return;
