@@ -1419,6 +1419,7 @@ async function bookmarkFromFieldData(allowedBookmark, fieldData) {
     }
 }
 */
+/*
 async function bookmarkFromFieldData(allowedBookmark, fieldData) {
     //const bookmarkResults = []; // pastikan ini ada di dalam fungsi kalau bukan variabel global
 
@@ -1446,7 +1447,39 @@ async function bookmarkFromFieldData(allowedBookmark, fieldData) {
 
     //return bookmarkResults;
 }
+*/
 
+async function bookmarkFromFieldData(allowedBookmark, fieldData) {
+    const existingLocs = new Set(bookmarkResults.map(b => b.loc.join(","))); // inisialisasi dengan loc yang sudah ada
+    let index = bookmarkResults.length + 1; // mulai index dari jumlah bookmark yang sudah ada + 1
+
+    for (const obj of fieldData.objects) {
+        if (obj.occupied) continue;
+
+        const codeStr = String(obj.code);
+        const bookmarkData = allowedBookmark[codeStr];
+
+        if (
+            bookmarkData &&
+            obj.level >= bookmarkData.minLevel &&
+            (bookmarkData.maxLevel === undefined || obj.level <= bookmarkData.maxLevel)
+        ) {
+            const locKey = obj.loc.join(",");
+            if (existingLocs.has(locKey)) continue; // skip jika lokasi sudah ada
+
+            existingLocs.add(locKey);
+
+            const result = {
+                name: bookmarkData.name,
+                level: obj.level,
+                loc: obj.loc
+            };
+            bookmarkResults.push(result);
+
+            console.log(`${index++}. 📍 Bookmarked: ${bookmarkData.name} Lv.${obj.level} at ${locKey}`);
+        }
+    }
+}
 
 async function bookmarkSave() {
     if (!Array.isArray(bookmarkResults)) {
