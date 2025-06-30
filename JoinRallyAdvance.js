@@ -2110,10 +2110,11 @@ window.addEventListener('load', () => {
     }, 1000); // cek setiap 1 detik sampai 5x
 });
 
-
-//const loc = [723, 1983];
-//sendGatherCM(loc);
-//sendGatherCM([723, 1983]);
+// marchType 1 = gathering
+// marchType 2 = attack/rally castle
+// marchType 5 = attack/rally monster
+// marchType 7 = support
+// marchType 8 = Join rally
 async function sendGatherCM(loc) {
     await sendMarch(loc, 1, 3); // marchType 1 = gathering, preset index 3
 }
@@ -2187,6 +2188,81 @@ async function sendMarch(loc, marchType, troopIndex) {
         console.error("❌ Gagal kirim march:", err);
     }
 }
+
+async function setRallyMonster(loc, rallyTime = 5, troopIndex = 0, message = "") {
+    // 🔁 Cek march queue sebelum lanjut
+    const marchQueueUsed = await getMarchQueueUsed();
+    if (marchQueueUsed >= marchLimit) {
+        console.log(`⛔ March queue penuh (${marchQueueUsed}/${marchLimit}), batal set rally.`);
+        return;
+    }
+
+    // Lokasi tujuan (kingdom ID, x, y)
+    const toLoc = [kingdomData.loc[0], ...loc];
+
+    const payload_marchInfo = {
+        fromId: kingdomData.fieldObjectId,
+        toLoc: toLoc
+    };
+
+    let marchInfoResponse, marchInfo;
+    try {
+        marchInfoResponse = await sendRequest({
+            url: "https://api-lok-live.leagueofkingdoms.com/api/field/march/info",
+            token: token,
+            body: b64xorEnc(payload_marchInfo, xor_password),
+            returnResponse: true
+        });
+        marchInfo = b64xorDec(marchInfoResponse, xor_password);
+    } catch (err) {
+        console.error("❌ Gagal ambil march info:", err);
+        return;
+    }
+
+    // Cek apakah marchType = 5 (rally monster)
+    const marchType = marchInfo.marchType;
+    if (marchType !== 5) {
+        console.log(`⛔ MarchType bukan untuk rally monster (marchType = ${marchType}).`);
+        return;
+    }
+
+    const troops = marchInfo?.saveTroops?.[troopIndex];
+    if (!troops) {
+        console.warn(`⚠️ Troops preset ke-${troopIndex} tidak ditemukan.`);
+        return;
+    }
+
+    const canSendMarch = troops.every(saveTroop => {
+        const troopInMarch = marchInfo.troops.find(troop => troop.code === saveTroop.code);
+        return troopInMarch && saveTroop.amount <= troopInMarch.amount;
+    });
+
+    if (!canSendMarch) {
+        console.warn("⛔ Gagal karena jumlah troops kurang dari preset.");
+        return;
+    }
+
+    const payload = {
+        marchType,
+        toLoc,
+        marchTroops: troops,
+        rallyTime,
+        message
+    };
+
+    try {
+        await sendRequest({
+            url: "https://api-lok-live.leagueofkingdoms.com/api/field/rally/start",
+            token: token,
+            body: b64xorEnc(payload, xor_password),
+            returnResponse: false
+        });
+        console.log("✅ Berhasil set rally monster.");
+    } catch (err) {
+        console.error("❌ Gagal set rally:", err);
+    }
+}
+
 
 async function exportCvCRankToCSV(eventId, filename = `CvC_Rank_${getTodayKey()}.csv`) {
     if (!token || !xor_password) {
