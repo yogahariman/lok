@@ -1591,6 +1591,8 @@ async function bookmarkSave(limit = undefined) {
 // marchType 5 = attack/rally monster
 // marchType 7 = support
 // marchType 8 = Join rally
+// sendSupport(123, 456);
+// sendGatherCM(789, 101);
 async function sendGatherCM(x, y) {
     await sendMarch([x, y], 1, 3); // marchType 1 = gathering, preset index 3
 }
