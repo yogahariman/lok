@@ -1569,7 +1569,7 @@ async function bookmarkSave(limit = undefined) {
             mark: 1
         });
 
-        await delay(1000);
+        await delay(2000);
         await sendRequest({
             url: "https://api-lok-live.leagueofkingdoms.com/api/kingdom/bookmark/add",
             token: token,
@@ -1583,6 +1583,313 @@ async function bookmarkSave(limit = undefined) {
     // Kosongkan setelah disimpan
     bookmarkResults = [];
     console.log("🧹 bookmarkResults dikosongkan setelah disimpan.");
+}
+
+
+// marchType 1 = gathering
+// marchType 2 = attack/rally castle
+// marchType 5 = attack/rally monster
+// marchType 7 = support
+// marchType 8 = Join rally
+async function sendGatherCM(loc) {
+    await sendMarch(loc, 1, 3); // marchType 1 = gathering, preset index 3
+}
+
+async function sendSupport(loc) {
+    await sendMarch(loc, 7, 2); // marchType 7 = support, preset index 2
+}
+
+async function sendMarch(loc, marchType, troopIndex) {
+
+    // 🔁 Cek march queue sebelum lanjut
+    marchQueueUsed = await getMarchQueueUsed();
+    if (marchQueueUsed >= marchLimit) {
+        console.log(`⛔ March queue penuh (${marchQueueUsed}/${marchLimit}), batal ${marchType === 1 ? 'Gathering' : 'Support'} ke (${loc[0]}, ${loc[1]})`);
+        return;
+    }
+    //const toLoc = [kingdomData.worldId, ...loc];
+    const toLoc = [kingdomData.loc[0], ...loc];
+
+    const payload_marchInfo = {
+        fromId: kingdomData.fieldObjectId,
+        toLoc: toLoc
+    };
+
+    let marchInfoResponse, marchInfo;
+    try {
+        marchInfoResponse = await sendRequest({
+            url: "https://api-lok-live.leagueofkingdoms.com/api/field/march/info",
+            token: token,
+            body: b64xorEnc(payload_marchInfo, xor_password),
+            returnResponse: true
+        });
+        marchInfo = b64xorDec(marchInfoResponse, xor_password);
+    } catch (err) {
+        console.error("❌ Gagal ambil march info:", err);
+        return;
+    }
+
+    const troops = marchInfo?.saveTroops?.[troopIndex];
+    if (!troops) {
+        console.warn(`⚠️ Troops preset ke-${troopIndex} tidak ditemukan.`);
+        return;
+    }
+
+    const canSendMarch = troops.every(saveTroop => {
+        const troopInMarch = marchInfo.troops.find(troop => troop.code === saveTroop.code);
+        return troopInMarch && saveTroop.amount <= troopInMarch.amount;
+    });
+
+    if (!canSendMarch) {
+        console.log(`❌ Gagal ${marchType === 1 ? 'Gathering' : 'Support'} ke (${loc[0]}, ${loc[1]}) karena jumlah troops kurang`);
+        return;
+    }
+
+    const payload = {
+        fromId: kingdomData.fieldObjectId,
+        marchType,
+        toLoc,
+        marchTroops: troops
+    };
+
+    try {
+        await sendRequest({
+            url: "https://api-lok-live.leagueofkingdoms.com/api/field/march/start",
+            token: token,
+            body: b64xorEnc(payload, xor_password),
+            returnResponse: false
+        });
+        console.log(`✅ March dikirim: ${marchType === 1 ? 'Gathering' : 'Support'} ke (${loc[0]}, ${loc[1]})`);
+    } catch (err) {
+        console.error("❌ Gagal kirim march:", err);
+    }
+}
+
+async function setRallyMonster(loc, rallyTime = 5, troopIndex = 0, message = "") {
+    // 🔁 Cek march queue sebelum lanjut
+    const marchQueueUsed = await getMarchQueueUsed();
+    if (marchQueueUsed >= marchLimit) {
+        console.log(`⛔ March queue penuh (${marchQueueUsed}/${marchLimit}), batal set rally.`);
+        return;
+    }
+
+    // Lokasi tujuan (kingdom ID, x, y)
+    const toLoc = [kingdomData.loc[0], ...loc];
+
+    const payload_marchInfo = {
+        fromId: kingdomData.fieldObjectId,
+        toLoc: toLoc
+    };
+
+    let marchInfoResponse, marchInfo;
+    try {
+        marchInfoResponse = await sendRequest({
+            url: "https://api-lok-live.leagueofkingdoms.com/api/field/march/info",
+            token: token,
+            body: b64xorEnc(payload_marchInfo, xor_password),
+            returnResponse: true
+        });
+        marchInfo = b64xorDec(marchInfoResponse, xor_password);
+    } catch (err) {
+        console.error("❌ Gagal ambil march info:", err);
+        return;
+    }
+
+    // Cek apakah marchType = 5 (rally monster)
+    const marchType = marchInfo.marchType;
+    if (marchType !== 5) {
+        console.log(`⛔ MarchType bukan untuk rally monster (marchType = ${marchType}).`);
+        return;
+    }
+
+    const troops = marchInfo?.saveTroops?.[troopIndex];
+    if (!troops) {
+        console.warn(`⚠️ Troops preset ke-${troopIndex} tidak ditemukan.`);
+        return;
+    }
+
+    const canSendMarch = troops.every(saveTroop => {
+        const troopInMarch = marchInfo.troops.find(troop => troop.code === saveTroop.code);
+        return troopInMarch && saveTroop.amount <= troopInMarch.amount;
+    });
+
+    if (!canSendMarch) {
+        console.warn("⛔ Gagal karena jumlah troops kurang dari preset.");
+        return;
+    }
+
+    const payload = {
+        marchType,
+        toLoc,
+        marchTroops: troops,
+        rallyTime,
+        message
+    };
+
+    try {
+        await sendRequest({
+            url: "https://api-lok-live.leagueofkingdoms.com/api/field/rally/start",
+            token: token,
+            body: b64xorEnc(payload, xor_password),
+            returnResponse: false
+        });
+        console.log("✅ Berhasil set rally monster.");
+    } catch (err) {
+        console.error("❌ Gagal set rally:", err);
+    }
+}
+
+
+async function exportCvCRankToCSV(eventId, filename = `CvC_Rank_${getTodayKey()}.csv`) {
+    if (!token || !xor_password) {
+        console.warn("⏳ Token belum tersedia.");
+        return;
+    }
+
+    const worldId = kingdomData.worldId;
+
+    // Fetch list of CvC events
+    const eventListCvC = await sendRequest({
+        url: "https://api-lok-live.leagueofkingdoms.com/api/event/list/cvc",
+        token: token,
+        body: "{}",
+        returnResponse: true
+    });
+
+    if (!eventListCvC?.result || !Array.isArray(eventListCvC.events)) {
+        console.error("❌ Gagal mengambil daftar event CvC.");
+        return;
+    }
+
+    // Jika eventId tidak diberikan, ambil default dari indeks ke-4
+    if (!eventId) {
+        eventId = eventListCvC.events?.[3]?._id;
+        if (!eventId) {
+            console.error("❌ eventId tidak tersedia.");
+            return;
+        }
+    }
+
+    // Fetch ranking data
+    const data = await sendRequest({
+        url: "https://api-lok-live.leagueofkingdoms.com/api/event/cvc/ranking/continent",
+        token: token,
+        body: JSON.stringify({ eventId, worldId }),
+        returnResponse: true
+    });
+
+    if (!data?.result || !Array.isArray(data.ranking)) {
+        console.error("❌ Format data ranking tidak valid", data);
+        return;
+    }
+
+    // Generate CSV
+    const header = ['Rank', 'Point', 'Kingdom ID', 'Kingdom Name'];
+    const rows = data.ranking.map(entry => {
+        const { rank, point, kingdom } = entry;
+        return [rank, point, kingdom._id, `"${kingdom.name}"`];
+    });
+
+    const csvContent = [header.join(','), ...rows.map(row => row.join(','))].join('\n');
+
+    // Download CSV
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.setAttribute('download', filename);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+}
+
+async function exportCvCWeek1ToCSV(eventId, filename = `CvC_Week1_Rank_${getTodayKey()}.csv`) {
+    if (!token || !xor_password) {
+        console.warn("⏳ Token belum tersedia.");
+        return;
+    }
+
+    const worldId = kingdomData.worldId;
+
+    // Ambil daftar event CvC
+    const eventListCvC = await sendRequest({
+        url: "https://api-lok-live.leagueofkingdoms.com/api/event/list/cvc",
+        token: token,
+        body: "{}",
+        returnResponse: true
+    });
+
+    if (!eventListCvC?.result || !Array.isArray(eventListCvC.events)) {
+        console.error("❌ Gagal mengambil daftar event CvC.");
+        return;
+    }
+
+    // Gunakan eventId dari argumen atau ambil default dari index ke-2
+    if (!eventId) {
+        eventId = eventListCvC.events?.[2]?._id;
+        if (!eventId) {
+            console.error("❌ eventId tidak tersedia.");
+            return;
+        }
+    }
+
+    // Ambil data ranking
+    const data = await sendRequest({
+        url: "https://api-lok-live.leagueofkingdoms.com/api/event/cvc/ranking/continent",
+        token: token,
+        body: JSON.stringify({ eventId, worldId }),
+        returnResponse: true
+    });
+
+    if (!data?.result || !Array.isArray(data.ranking)) {
+        console.error("❌ Format data ranking tidak valid", data);
+        return;
+    }
+
+    const header = ['Rank', 'Point', 'Kingdom ID', 'Kingdom Name', 'Kill', 'Death'];
+    const rows = [];
+
+    for (const entry of data.ranking) {
+        const { rank, point, kingdom } = entry;
+        const kingdomId = kingdom._id;
+        let kill = 0;
+        let death = 0;
+
+        try {
+            const historyRes = await sendRequest({
+                url: "https://api-lok-live.leagueofkingdoms.com/api/kingdom/profile/other/history",
+                token: token,
+                body: JSON.stringify({ kingdomId }),
+                returnResponse: true
+            });
+
+            if (historyRes?.result) {
+                kill = historyRes.history?.stats?.battle?.kill || 0;
+                death = historyRes.history?.stats?.battle?.death || 0;
+            }
+        } catch (err) {
+            console.warn(`⚠️ Gagal mengambil data history untuk kingdom ${kingdomId}`, err);
+        }
+
+        rows.push([
+            rank,
+            point,
+            kingdomId,
+            `"${kingdom.name}"`,
+            kill,
+            death
+        ]);
+    }
+
+    const csvContent = [header.join(','), ...rows.map(row => row.join(','))].join('\n');
+
+    // Download CSV
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.setAttribute('download', filename);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
 }
 
 
@@ -2175,311 +2482,6 @@ window.addEventListener('load', () => {
     }, 1000); // cek setiap 1 detik sampai 5x
 });
 
-// marchType 1 = gathering
-// marchType 2 = attack/rally castle
-// marchType 5 = attack/rally monster
-// marchType 7 = support
-// marchType 8 = Join rally
-async function sendGatherCM(loc) {
-    await sendMarch(loc, 1, 3); // marchType 1 = gathering, preset index 3
-}
-
-async function sendSupport(loc) {
-    await sendMarch(loc, 7, 2); // marchType 7 = support, preset index 2
-}
-
-async function sendMarch(loc, marchType, troopIndex) {
-
-    // 🔁 Cek march queue sebelum lanjut
-    marchQueueUsed = await getMarchQueueUsed();
-    if (marchQueueUsed >= marchLimit) {
-        console.log(`⛔ March queue penuh (${marchQueueUsed}/${marchLimit}), batal ${marchType === 1 ? 'Gathering' : 'Support'} ke (${loc[0]}, ${loc[1]})`);
-        return;
-    }
-    //const toLoc = [kingdomData.worldId, ...loc];
-    const toLoc = [kingdomData.loc[0], ...loc];
-
-    const payload_marchInfo = {
-        fromId: kingdomData.fieldObjectId,
-        toLoc: toLoc
-    };
-
-    let marchInfoResponse, marchInfo;
-    try {
-        marchInfoResponse = await sendRequest({
-            url: "https://api-lok-live.leagueofkingdoms.com/api/field/march/info",
-            token: token,
-            body: b64xorEnc(payload_marchInfo, xor_password),
-            returnResponse: true
-        });
-        marchInfo = b64xorDec(marchInfoResponse, xor_password);
-    } catch (err) {
-        console.error("❌ Gagal ambil march info:", err);
-        return;
-    }
-
-    const troops = marchInfo?.saveTroops?.[troopIndex];
-    if (!troops) {
-        console.warn(`⚠️ Troops preset ke-${troopIndex} tidak ditemukan.`);
-        return;
-    }
-
-    const canSendMarch = troops.every(saveTroop => {
-        const troopInMarch = marchInfo.troops.find(troop => troop.code === saveTroop.code);
-        return troopInMarch && saveTroop.amount <= troopInMarch.amount;
-    });
-
-    if (!canSendMarch) {
-        console.log(`❌ Gagal ${marchType === 1 ? 'Gathering' : 'Support'} ke (${loc[0]}, ${loc[1]}) karena jumlah troops kurang`);
-        return;
-    }
-
-    const payload = {
-        fromId: kingdomData.fieldObjectId,
-        marchType,
-        toLoc,
-        marchTroops: troops
-    };
-
-    try {
-        await sendRequest({
-            url: "https://api-lok-live.leagueofkingdoms.com/api/field/march/start",
-            token: token,
-            body: b64xorEnc(payload, xor_password),
-            returnResponse: false
-        });
-        console.log(`✅ March dikirim: ${marchType === 1 ? 'Gathering' : 'Support'} ke (${loc[0]}, ${loc[1]})`);
-    } catch (err) {
-        console.error("❌ Gagal kirim march:", err);
-    }
-}
-
-async function setRallyMonster(loc, rallyTime = 5, troopIndex = 0, message = "") {
-    // 🔁 Cek march queue sebelum lanjut
-    const marchQueueUsed = await getMarchQueueUsed();
-    if (marchQueueUsed >= marchLimit) {
-        console.log(`⛔ March queue penuh (${marchQueueUsed}/${marchLimit}), batal set rally.`);
-        return;
-    }
-
-    // Lokasi tujuan (kingdom ID, x, y)
-    const toLoc = [kingdomData.loc[0], ...loc];
-
-    const payload_marchInfo = {
-        fromId: kingdomData.fieldObjectId,
-        toLoc: toLoc
-    };
-
-    let marchInfoResponse, marchInfo;
-    try {
-        marchInfoResponse = await sendRequest({
-            url: "https://api-lok-live.leagueofkingdoms.com/api/field/march/info",
-            token: token,
-            body: b64xorEnc(payload_marchInfo, xor_password),
-            returnResponse: true
-        });
-        marchInfo = b64xorDec(marchInfoResponse, xor_password);
-    } catch (err) {
-        console.error("❌ Gagal ambil march info:", err);
-        return;
-    }
-
-    // Cek apakah marchType = 5 (rally monster)
-    const marchType = marchInfo.marchType;
-    if (marchType !== 5) {
-        console.log(`⛔ MarchType bukan untuk rally monster (marchType = ${marchType}).`);
-        return;
-    }
-
-    const troops = marchInfo?.saveTroops?.[troopIndex];
-    if (!troops) {
-        console.warn(`⚠️ Troops preset ke-${troopIndex} tidak ditemukan.`);
-        return;
-    }
-
-    const canSendMarch = troops.every(saveTroop => {
-        const troopInMarch = marchInfo.troops.find(troop => troop.code === saveTroop.code);
-        return troopInMarch && saveTroop.amount <= troopInMarch.amount;
-    });
-
-    if (!canSendMarch) {
-        console.warn("⛔ Gagal karena jumlah troops kurang dari preset.");
-        return;
-    }
-
-    const payload = {
-        marchType,
-        toLoc,
-        marchTroops: troops,
-        rallyTime,
-        message
-    };
-
-    try {
-        await sendRequest({
-            url: "https://api-lok-live.leagueofkingdoms.com/api/field/rally/start",
-            token: token,
-            body: b64xorEnc(payload, xor_password),
-            returnResponse: false
-        });
-        console.log("✅ Berhasil set rally monster.");
-    } catch (err) {
-        console.error("❌ Gagal set rally:", err);
-    }
-}
-
-
-async function exportCvCRankToCSV(eventId, filename = `CvC_Rank_${getTodayKey()}.csv`) {
-    if (!token || !xor_password) {
-        console.warn("⏳ Token belum tersedia.");
-        return;
-    }
-
-    const worldId = kingdomData.worldId;
-
-    // Fetch list of CvC events
-    const eventListCvC = await sendRequest({
-        url: "https://api-lok-live.leagueofkingdoms.com/api/event/list/cvc",
-        token: token,
-        body: "{}",
-        returnResponse: true
-    });
-
-    if (!eventListCvC?.result || !Array.isArray(eventListCvC.events)) {
-        console.error("❌ Gagal mengambil daftar event CvC.");
-        return;
-    }
-
-    // Jika eventId tidak diberikan, ambil default dari indeks ke-4
-    if (!eventId) {
-        eventId = eventListCvC.events?.[3]?._id;
-        if (!eventId) {
-            console.error("❌ eventId tidak tersedia.");
-            return;
-        }
-    }
-
-    // Fetch ranking data
-    const data = await sendRequest({
-        url: "https://api-lok-live.leagueofkingdoms.com/api/event/cvc/ranking/continent",
-        token: token,
-        body: JSON.stringify({ eventId, worldId }),
-        returnResponse: true
-    });
-
-    if (!data?.result || !Array.isArray(data.ranking)) {
-        console.error("❌ Format data ranking tidak valid", data);
-        return;
-    }
-
-    // Generate CSV
-    const header = ['Rank', 'Point', 'Kingdom ID', 'Kingdom Name'];
-    const rows = data.ranking.map(entry => {
-        const { rank, point, kingdom } = entry;
-        return [rank, point, kingdom._id, `"${kingdom.name}"`];
-    });
-
-    const csvContent = [header.join(','), ...rows.map(row => row.join(','))].join('\n');
-
-    // Download CSV
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
-    link.href = URL.createObjectURL(blob);
-    link.setAttribute('download', filename);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-}
-
-async function exportCvCWeek1ToCSV(eventId, filename = `CvC_Week1_Rank_${getTodayKey()}.csv`) {
-    if (!token || !xor_password) {
-        console.warn("⏳ Token belum tersedia.");
-        return;
-    }
-
-    const worldId = kingdomData.worldId;
-
-    // Ambil daftar event CvC
-    const eventListCvC = await sendRequest({
-        url: "https://api-lok-live.leagueofkingdoms.com/api/event/list/cvc",
-        token: token,
-        body: "{}",
-        returnResponse: true
-    });
-
-    if (!eventListCvC?.result || !Array.isArray(eventListCvC.events)) {
-        console.error("❌ Gagal mengambil daftar event CvC.");
-        return;
-    }
-
-    // Gunakan eventId dari argumen atau ambil default dari index ke-2
-    if (!eventId) {
-        eventId = eventListCvC.events?.[2]?._id;
-        if (!eventId) {
-            console.error("❌ eventId tidak tersedia.");
-            return;
-        }
-    }
-
-    // Ambil data ranking
-    const data = await sendRequest({
-        url: "https://api-lok-live.leagueofkingdoms.com/api/event/cvc/ranking/continent",
-        token: token,
-        body: JSON.stringify({ eventId, worldId }),
-        returnResponse: true
-    });
-
-    if (!data?.result || !Array.isArray(data.ranking)) {
-        console.error("❌ Format data ranking tidak valid", data);
-        return;
-    }
-
-    const header = ['Rank', 'Point', 'Kingdom ID', 'Kingdom Name', 'Kill', 'Death'];
-    const rows = [];
-
-    for (const entry of data.ranking) {
-        const { rank, point, kingdom } = entry;
-        const kingdomId = kingdom._id;
-        let kill = 0;
-        let death = 0;
-
-        try {
-            const historyRes = await sendRequest({
-                url: "https://api-lok-live.leagueofkingdoms.com/api/kingdom/profile/other/history",
-                token: token,
-                body: JSON.stringify({ kingdomId }),
-                returnResponse: true
-            });
-
-            if (historyRes?.result) {
-                kill = historyRes.history?.stats?.battle?.kill || 0;
-                death = historyRes.history?.stats?.battle?.death || 0;
-            }
-        } catch (err) {
-            console.warn(`⚠️ Gagal mengambil data history untuk kingdom ${kingdomId}`, err);
-        }
-
-        rows.push([
-            rank,
-            point,
-            kingdomId,
-            `"${kingdom.name}"`,
-            kill,
-            death
-        ]);
-    }
-
-    const csvContent = [header.join(','), ...rows.map(row => row.join(','))].join('\n');
-
-    // Download CSV
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
-    link.href = URL.createObjectURL(blob);
-    link.setAttribute('download', filename);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-}
 
 
 
