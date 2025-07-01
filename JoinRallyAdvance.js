@@ -1591,12 +1591,12 @@ async function bookmarkSave(limit = undefined) {
 // marchType 5 = attack/rally monster
 // marchType 7 = support
 // marchType 8 = Join rally
-async function sendGatherCM(loc) {
-    await sendMarch(loc, 1, 3); // marchType 1 = gathering, preset index 3
+async function sendGatherCM(x, y) {
+    await sendMarch([x, y], 1, 3); // marchType 1 = gathering, preset index 3
 }
 
-async function sendSupport(loc) {
-    await sendMarch(loc, 7, 2); // marchType 7 = support, preset index 2
+async function sendSupport(x, y) {
+    await sendMarch([x, y], 7, 2); // marchType 7 = support, preset index 2
 }
 
 async function sendMarch(loc, marchType, troopIndex) {
@@ -1665,15 +1665,29 @@ async function sendMarch(loc, marchType, troopIndex) {
     }
 }
 
+
+async function setRallyMonsterFromLoc(x, y, rallyTime = 5, troopIndex = 0, message = "") {
+    await setRallyMonster([x, y], rallyTime, troopIndex, message);
+}
+
+async function setRallyMonsterFromBookmark(index, rallyTime = 5, troopIndex = 0, message = "") {
+    const bookmark = kingdomData.bookmarks[index];
+    if (!bookmark) {
+        console.warn(`⚠️ Bookmark dengan index ${index} tidak ditemukan.`);
+        return;
+    }
+
+    const [, x, y] = bookmark.loc;
+    await setRallyMonster([x, y], rallyTime, troopIndex, message);
+}
+
 async function setRallyMonster(loc, rallyTime = 5, troopIndex = 0, message = "") {
-    // 🔁 Cek march queue sebelum lanjut
     const marchQueueUsed = await getMarchQueueUsed();
     if (marchQueueUsed >= marchLimit) {
         console.log(`⛔ March queue penuh (${marchQueueUsed}/${marchLimit}), batal set rally.`);
         return;
     }
 
-    // Lokasi tujuan (kingdom ID, x, y)
     const toLoc = [kingdomData.loc[0], ...loc];
 
     const payload_marchInfo = {
@@ -1695,7 +1709,6 @@ async function setRallyMonster(loc, rallyTime = 5, troopIndex = 0, message = "")
         return;
     }
 
-    // Cek apakah marchType = 5 (rally monster)
     const marchType = marchInfo.marchType;
     if (marchType !== 5) {
         console.log(`⛔ MarchType bukan untuk rally monster (marchType = ${marchType}).`);
@@ -1733,12 +1746,11 @@ async function setRallyMonster(loc, rallyTime = 5, troopIndex = 0, message = "")
             body: b64xorEnc(payload, xor_password),
             returnResponse: false
         });
-        console.log("✅ Berhasil set rally monster.");
+        console.log("✅ Berhasil set rally monster di lokasi:", toLoc);
     } catch (err) {
         console.error("❌ Gagal set rally:", err);
     }
 }
-
 
 async function exportCvCRankToCSV(eventId, filename = `CvC_Rank_${getTodayKey()}.csv`) {
     if (!token || !xor_password) {
