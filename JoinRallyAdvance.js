@@ -1483,7 +1483,7 @@ async function bookmarkFromFieldData(allowedBookmark, fieldData) {
         }
     }
 }
-
+/*
 async function bookmarkSave() {
     if (!Array.isArray(bookmarkResults)) {
         console.warn("❗ bookmarkResults tidak ditemukan.");
@@ -1520,6 +1520,71 @@ async function bookmarkSave() {
     bookmarkResults = [];
     console.log("🧹 bookmarkResults dikosongkan setelah disimpan.");
 }
+*/
+
+async function bookmarkSave(limit = undefined) {
+    if (!Array.isArray(bookmarkResults)) {
+        console.warn("❗ bookmarkResults tidak ditemukan.");
+        return;
+    }
+
+    if (!kingdomData?.loc || kingdomData.loc.length !== 3) {
+        console.warn("❗ Lokasi kingdom tidak valid.");
+        return;
+    }
+
+    const distance = (loc1, loc2) => {
+        // Euclidean distance
+        const dx = loc1[1] - loc2[1];
+        const dy = loc1[2] - loc2[2];
+        return Math.sqrt(dx * dx + dy * dy);
+    };
+
+    const sorted = [...bookmarkResults].sort((a, b) => {
+        const nameComp = a.name.localeCompare(b.name);
+        if (nameComp !== 0) return nameComp;
+
+        if (a.level !== b.level) return b.level - a.level;
+
+        const distA = distance(kingdomData.loc, a.loc);
+        const distB = distance(kingdomData.loc, b.loc);
+        return distA - distB;
+    });
+
+    // Hilangkan duplikat berdasarkan loc
+    const seen = new Set();
+    const uniqueResults = sorted.filter(item => {
+        const key = item.loc.join(",");
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+    });
+
+    const finalResults = typeof limit === "number" ? uniqueResults.slice(0, limit) : uniqueResults;
+
+    for (const item of finalResults) {
+        const body = JSON.stringify({
+            name: `${item.name} Lv.${item.level}`,
+            loc: item.loc,
+            mark: 1
+        });
+
+        await delay(1000);
+        await sendRequest({
+            url: "https://api-lok-live.leagueofkingdoms.com/api/kingdom/bookmark/add",
+            token: token,
+            body: body,
+            returnResponse: false
+        });
+
+        console.log(`✅ Saved bookmark: ${item.name} Lv.${item.level} at ${item.loc.join(",")}`);
+    }
+
+    // Kosongkan setelah disimpan
+    bookmarkResults = [];
+    console.log("🧹 bookmarkResults dikosongkan setelah disimpan.");
+}
+
 
 async function sendTelegramMessage(token, message) {
     const localKey = `telegram_chat_id_${token.slice(0, 10)}`;
