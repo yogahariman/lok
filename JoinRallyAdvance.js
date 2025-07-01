@@ -1670,16 +1670,46 @@ async function setRallyMonsterFromLoc(x, y, rallyTime = 5, troopIndex = 0, messa
     await setRallyMonster([x, y], rallyTime, troopIndex, message);
 }
 
-async function setRallyMonsterFromBookmark(index, rallyTime = 5, troopIndex = 0, message = "") {
-    const bookmark = kingdomData.bookmarks[index];
-    if (!bookmark) {
-        console.warn(`⚠️ Bookmark dengan index ${index} tidak ditemukan.`);
+// await setRallyMonsterFromBookmarkIndex(3);        // satu index saja
+// await setRallyMonsterFromBookmarkIndex([1, 5]);   // index 1 sampai 5
+async function setRallyMonsterFromBookmark(indexInput, rallyTime = 5, troopIndex = 0, message = "") {
+    let indices = [];
+
+    if (typeof indexInput === "number") {
+        // Satu index
+        indices = [indexInput];
+    } else if (
+        Array.isArray(indexInput) &&
+        indexInput.length === 2 &&
+        typeof indexInput[0] === "number" &&
+        typeof indexInput[1] === "number"
+    ) {
+        // Rentang index: [start, end]
+        const [start, end] = indexInput;
+        if (start > end) {
+            console.warn("⚠️ start index harus <= end index.");
+            return;
+        }
+        indices = Array.from({ length: end - start + 1 }, (_, i) => start + i);
+    } else {
+        console.warn("⚠️ Format indexInput tidak valid. Gunakan angka atau array dua angka [start, end].");
         return;
     }
 
-    const [, x, y] = bookmark.loc;
-    await setRallyMonster([x, y], rallyTime, troopIndex, message);
+    for (const i of indices) {
+        const bookmark = kingdomData.bookmarks[i];
+        if (!bookmark) {
+            console.warn(`⚠️ Bookmark dengan index ${i} tidak ditemukan, skip.`);
+            continue;
+        }
+
+        const [, x, y] = bookmark.loc;
+        console.log(`📍 Set rally dari bookmark [${i}] ${bookmark.name} @ (${x}, ${y})`);
+        await setRallyMonster([x, y], rallyTime, troopIndex, message);
+        await delay(5000); // Delay antar rally
+    }
 }
+
 
 async function setRallyMonster(loc, rallyTime = 5, troopIndex = 0, message = "") {
     const marchQueueUsed = await getMarchQueueUsed();
