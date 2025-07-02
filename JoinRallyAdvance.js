@@ -1585,7 +1585,7 @@ async function bookmarkSave(limit = undefined) {
     console.log("🧹 bookmarkResults dikosongkan setelah disimpan.");
 }
 
-async function removeBookmark(indexOrRange) {
+async function bookmarkRemove(indexOrRange) {
     const bookmarks = kingdomData.bookmarks;
     if (!Array.isArray(bookmarks) || bookmarks.length === 0) {
         console.warn("Tidak ada bookmark untuk dihapus.");
