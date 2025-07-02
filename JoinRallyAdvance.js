@@ -1782,7 +1782,7 @@ async function setRallyMonsterFromBookmarks(rallyTime = 5, troopIndex = 0, messa
 
         if (sisaQueue <= 0) {
             console.log(`⏳ Queue penuh (${marchQueueUsed}/${marchLimit}), tunggu 10 detik...`);
-            await delay(10000);
+            await delay(30000);
             continue;
         }
 
