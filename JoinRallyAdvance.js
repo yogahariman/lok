@@ -1772,8 +1772,8 @@ async function setRallyMonsterFromBookmarks(rallyTime = 5, troopIndex = 0, messa
         const sisaQueue = marchLimit - marchQueueUsed;
 
         if (sisaQueue <= 0) {
-            console.log(`⏳ Queue penuh (${marchQueueUsed}/${marchLimit}), tunggu 30 detik...`);
-            await delay(30000);
+            //console.log(`⏳ Queue penuh (${marchQueueUsed}/${marchLimit}), tunggu 30 detik...`);
+            await delay(60000);
             continue;
         }
 
