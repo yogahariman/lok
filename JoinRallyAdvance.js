@@ -1756,7 +1756,7 @@ async function setRallyMonsterFromBookmark(indexInput, rallyTime = 5, troopIndex
         return;
     }
 
-    for (const i of indices) {
+    for (const i of indices.reverse()) {
         const bookmark = kingdomData.bookmarks[i];
         if (!bookmark) {
             console.warn(`⚠️ Bookmark dengan index ${i} tidak ditemukan, skip.`);
