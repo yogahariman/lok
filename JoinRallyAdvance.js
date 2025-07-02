@@ -1771,33 +1771,40 @@ async function setRallyMonsterFromBookmark(indexInput, rallyTime = 5, troopIndex
 }
 
 async function setRallyAutoFromBookmark(rallyTime = 5, troopIndex = 0, message = "") {
-    const bookmarks = [...kingdomData.bookmarks]; // duplikat agar bisa dimodifikasi
     let i = 0;
 
-    while (i < bookmarks.length) {
+    while (i < kingdomData.bookmarks.length) {
         const marchQueueUsed = await getMarchQueueUsed();
         const sisaQueue = marchLimit - marchQueueUsed;
 
         if (sisaQueue <= 0) {
             console.log(`⏳ Queue penuh (${marchQueueUsed}/${marchLimit}), tunggu 10 detik...`);
-            await delay(30000); // Tunggu 30 detik sebelum coba lagi
+            await delay(10000);
             continue;
         }
 
-        const rallyBatch = bookmarks.slice(i, i + sisaQueue);
+        const rallyBatch = kingdomData.bookmarks.slice(i, i + sisaQueue);
 
-        for (const bookmark of rallyBatch) {
+        for (let j = 0; j < rallyBatch.length; j++) {
+            const indexInBookmark = i + j;
+            const bookmark = kingdomData.bookmarks[indexInBookmark];
+            if (!bookmark || !bookmark.loc || bookmark.loc.length < 3) continue;
+
             const [, x, y] = bookmark.loc;
-            console.log(`📍 Set rally ke ${bookmark.name} @ (${x}, ${y})`);
+            console.log(`📍 Set rally ke [${indexInBookmark}] ${bookmark.name} @ (${x}, ${y})`);
+
             await setRallyMonster([x, y], rallyTime, troopIndex, message);
-            await delay(5000); // Delay antar rally
+            await bookmarkRemove(indexInBookmark);
+            await delay(5000);
         }
 
-        i += sisaQueue;
+        // Setelah hapus, posisi index tidak perlu ditambah,
+        // karena element dihapus dari array sehingga index "i" tetap menunjuk ke yang belum diproses
     }
 
-    console.log("✅ Semua rally dari bookmark selesai dikirim.");
+    console.log("✅ Semua rally dari bookmark selesai & bookmark dihapus.");
 }
+    
 
 async function setRallyMonster(loc, rallyTime = 5, troopIndex = 0, message = "") {
     const marchQueueUsed = await getMarchQueueUsed();
