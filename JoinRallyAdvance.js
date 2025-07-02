@@ -1730,6 +1730,7 @@ async function setRallyMonsterFromLoc(x, y, rallyTime = 5, troopIndex = 0, messa
     await setRallyMonster([x, y], rallyTime, troopIndex, message);
 }
 
+/*
 // await setRallyMonsterFromBookmarkIndex(3);        // satu index saja
 // await setRallyMonsterFromBookmarkIndex([1, 5]);   // index 1 sampai 5
 async function setRallyMonsterFromBookmark(indexInput, rallyTime = 5, troopIndex = 0, message = "") {
@@ -1769,41 +1770,39 @@ async function setRallyMonsterFromBookmark(indexInput, rallyTime = 5, troopIndex
         await delay(5000); // Delay antar rally
     }
 }
+*/
 
-async function setRallyAutoFromBookmark(rallyTime = 5, troopIndex = 0, message = "") {
-    let i = 0;
+async function setRallyMonsterFromBookmarks(rallyTime = 5, troopIndex = 0, message = "") {
+    const bookmarksWithIndex = kingdomData.bookmarks.map((b, i) => ({ index: i, ...b }));
+    let current = 0;
 
-    while (i < kingdomData.bookmarks.length) {
+    while (current < bookmarksWithIndex.length) {
         const marchQueueUsed = await getMarchQueueUsed();
         const sisaQueue = marchLimit - marchQueueUsed;
 
         if (sisaQueue <= 0) {
-            console.log(`⏳ Queue penuh (${marchQueueUsed}/${marchLimit}), tunggu 30 detik...`);
-            await delay(30000);
+            console.log(`⏳ Queue penuh (${marchQueueUsed}/${marchLimit}), tunggu 10 detik...`);
+            await delay(10000);
             continue;
         }
 
-        const rallyBatch = kingdomData.bookmarks.slice(i, i + sisaQueue);
+        const batch = bookmarksWithIndex.slice(current, current + sisaQueue);
 
-        for (let j = 0; j < rallyBatch.length; j++) {
-            const indexInBookmark = i + j;
-            const bookmark = kingdomData.bookmarks[indexInBookmark];
-            if (!bookmark || !bookmark.loc || bookmark.loc.length < 3) continue;
-
-            const [, x, y] = bookmark.loc;
-            console.log(`📍 Set rally ke [${indexInBookmark}] ${bookmark.name} @ (${x}, ${y})`);
+        for (const b of batch) {
+            const [, x, y] = b.loc;
+            console.log(`📍 Set rally ke [${b.index}] ${b.name} @ (${x}, ${y})`);
 
             await setRallyMonster([x, y], rallyTime, troopIndex, message);
-            await bookmarkRemove(indexInBookmark);
+            await bookmarkRemove(b.index);
             await delay(5000);
         }
 
-        // Setelah hapus, posisi index tidak perlu ditambah,
-        // karena element dihapus dari array sehingga index "i" tetap menunjuk ke yang belum diproses
+        current += sisaQueue;
     }
 
-    console.log("✅ Semua rally dari bookmark selesai & bookmark dihapus.");
+    console.log("✅ Semua rally dari bookmark selesai & dihapus dari kingdomData.bookmarks.");
 }
+
     
 
 async function setRallyMonster(loc, rallyTime = 5, troopIndex = 0, message = "") {
@@ -1874,7 +1873,7 @@ async function setRallyMonster(loc, rallyTime = 5, troopIndex = 0, message = "")
             body: b64xorEnc(payload, xor_password),
             returnResponse: false
         });
-        console.log("✅ Berhasil set rally monster di lokasi:", toLoc);
+        //console.log("✅ Berhasil set rally monster di lokasi:", toLoc);
     } catch (err) {
         console.error("❌ Gagal set rally:", err);
     }
