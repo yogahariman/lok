@@ -1765,6 +1765,7 @@ async function setRallyMonsterFromBookmarks(rallyTime = 5, troopIndex = 0, messa
     });
 
     let current = 0;
+    let rallyCount = 1; // Mulai dari rally ke-1
 
     while (current < bookmarksWithIndex.length) {
         const marchQueueUsed = await getMarchQueueUsed();
@@ -1781,9 +1782,10 @@ async function setRallyMonsterFromBookmarks(rallyTime = 5, troopIndex = 0, messa
         for (const b of batch) {
             const [, x, y] = b.loc;
             const levelText = b.monsterLevel ? ` Lv.${b.monsterLevel}` : "";
-            console.log(`📍 Rally ke ${b.name}${levelText} @ (${x}, ${y})`);
+            console.log(`📍 [${rallyCount}] Rally ${b.name}${levelText} @ (${x}, ${y})`);
 
             await setRallyMonster([x, y], rallyTime, troopIndex, message);
+            rallyCount++;
             await delay(5000);
         }
 
