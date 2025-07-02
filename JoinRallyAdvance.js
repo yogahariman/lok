@@ -1770,6 +1770,34 @@ async function setRallyMonsterFromBookmark(indexInput, rallyTime = 5, troopIndex
     }
 }
 
+async function setRallyAutoFromBookmark(rallyTime = 5, troopIndex = 0, message = "") {
+    const bookmarks = [...kingdomData.bookmarks]; // duplikat agar bisa dimodifikasi
+    let i = 0;
+
+    while (i < bookmarks.length) {
+        const marchQueueUsed = await getMarchQueueUsed();
+        const sisaQueue = marchLimit - marchQueueUsed;
+
+        if (sisaQueue <= 0) {
+            console.log(`⏳ Queue penuh (${marchQueueUsed}/${marchLimit}), tunggu 10 detik...`);
+            await delay(30000); // Tunggu 30 detik sebelum coba lagi
+            continue;
+        }
+
+        const rallyBatch = bookmarks.slice(i, i + sisaQueue);
+
+        for (const bookmark of rallyBatch) {
+            const [, x, y] = bookmark.loc;
+            console.log(`📍 Set rally ke ${bookmark.name} @ (${x}, ${y})`);
+            await setRallyMonster([x, y], rallyTime, troopIndex, message);
+            await delay(5000); // Delay antar rally
+        }
+
+        i += sisaQueue;
+    }
+
+    console.log("✅ Semua rally dari bookmark selesai dikirim.");
+}
 
 async function setRallyMonster(loc, rallyTime = 5, troopIndex = 0, message = "") {
     const marchQueueUsed = await getMarchQueueUsed();
