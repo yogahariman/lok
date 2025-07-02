@@ -1812,8 +1812,9 @@ async function setRallyMonsterFromBookmarks(rallyTime = 5, troopIndex = 0, messa
             console.log(`📍 Set rally ke [${b.index}] ${b.name} @ (${x}, ${y})`);
 
             await setRallyMonster([x, y], rallyTime, troopIndex, message);
+            await delay(3000);
             await bookmarkRemove(b.index);
-            await delay(5000);
+            await delay(2000);
         }
 
         current += sisaQueue;
