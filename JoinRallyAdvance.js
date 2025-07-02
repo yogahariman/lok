@@ -1585,7 +1585,7 @@ async function bookmarkSave(limit = undefined) {
     console.log("🧹 bookmarkResults dikosongkan setelah disimpan.");
 }
 
-async function bookmarkRemove(indexOrRange) {
+async function bookmarksRemove(indexOrRange) {
     const bookmarks = kingdomData.bookmarks;
     if (!Array.isArray(bookmarks) || bookmarks.length === 0) {
         console.warn("Tidak ada bookmark untuk dihapus.");
@@ -1627,6 +1627,7 @@ async function bookmarkRemove(indexOrRange) {
     for (const i of indexesToRemove) {
         const bookmark = bookmarks[i];
         if (bookmark && bookmark.loc) {
+            await delay(3000);
             await sendRequest({
                 url: "https://api-lok-live.leagueofkingdoms.com/api/kingdom/bookmark/remove",
                 token,
@@ -1637,6 +1638,30 @@ async function bookmarkRemove(indexOrRange) {
         }
     }
 }
+
+async function bookmarkRemove(index) {
+    const bookmarks = kingdomData.bookmarks;
+    if (!Array.isArray(bookmarks) || index < 0 || index >= bookmarks.length) {
+        console.warn("Index bookmark tidak valid.");
+        return;
+    }
+
+    const bookmark = bookmarks[index];
+    if (!bookmark || !bookmark.loc) {
+        console.warn("Data bookmark tidak ditemukan pada index tersebut.");
+        return;
+    }
+
+    await sendRequest({
+        url: "https://api-lok-live.leagueofkingdoms.com/api/kingdom/bookmark/remove",
+        token,
+        body: JSON.stringify({ loc: bookmark.loc }),
+        returnResponse: false
+    });
+
+    console.log(`Bookmark index ${index} berhasil dihapus.`);
+}
+
 
 // marchType 1 = gathering
 // marchType 2 = attack/rally castle
