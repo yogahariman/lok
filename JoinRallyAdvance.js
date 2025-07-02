@@ -1662,6 +1662,210 @@ async function bookmarkRemove(index) {
     console.log(`Bookmark index ${index} berhasil dihapus.`);
 }
 
+async function setRallyMonsterFromLoc(x, y, rallyTime = 5, troopIndex = 0, message = "") {
+    await setRallyMonster([x, y], rallyTime, troopIndex, message);
+}
+
+/*
+// await setRallyMonsterFromBookmarkIndex(3);        // satu index saja
+// await setRallyMonsterFromBookmarkIndex([1, 5]);   // index 1 sampai 5
+async function setRallyMonsterFromBookmark(indexInput, rallyTime = 5, troopIndex = 0, message = "") {
+    let indices = [];
+
+    if (typeof indexInput === "number") {
+        // Satu index
+        indices = [indexInput];
+    } else if (
+        Array.isArray(indexInput) &&
+        indexInput.length === 2 &&
+        typeof indexInput[0] === "number" &&
+        typeof indexInput[1] === "number"
+    ) {
+        // Rentang index: [start, end]
+        const [start, end] = indexInput;
+        if (start > end) {
+            console.warn("⚠️ start index harus <= end index.");
+            return;
+        }
+        indices = Array.from({ length: end - start + 1 }, (_, i) => start + i);
+    } else {
+        console.warn("⚠️ Format indexInput tidak valid. Gunakan angka atau array dua angka [start, end].");
+        return;
+    }
+
+    for (const i of indices.reverse()) {
+        const bookmark = kingdomData.bookmarks[i];
+        if (!bookmark) {
+            console.warn(`⚠️ Bookmark dengan index ${i} tidak ditemukan, skip.`);
+            continue;
+        }
+
+        const [, x, y] = bookmark.loc;
+        console.log(`📍 Set rally dari bookmark [${i}] ${bookmark.name} @ (${x}, ${y})`);
+        await setRallyMonster([x, y], rallyTime, troopIndex, message);
+        await delay(5000); // Delay antar rally
+    }
+}
+*/
+/*
+async function setRallyMonsterFromBookmarks(rallyTime = 5, troopIndex = 0, message = "") {
+    const bookmarksWithIndex = kingdomData.bookmarks.map((b, i) => ({ index: i, ...b }));
+    let current = 0;
+
+    while (current < bookmarksWithIndex.length) {
+        const marchQueueUsed = await getMarchQueueUsed();
+        const sisaQueue = marchLimit - marchQueueUsed;
+
+        if (sisaQueue <= 0) {
+            console.log(`⏳ Queue penuh (${marchQueueUsed}/${marchLimit}), tunggu 10 detik...`);
+            await delay(30000);
+            continue;
+        }
+
+        const batch = bookmarksWithIndex.slice(current, current + sisaQueue);
+
+        for (const b of batch) {
+            const [, x, y] = b.loc;
+            console.log(`📍 Set rally ke [${b.index}] ${b.name} @ (${x}, ${y})`);
+
+            await setRallyMonster([x, y], rallyTime, troopIndex, message);
+            await delay(3000);
+            await bookmarkRemove(b.index);
+            await delay(2000);
+        }
+
+        current += sisaQueue;
+    }
+
+    console.log("✅ Semua rally dari bookmark selesai & dihapus dari kingdomData.bookmarks.");
+}
+*/
+
+async function setRallyMonsterFromBookmarks(rallyTime = 5, troopIndex = 0, message = "") {
+    const locKey = (loc) => loc.join(",");
+
+    // Buat map dari bookmarkResults
+    const resultMap = Object.fromEntries(
+        bookmarkResults.map(r => [locKey(r.loc), r])
+    );
+
+    // Gabungkan data dengan prioritas dari bookmarkResults (name & level)
+    const bookmarksWithIndex = kingdomData.bookmarks.map((b, i) => {
+        const key = locKey(b.loc);
+        const match = resultMap[key];
+
+        return {
+            index: i,
+            loc: b.loc,
+            mark: b.mark,
+            _id: b._id,
+            name: match?.name || b.name,
+            monsterLevel: match?.level || null
+        };
+    });
+
+    let current = 0;
+
+    while (current < bookmarksWithIndex.length) {
+        const marchQueueUsed = await getMarchQueueUsed();
+        const sisaQueue = marchLimit - marchQueueUsed;
+
+        if (sisaQueue <= 0) {
+            console.log(`⏳ Queue penuh (${marchQueueUsed}/${marchLimit}), tunggu 30 detik...`);
+            await delay(30000);
+            continue;
+        }
+
+        const batch = bookmarksWithIndex.slice(current, current + sisaQueue);
+
+        for (const b of batch) {
+            const [, x, y] = b.loc;
+            const levelText = b.monsterLevel ? ` Lv.${b.monsterLevel}` : "";
+            console.log(`📍 Rally ke ${b.name}${levelText} @ (${x}, ${y})`);
+
+            await setRallyMonster([x, y], rallyTime, troopIndex, message);
+            await delay(5000);
+        }
+
+        current += sisaQueue;
+    }
+
+    console.log("✅ Semua rally dari bookmark selesai.");
+}
+
+async function setRallyMonster(loc, rallyTime = 5, troopIndex = 0, message = "") {
+    const marchQueueUsed = await getMarchQueueUsed();
+    if (marchQueueUsed >= marchLimit) {
+        console.log(`⛔ March queue penuh (${marchQueueUsed}/${marchLimit}), batal set rally.`);
+        return;
+    }
+
+    const toLoc = [kingdomData.loc[0], ...loc];
+
+    const payload_marchInfo = {
+        fromId: kingdomData.fieldObjectId,
+        toLoc: toLoc
+    };
+
+    let marchInfoResponse, marchInfo;
+    try {
+        marchInfoResponse = await sendRequest({
+            url: "https://api-lok-live.leagueofkingdoms.com/api/field/march/info",
+            token: token,
+            body: b64xorEnc(payload_marchInfo, xor_password),
+            returnResponse: true
+        });
+        marchInfo = b64xorDec(marchInfoResponse, xor_password);
+    } catch (err) {
+        console.error("❌ Gagal ambil march info:", err);
+        return;
+    }
+
+    const marchType = marchInfo.marchType;
+    if (marchType !== 5) {
+        console.log(`⛔ MarchType bukan untuk rally monster (marchType = ${marchType}).`);
+        return;
+    }
+
+    const troops = marchInfo?.saveTroops?.[troopIndex];
+    if (!troops) {
+        console.warn(`⚠️ Troops preset ke-${troopIndex} tidak ditemukan.`);
+        return;
+    }
+
+    const canSendMarch = troops.every(saveTroop => {
+        const troopInMarch = marchInfo.troops.find(troop => troop.code === saveTroop.code);
+        return troopInMarch && saveTroop.amount <= troopInMarch.amount;
+    });
+
+    if (!canSendMarch) {
+        console.warn("⛔ Gagal karena jumlah troops kurang dari preset.");
+        return;
+    }
+
+    const payload = {
+        marchType,
+        toLoc,
+        marchTroops: troops,
+        rallyTime,
+        message
+    };
+
+    try {
+        // Gunakan AP jika < 50
+        await useActionPoint();
+        await delay(1000);
+        await sendRequest({
+            url: "https://api-lok-live.leagueofkingdoms.com/api/field/rally/start",
+            token: token,
+            body: b64xorEnc(payload, xor_password),
+            returnResponse: false
+        });
+        //console.log("✅ Berhasil set rally monster di lokasi:", toLoc);
+    } catch (err) {
+        console.error("❌ Gagal set rally:", err);
+    }
+}
 
 // marchType 1 = gathering
 // marchType 2 = attack/rally castle
@@ -1741,161 +1945,6 @@ async function sendMarch(loc, marchType, troopIndex) {
         console.log(`✅ March dikirim: ${marchType === 1 ? 'Gathering' : 'Support'} ke (${loc[0]}, ${loc[1]})`);
     } catch (err) {
         console.error("❌ Gagal kirim march:", err);
-    }
-}
-
-
-async function setRallyMonsterFromLoc(x, y, rallyTime = 5, troopIndex = 0, message = "") {
-    await setRallyMonster([x, y], rallyTime, troopIndex, message);
-}
-
-/*
-// await setRallyMonsterFromBookmarkIndex(3);        // satu index saja
-// await setRallyMonsterFromBookmarkIndex([1, 5]);   // index 1 sampai 5
-async function setRallyMonsterFromBookmark(indexInput, rallyTime = 5, troopIndex = 0, message = "") {
-    let indices = [];
-
-    if (typeof indexInput === "number") {
-        // Satu index
-        indices = [indexInput];
-    } else if (
-        Array.isArray(indexInput) &&
-        indexInput.length === 2 &&
-        typeof indexInput[0] === "number" &&
-        typeof indexInput[1] === "number"
-    ) {
-        // Rentang index: [start, end]
-        const [start, end] = indexInput;
-        if (start > end) {
-            console.warn("⚠️ start index harus <= end index.");
-            return;
-        }
-        indices = Array.from({ length: end - start + 1 }, (_, i) => start + i);
-    } else {
-        console.warn("⚠️ Format indexInput tidak valid. Gunakan angka atau array dua angka [start, end].");
-        return;
-    }
-
-    for (const i of indices.reverse()) {
-        const bookmark = kingdomData.bookmarks[i];
-        if (!bookmark) {
-            console.warn(`⚠️ Bookmark dengan index ${i} tidak ditemukan, skip.`);
-            continue;
-        }
-
-        const [, x, y] = bookmark.loc;
-        console.log(`📍 Set rally dari bookmark [${i}] ${bookmark.name} @ (${x}, ${y})`);
-        await setRallyMonster([x, y], rallyTime, troopIndex, message);
-        await delay(5000); // Delay antar rally
-    }
-}
-*/
-
-async function setRallyMonsterFromBookmarks(rallyTime = 5, troopIndex = 0, message = "") {
-    const bookmarksWithIndex = kingdomData.bookmarks.map((b, i) => ({ index: i, ...b }));
-    let current = 0;
-
-    while (current < bookmarksWithIndex.length) {
-        const marchQueueUsed = await getMarchQueueUsed();
-        const sisaQueue = marchLimit - marchQueueUsed;
-
-        if (sisaQueue <= 0) {
-            console.log(`⏳ Queue penuh (${marchQueueUsed}/${marchLimit}), tunggu 10 detik...`);
-            await delay(30000);
-            continue;
-        }
-
-        const batch = bookmarksWithIndex.slice(current, current + sisaQueue);
-
-        for (const b of batch) {
-            const [, x, y] = b.loc;
-            console.log(`📍 Set rally ke [${b.index}] ${b.name} @ (${x}, ${y})`);
-
-            await setRallyMonster([x, y], rallyTime, troopIndex, message);
-            await delay(3000);
-            await bookmarkRemove(b.index);
-            await delay(2000);
-        }
-
-        current += sisaQueue;
-    }
-
-    console.log("✅ Semua rally dari bookmark selesai & dihapus dari kingdomData.bookmarks.");
-}
-
-    
-
-async function setRallyMonster(loc, rallyTime = 5, troopIndex = 0, message = "") {
-    const marchQueueUsed = await getMarchQueueUsed();
-    if (marchQueueUsed >= marchLimit) {
-        console.log(`⛔ March queue penuh (${marchQueueUsed}/${marchLimit}), batal set rally.`);
-        return;
-    }
-
-    const toLoc = [kingdomData.loc[0], ...loc];
-
-    const payload_marchInfo = {
-        fromId: kingdomData.fieldObjectId,
-        toLoc: toLoc
-    };
-
-    let marchInfoResponse, marchInfo;
-    try {
-        marchInfoResponse = await sendRequest({
-            url: "https://api-lok-live.leagueofkingdoms.com/api/field/march/info",
-            token: token,
-            body: b64xorEnc(payload_marchInfo, xor_password),
-            returnResponse: true
-        });
-        marchInfo = b64xorDec(marchInfoResponse, xor_password);
-    } catch (err) {
-        console.error("❌ Gagal ambil march info:", err);
-        return;
-    }
-
-    const marchType = marchInfo.marchType;
-    if (marchType !== 5) {
-        console.log(`⛔ MarchType bukan untuk rally monster (marchType = ${marchType}).`);
-        return;
-    }
-
-    const troops = marchInfo?.saveTroops?.[troopIndex];
-    if (!troops) {
-        console.warn(`⚠️ Troops preset ke-${troopIndex} tidak ditemukan.`);
-        return;
-    }
-
-    const canSendMarch = troops.every(saveTroop => {
-        const troopInMarch = marchInfo.troops.find(troop => troop.code === saveTroop.code);
-        return troopInMarch && saveTroop.amount <= troopInMarch.amount;
-    });
-
-    if (!canSendMarch) {
-        console.warn("⛔ Gagal karena jumlah troops kurang dari preset.");
-        return;
-    }
-
-    const payload = {
-        marchType,
-        toLoc,
-        marchTroops: troops,
-        rallyTime,
-        message
-    };
-
-    try {
-        // Gunakan AP jika < 50
-        await useActionPoint();
-        await delay(1000);
-        await sendRequest({
-            url: "https://api-lok-live.leagueofkingdoms.com/api/field/rally/start",
-            token: token,
-            body: b64xorEnc(payload, xor_password),
-            returnResponse: false
-        });
-        //console.log("✅ Berhasil set rally monster di lokasi:", toLoc);
-    } catch (err) {
-        console.error("❌ Gagal set rally:", err);
     }
 }
 
