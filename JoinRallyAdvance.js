@@ -1585,7 +1585,7 @@ async function bookmarkSave(limit = undefined) {
     console.log("🧹 bookmarkResults dikosongkan setelah disimpan.");
 }
 
-async function bookmarkRemove(indexOrRange) {
+async function removeBookmark(indexOrRange) {
     const bookmarks = kingdomData.bookmarks;
     if (!Array.isArray(bookmarks) || bookmarks.length === 0) {
         console.warn("Tidak ada bookmark untuk dihapus.");
@@ -1623,26 +1623,20 @@ async function bookmarkRemove(indexOrRange) {
         return;
     }
 
-    // Proses hapus
+    // Proses hapus via API
     for (const i of indexesToRemove) {
         const bookmark = bookmarks[i];
         if (bookmark && bookmark.loc) {
-            await delay(3000);
             await sendRequest({
                 url: "https://api-lok-live.leagueofkingdoms.com/api/kingdom/bookmark/remove",
                 token,
                 body: JSON.stringify({ loc: bookmark.loc }),
                 returnResponse: false
             });
-            console.log(`Removed bookmark index ${i}`);            
+            console.log(`Removed bookmark index ${i}`);
         }
     }
-
-    // Update lokal
-    kingdomData.bookmarks = bookmarks.filter((_, i) => !indexesToRemove.includes(i));
 }
-
-
 
 // marchType 1 = gathering
 // marchType 2 = attack/rally castle
