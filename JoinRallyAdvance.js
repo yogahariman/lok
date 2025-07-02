@@ -1585,6 +1585,64 @@ async function bookmarkSave(limit = undefined) {
     console.log("🧹 bookmarkResults dikosongkan setelah disimpan.");
 }
 
+async function bookmarkRemove(indexOrRange) {
+    const bookmarks = kingdomData.bookmarks;
+    if (!Array.isArray(bookmarks) || bookmarks.length === 0) {
+        console.warn("Tidak ada bookmark untuk dihapus.");
+        return;
+    }
+
+    let indexesToRemove = [];
+
+    if (typeof indexOrRange === 'undefined') {
+        // Hapus semua
+        indexesToRemove = bookmarks.map((_, i) => i);
+    } else if (typeof indexOrRange === 'number') {
+        if (indexOrRange >= 0 && indexOrRange < bookmarks.length) {
+            indexesToRemove = [indexOrRange];
+        } else {
+            console.warn("Index out of range.");
+            return;
+        }
+    } else if (
+        Array.isArray(indexOrRange) &&
+        indexOrRange.length === 2 &&
+        indexOrRange.every(n => typeof n === 'number')
+    ) {
+        const [start, end] = indexOrRange;
+        if (start <= end && start >= 0 && end < bookmarks.length) {
+            for (let i = start; i <= end; i++) {
+                indexesToRemove.push(i);
+            }
+        } else {
+            console.warn("Range index invalid.");
+            return;
+        }
+    } else {
+        console.warn("Format input tidak dikenali.");
+        return;
+    }
+
+    // Proses hapus
+    for (const i of indexesToRemove) {
+        const bookmark = bookmarks[i];
+        if (bookmark && bookmark.loc) {
+            await delay(3000);
+            await sendRequest({
+                url: "https://api-lok-live.leagueofkingdoms.com/api/kingdom/bookmark/remove",
+                token,
+                body: JSON.stringify({ loc: bookmark.loc }),
+                returnResponse: false
+            });
+            console.log(`Removed bookmark index ${i}`);            
+        }
+    }
+
+    // Update lokal
+    kingdomData.bookmarks = bookmarks.filter((_, i) => !indexesToRemove.includes(i));
+}
+
+
 
 // marchType 1 = gathering
 // marchType 2 = attack/rally castle
@@ -1772,6 +1830,9 @@ async function setRallyMonster(loc, rallyTime = 5, troopIndex = 0, message = "")
     };
 
     try {
+        // Gunakan AP jika < 50
+        await useActionPoint();
+        await delay(1000);
         await sendRequest({
             url: "https://api-lok-live.leagueofkingdoms.com/api/field/rally/start",
             token: token,
