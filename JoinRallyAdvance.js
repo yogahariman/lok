@@ -1779,7 +1779,7 @@ async function setRallyAutoFromBookmark(rallyTime = 5, troopIndex = 0, message =
 
         if (sisaQueue <= 0) {
             console.log(`⏳ Queue penuh (${marchQueueUsed}/${marchLimit}), tunggu 30 detik...`);
-            await delay(60000);
+            await delay(30000);
             continue;
         }
 
