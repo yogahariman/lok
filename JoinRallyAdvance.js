@@ -1585,10 +1585,6 @@ async function bookmarkSave(limit = undefined) {
     console.log("🧹 bookmarkResults dikosongkan setelah disimpan.");
 }
 
-function delay(ms) {
-    return new Promise(resolve => setTimeout(resolve, ms));
-}
-
 async function bookmarkDelete(indexOrRange) {
     const bookmarks = kingdomData.bookmarks;
     if (!Array.isArray(bookmarks) || bookmarks.length === 0) {
@@ -1659,15 +1655,46 @@ async function startRallyMonsterFromLoc(x, y, rallyTime = 5, troopIndex = 0, mes
 }
 
 async function startRallyMonsterFromBookmarks(rallyTime = 5, troopIndex = 0, message = "") {
-    if (!bookmarkResults || bookmarkResults.length === 0) {
-        console.warn("⚠️ Tidak ada data di bookmarkResults.");
+    if (!kingdomData?.loc || kingdomData.loc.length !== 3) {
+        console.warn("❗ Lokasi kingdom tidak valid.");
+        return;
+    }
+
+    const distance = (loc1, loc2) => {
+        const dx = loc1[1] - loc2[1];
+        const dy = loc1[2] - loc2[2];
+        return Math.sqrt(dx * dx + dy * dy);
+    };
+
+    // Urutkan bookmarkResults
+    const sorted = [...bookmarkResults].sort((a, b) => {
+        const nameComp = a.name.localeCompare(b.name);
+        if (nameComp !== 0) return nameComp;
+        if (a.level !== b.level) return b.level - a.level;
+
+        const distA = distance(kingdomData.loc, a.loc);
+        const distB = distance(kingdomData.loc, b.loc);
+        return distA - distB;
+    });
+
+    // Hilangkan duplikat berdasarkan lokasi
+    const seen = new Set();
+    const finalResults = sorted.filter(item => {
+        const key = item.loc.join(",");
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+    });
+
+    if (finalResults.length === 0) {
+        console.warn("⚠️ Tidak ada monster yang bisa dirally.");
         return;
     }
 
     let current = 0;
     let rallyCount = 1;
 
-    while (current < bookmarkResults.length) {
+    while (current < finalResults.length) {
         const marchQueueUsed = await getMarchQueueUsed();
         const sisaQueue = marchLimit - marchQueueUsed;
 
@@ -1677,7 +1704,7 @@ async function startRallyMonsterFromBookmarks(rallyTime = 5, troopIndex = 0, mes
             continue;
         }
 
-        const batch = bookmarkResults.slice(current, current + sisaQueue);
+        const batch = finalResults.slice(current, current + sisaQueue);
 
         for (const b of batch) {
             const [, x, y] = b.loc;
@@ -1692,8 +1719,9 @@ async function startRallyMonsterFromBookmarks(rallyTime = 5, troopIndex = 0, mes
         current += sisaQueue;
     }
 
-    console.log("✅ Semua rally dari bookmarkResults selesai.");
+    console.log("✅ Semua rally dari bookmark selesai.");
 }
+
 
 async function rallyMonster(loc, rallyTime = 5, troopIndex = 0, message = "") {
     const marchQueueUsed = await getMarchQueueUsed();
