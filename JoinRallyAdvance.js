@@ -1585,7 +1585,11 @@ async function bookmarkSave(limit = undefined) {
     console.log("🧹 bookmarkResults dikosongkan setelah disimpan.");
 }
 
-async function bookmarksRemove(indexOrRange) {
+function delay(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+async function bookmarkRemove(indexOrRange) {
     const bookmarks = kingdomData.bookmarks;
     if (!Array.isArray(bookmarks) || bookmarks.length === 0) {
         console.warn("Tidak ada bookmark untuk dihapus.");
@@ -1595,13 +1599,14 @@ async function bookmarksRemove(indexOrRange) {
     let indexesToRemove = [];
 
     if (typeof indexOrRange === 'undefined') {
-        // Hapus semua
+        // Hapus semua (semua index 0-based)
         indexesToRemove = bookmarks.map((_, i) => i);
     } else if (typeof indexOrRange === 'number') {
-        if (indexOrRange >= 0 && indexOrRange < bookmarks.length) {
-            indexesToRemove = [indexOrRange];
+        const index = indexOrRange - 1;
+        if (index >= 0 && index < bookmarks.length) {
+            indexesToRemove = [index];
         } else {
-            console.warn("Index out of range.");
+            console.warn("Index tidak valid.");
             return;
         }
     } else if (
@@ -1609,57 +1614,44 @@ async function bookmarksRemove(indexOrRange) {
         indexOrRange.length === 2 &&
         indexOrRange.every(n => typeof n === 'number')
     ) {
-        const [start, end] = indexOrRange;
+        const [start, end] = indexOrRange.map(n => n - 1); // convert to 0-based
         if (start <= end && start >= 0 && end < bookmarks.length) {
             for (let i = start; i <= end; i++) {
                 indexesToRemove.push(i);
             }
         } else {
-            console.warn("Range index invalid.");
+            console.warn("Range index tidak valid.");
             return;
         }
     } else {
-        console.warn("Format input tidak dikenali.");
+        console.warn("Input tidak dikenali. Gunakan angka atau [start, end].");
         return;
     }
 
-    // Proses hapus via API
-    for (const i of indexesToRemove) {
-        const bookmark = bookmarks[i];
-        if (bookmark && bookmark.loc) {
+    const useDelay = indexesToRemove.length > 1;
+
+    for (let i = 0; i < indexesToRemove.length; i++) {
+        const idx = indexesToRemove[i];
+        const bookmark = bookmarks[idx];
+
+        if (!bookmark || !bookmark.loc) {
+            console.warn(`Bookmark tidak valid pada index ${idx}`);
+            continue;
+        }
+
+        await sendRequest({
+            url: "https://api-lok-live.leagueofkingdoms.com/api/kingdom/bookmark/remove",
+            token,
+            body: JSON.stringify({ loc: bookmark.loc }),
+            returnResponse: false
+        });
+
+        console.log(`Bookmark urutan ke-${idx + 1} berhasil dihapus`);
+
+        if (useDelay && i < indexesToRemove.length - 1) {
             await delay(3000);
-            await sendRequest({
-                url: "https://api-lok-live.leagueofkingdoms.com/api/kingdom/bookmark/remove",
-                token,
-                body: JSON.stringify({ loc: bookmark.loc }),
-                returnResponse: false
-            });
-            console.log(`Removed bookmark index ${i}`);
         }
     }
-}
-
-async function bookmarkRemove(index) {
-    const bookmarks = kingdomData.bookmarks;
-    if (!Array.isArray(bookmarks) || index < 0 || index >= bookmarks.length) {
-        console.warn("Index bookmark tidak valid.");
-        return;
-    }
-
-    const bookmark = bookmarks[index];
-    if (!bookmark || !bookmark.loc) {
-        console.warn("Data bookmark tidak ditemukan pada index tersebut.");
-        return;
-    }
-
-    await sendRequest({
-        url: "https://api-lok-live.leagueofkingdoms.com/api/kingdom/bookmark/remove",
-        token,
-        body: JSON.stringify({ loc: bookmark.loc }),
-        returnResponse: false
-    });
-
-    console.log(`Bookmark index ${index} berhasil dihapus.`);
 }
 
 async function setRallyMonsterFromLoc(x, y, rallyTime = 5, troopIndex = 0, message = "") {
