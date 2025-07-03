@@ -1706,15 +1706,29 @@ async function startRallyMonsterFromBookmarks(rallyTime = 5, troopIndex = 0, mes
 
         const batch = finalResults.slice(current, current + sisaQueue);
 
+
+        // for (const b of batch) {
+        //     const [, x, y] = b.loc;
+        //     const levelText = b.level ? ` Lv.${b.level}` : "";
+        //     console.log(`📍 [${rallyCount}] Rally ${b.name}${levelText} @ (${x}, ${y})`);
+
+        //     await rallyMonster([x, y], rallyTime, troopIndex, message);
+        //     rallyCount++;
+        //     await delay(5000);
+        // }
+
         for (const b of batch) {
             const [, x, y] = b.loc;
             const levelText = b.level ? ` Lv.${b.level}` : "";
-            console.log(`📍 [${rallyCount}] Rally ${b.name}${levelText} @ (${x}, ${y})`);
+            const dist = Math.round(distance(kingdomData.loc, b.loc)); // dibulatkan ke bilangan bulat
+
+            console.log(`📍 [${rallyCount}] Rally ${b.name}${levelText} @ (${x}, ${y}) | 📏 Jarak: ${dist}`);
 
             await rallyMonster([x, y], rallyTime, troopIndex, message);
             rallyCount++;
             await delay(5000);
         }
+
 
         current += sisaQueue;
     }
