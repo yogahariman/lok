@@ -1659,46 +1659,29 @@ async function startRallyMonsterFromLoc(x, y, rallyTime = 5, troopIndex = 0, mes
 }
 
 async function startRallyMonsterFromBookmarks(rallyTime = 5, troopIndex = 0, message = "") {
-    const locKey = (loc) => loc.join(",");
-
-    // Buat map dari bookmarkResults
-    const resultMap = Object.fromEntries(
-        bookmarkResults.map(r => [locKey(r.loc), r])
-    );
-
-    // Gabungkan data dengan prioritas dari bookmarkResults (name & level)
-    const bookmarksWithIndex = kingdomData.bookmarks.map((b, i) => {
-        const key = locKey(b.loc);
-        const match = resultMap[key];
-
-        return {
-            index: i,
-            loc: b.loc,
-            mark: b.mark,
-            _id: b._id,
-            name: match?.name || b.name,
-            monsterLevel: match?.level || null
-        };
-    });
+    if (!bookmarkResults || bookmarkResults.length === 0) {
+        console.warn("⚠️ Tidak ada data di bookmarkResults.");
+        return;
+    }
 
     let current = 0;
-    let rallyCount = 1; // Mulai dari rally ke-1
+    let rallyCount = 1;
 
-    while (current < bookmarksWithIndex.length) {
+    while (current < bookmarkResults.length) {
         const marchQueueUsed = await getMarchQueueUsed();
         const sisaQueue = marchLimit - marchQueueUsed;
 
         if (sisaQueue <= 0) {
-            //console.log(`⏳ Queue penuh (${marchQueueUsed}/${marchLimit}), tunggu 30 detik...`);
+            console.log(`⏳ Queue penuh (${marchQueueUsed}/${marchLimit}), tunggu 1 menit...`);
             await delay(60000);
             continue;
         }
 
-        const batch = bookmarksWithIndex.slice(current, current + sisaQueue);
+        const batch = bookmarkResults.slice(current, current + sisaQueue);
 
         for (const b of batch) {
             const [, x, y] = b.loc;
-            const levelText = b.monsterLevel ? ` Lv.${b.monsterLevel}` : "";
+            const levelText = b.level ? ` Lv.${b.level}` : "";
             console.log(`📍 [${rallyCount}] Rally ${b.name}${levelText} @ (${x}, ${y})`);
 
             await rallyMonster([x, y], rallyTime, troopIndex, message);
@@ -1709,7 +1692,7 @@ async function startRallyMonsterFromBookmarks(rallyTime = 5, troopIndex = 0, mes
         current += sisaQueue;
     }
 
-    console.log("✅ Semua rally dari bookmark selesai.");
+    console.log("✅ Semua rally dari bookmarkResults selesai.");
 }
 
 async function rallyMonster(loc, rallyTime = 5, troopIndex = 0, message = "") {
