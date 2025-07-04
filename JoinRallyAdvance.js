@@ -10,7 +10,7 @@ let bookmarkResults = [];
 
 // Simpan ke localStorage sebagai string JSON
 //localStorage.setItem('bookmarkResults_bk', JSON.stringify(bookmarkResults));
-//bookmarkResults = JSON.parse(localStorage.getItem('bookmarkResults_')) || [];
+//bookmarkResults = JSON.parse(localStorage.getItem('bookmarkResults_bk')) || [];
 
 
 //const delayJoin = 5000; // 5 detik delay sebelum join rally
