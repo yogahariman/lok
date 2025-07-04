@@ -2138,7 +2138,7 @@ async function autoJoinRally() {
                 } = {}
             } = battle;
 
-            //const monsterInfo = allowedMonsters[monsterCode];
+            const monsterInfo = allowedMonsters[monsterCode];
             //const isAllowed = monsterInfo && monsterLevel >= monsterInfo.minLevel;
 
             //if (!isAllowed) {
