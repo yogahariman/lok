@@ -1662,7 +1662,14 @@ async function startRallyMonsterFromLoc(x, y, rallyTime = 5, troopIndex = 0, mes
 
 async function startRallyMonsterFromBookmarks(rallyTime = 5, troopIndex = 0, message = "") {
 
+    const distance = (loc1, loc2) => {
+        const dx = loc1[1] - loc2[1];
+        const dy = loc1[2] - loc2[2];
+        return Math.sqrt(dx * dx + dy * dy);
+    };
+    
     const finalResults = getSortedUniqueBookmarks();
+
 
     if (finalResults.length === 0) {
         console.warn("⚠️ Tidak ada monster yang bisa dirally.");
