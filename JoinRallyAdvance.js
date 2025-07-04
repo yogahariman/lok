@@ -8,6 +8,11 @@ let marchLimit = null;
 let marchQueueUsed = null;
 let bookmarkResults = [];
 
+// Simpan ke localStorage sebagai string JSON
+//localStorage.setItem('bookmarkResults_', JSON.stringify(bookmarkResults));
+//bookmarkResults = JSON.parse(localStorage.getItem('bookmarkResults_')) || [];
+
+
 //const delayJoin = 5000; // 5 detik delay sebelum join rally
 //let autoOpen = false;
 //const delayCheckListRally = 60000; // 60 detik delay untuk check list rally
