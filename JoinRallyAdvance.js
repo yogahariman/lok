@@ -433,9 +433,10 @@ async function useActionPoint() {
     }
 }
 
-// 10726001 (skin buff)
-// 10729001 (skin ap)
-async function changeSkin(skinCode = 10729001) {
+// 10726001 (skin skill cooldown reduction)
+// 10729001 (skin reduce AP consumption)
+// 10730001 (skin drop rate)
+async function changeSkin(skinCode = 10730001) {
     if (!token || !xor_password) {
         console.warn("⏳ Token belum tersedia.");
         return null;
@@ -1678,7 +1679,8 @@ async function startRallyMonsterFromBookmarks(rallyTime = 5, troopIndex = 0, mes
 
         const batch = finalResults.slice(current, current + sisaQueue);
 
-
+        await changeSkin(10729001);
+        await delay(2000);
         for (const b of batch) {
             const [, x, y] = b.loc;
             const levelText = b.level ? ` Lv.${b.level}` : "";
@@ -1690,7 +1692,7 @@ async function startRallyMonsterFromBookmarks(rallyTime = 5, troopIndex = 0, mes
             rallyCount++;
             await delay(5000);
         }
-
+        await changeSkin();
 
         current += sisaQueue;
     }
@@ -2100,6 +2102,7 @@ async function autoJoinRally() {
 
         checkAndResetRallyCount(); // Cek dan reset jumlah rally pukul 0 UTC
 
+        await changeSkin(10729001);
         for (const battle of unjoinedRallies) {
             //const battleId = battle._id;
             //const isJoined = battle.isJoined;
@@ -2128,20 +2131,6 @@ async function autoJoinRally() {
             if (marchQueueUsed >= marchLimit) {
                 console.log(`⛔ March queue penuh (${marchQueueUsed}/${marchLimit}), batal join rally.`);
                 break;
-                /*
-                console.log(`⏳ March queue penuh (${marchQueueUsed}/${marchLimit}), menunggu 30 detik...`);
-
-                await delay(30000); // tunggu 20 detik
-
-                // Cek ulang setelah delay
-                marchQueueUsed = await getMarchQueueUsed();
-                if (marchQueueUsed >= marchLimit) {
-                    console.log(`⛔ Masih penuh (${marchQueueUsed}/${marchLimit}), batal join rally.`);
-                    continue;
-                }
-
-                console.log("✅ Slot march tersedia setelah menunggu, lanjut join rally...");
-                */
             }
 
 
@@ -2246,6 +2235,7 @@ async function autoJoinRally() {
             });
             await delay(1000);
         }
+        await changeSkin();
     } catch (err) {
         console.error("❌ Error saat auto join:", err);
     }
