@@ -502,7 +502,7 @@ async function changeTreasure(page = 3) {
         });
 
         const currentPage = treasureList.page;
-        console.log(`📦 Treasure saat ini di page ${currentPage}`);
+        console.log(`📦 Treasure saat ini di page ${currentPage+1}`);
 
         if (currentPage === page) {
             console.log("🛑 Treasure sudah di page yang sama, tidak melakukan perubahan.");
@@ -527,7 +527,7 @@ async function changeTreasure(page = 3) {
             returnResponse: false
         });
 
-        console.log(`✅ Treasure berhasil diubah ke page ${page}`);
+        console.log(`✅ Treasure berhasil diubah ke page ${page+1}`);
     } catch (error) {
         console.error("❌ Gagal mengganti treasure:", error);
     }
