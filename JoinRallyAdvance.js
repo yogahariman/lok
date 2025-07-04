@@ -2089,6 +2089,213 @@ async function autoJoinRally() {
         });
         //console.log("📥 Rally list:", rallies);
 
+        rallies.forEach(b => {
+            if (!b.isJoined) {
+                const { code, level } = b.targetMonster || {};
+                const monsterInfo = allowedMonsters[code];
+                if (!monsterInfo || level < monsterInfo.minLevel) {
+                    console.log("❌ Tidak join rally:", monsterInfo?.name || "Unknown", "(Level:", level, ")");
+                }
+            }
+        });
+
+        //const unjoinedRallies = rallies.filter(b => !b.isJoined);
+        const unjoinedRallies = rallies.filter(b => {
+            if (b.isJoined) return false;
+
+            const monster = b.targetMonster;
+            if (!monster) return false;
+
+            const monsterInfo = allowedMonsters[monster.code];
+            return monsterInfo && monster.level >= monsterInfo.minLevel;
+        });
+
+        if (unjoinedRallies.length === 0) {
+            //console.log("✅ Semua rally sudah diikuti.");
+            return;
+        }
+
+        if (rallies.length === unjoinedRallies.length) {
+            // Semua rally belum diikuti
+            await changeTreasure(); // Jalankan pengecekan + ubah treasure jika perlu
+        }
+
+        checkAndResetRallyCount(); // Cek dan reset jumlah rally pukul 0 UTC
+
+        await changeSkin(10729001);
+        for (const battle of unjoinedRallies) {
+            //const battleId = battle._id;
+            //const isJoined = battle.isJoined;
+            //const monsterCode = battle.targetMonster?.code;
+            //const monsterLevel = battle.targetMonster?.level;
+            //const monsterHP = battle.targetMonster?.param?.value ?? 0; // default 0 kalau null
+            const {
+                _id: battleId,
+                targetMonster: {
+                    code: monsterCode,
+                    level: monsterLevel,
+                    param: { value: monsterHP = 0 } = {}
+                } = {}
+            } = battle;
+
+            //const monsterInfo = allowedMonsters[monsterCode];
+            //const isAllowed = monsterInfo && monsterLevel >= monsterInfo.minLevel;
+
+            //if (!isAllowed) {
+            //    console.log("❌ Tidak join rally:", monsterInfo?.name || "Unknown", "(Level:", monsterLevel, ")");
+            //    continue;
+            //}
+
+            // 🔁 Cek march queue sebelum lanjut
+            marchQueueUsed = await getMarchQueueUsed();
+            if (marchQueueUsed >= marchLimit) {
+                console.log(`⛔ March queue penuh (${marchQueueUsed}/${marchLimit}), batal join rally.`);
+                break;
+            }
+
+
+            incrementRallyCount();
+            //console.log(`[🔁] Memproses antrean rally ke-${getRallyCount()}`);    
+            //console.log("✅ Join rally:", monsterInfo.name, "(Level:", monsterLevel, ")");
+            console.log(
+                `%c[🎯 RALLY] %c#${getRallyCount()} %c🪖 ${marchQueueUsed + 1}/${marchLimit} %c🦖 ${monsterInfo.name.toUpperCase()} [Lv.${monsterLevel}]`,
+                'color: green; font-weight: bold;',
+                'color: cyan;',
+                'color: yellow;',
+                'color: orange; font-weight: bold;',
+            );
+
+
+            //const saveTroopsGroup = getTroopGroupByHP(monsterHP);
+            //const payload = payloadJoinRally(saveTroopsGroup, battleId);
+            //const payload_encrypted = b64xorEnc(payload, xor_password);
+
+
+            // Gunakan AP jika < 50
+            await useActionPoint();
+            await delay(1000);
+
+            await sendRequest({
+                url: "https://api-lok-live.leagueofkingdoms.com/api/alliance/info/my",
+                token: token,
+                body: "{}",
+                returnResponse: false
+            });
+            await delay(1000);
+
+            await sendRequest({
+                url: "https://api-lok-live.leagueofkingdoms.com/api/alliance/battle/list/v2",
+                token: token,
+                body: "{}",
+                returnResponse: false
+            });
+            await delay(1000);
+
+            const battleInfo = await sendRequest({
+                url: "https://api-lok-live.leagueofkingdoms.com/api/alliance/battle/info",
+                token: token,
+                body: JSON.stringify({ rallyMoId: battleId }),
+                returnResponse: true
+            });
+            await delay(1000);
+            //console.log("📥 /alliance/battle/info", battleInfo);
+
+
+            const payload_marchInfo = {
+                fromId: kingdomData.fieldObjectId,
+                toLoc: battleInfo.battle.fromLoc,
+                rallyMoId: battleId
+            };
+            const marchInfoResponse = await sendRequest({
+                url: "https://api-lok-live.leagueofkingdoms.com/api/field/march/info",
+                token: token,
+                body: b64xorEnc(payload_marchInfo, xor_password),
+                returnResponse: true
+            });
+            await delay(1000);
+            const marchInfo = b64xorDec(marchInfoResponse, xor_password);
+            //console.log("📥 Save Troops Response : ", marchInfo);
+
+            //Untuk menentukan apakah masih ada cukup waktu untuk ikut rally
+            const endTime = new Date(battle.endTime);
+            const speed = 5; // km per detik
+            const marchDurationSeconds = marchInfo.distance / speed;
+            const now = new Date();
+            const timeLeftSeconds = (endTime - now) / 1000;
+
+            if (marchDurationSeconds > timeLeftSeconds) {
+                console.log("❌ Tidak jadi ikut rally karena waktu untuk join kurang.");
+                continue;
+            } else {
+                //console.log("✅ Masih sempat untuk join rally.");
+            }
+
+
+            const saveTroopsGroup = getTroopGroupByHP(monsterHP, marchInfo);
+
+            const canJoinRally = saveTroopsGroup.every(saveTroop => {
+                const troopInMarch = marchInfo.troops.find(troop => troop.code === saveTroop.code);
+                return troopInMarch && saveTroop.amount <= troopInMarch.amount;
+            });
+
+            if (!canJoinRally) {
+                console.log("Tidak jadi ikut rally karena ada jumlah troops kurang.");
+                continue;
+            } else {
+                //console.log("Lanjut ikut rally.");
+            }
+
+            const payload_rally_encrypted = b64xorEnc(payloadJoinRally(saveTroopsGroup, battleId), xor_password);
+
+            await sendRequest({
+                url: "https://api-lok-live.leagueofkingdoms.com/api/field/rally/join",
+                token: token,
+                body: payload_rally_encrypted,
+                returnResponse: false
+            });
+            await delay(1000);
+        }
+        await changeSkin();
+    } catch (err) {
+        console.error("❌ Error saat auto join:", err);
+    }
+}
+/*
+async function autoJoinRally() {
+    if (!token || !xor_password) {
+        console.warn("⏳ Token belum tersedia.");
+        return;
+    }
+
+    try {
+        const rallyList = await sendRequest({
+            url: "https://api-lok-live.leagueofkingdoms.com/api/alliance/battle/list/v2",
+            token: token,
+            body: "{}",
+            returnResponse: true
+        });
+
+        //console.log("📥 Rally list response:", rallyList);
+        const rallyListJson = decodePayloadArray(rallyList.payload);
+        //console.log("📥 Rally list response:", rallyListJson);
+
+        if (!rallyListJson.result || !Array.isArray(rallyListJson.battles) || rallyListJson.battles.length === 0) {
+            //console.log("⚠️ Rally list tidak valid atau kosong.");
+            return;
+        }
+
+        // array rallies diurutkan berdasarkan code dan level
+        const rallies = rallyListJson.battles;
+        rallies.sort((a, b) => {
+            // Urutkan berdasarkan code ASCENDING
+            if (a.targetMonster.code !== b.targetMonster.code) {
+                return a.targetMonster.code - b.targetMonster.code;
+            }
+            // Jika code sama, urutkan berdasarkan level DESCENDING
+            return b.targetMonster.level - a.targetMonster.level;
+        });
+        //console.log("📥 Rally list:", rallies);
+
         const unjoinedRallies = rallies.filter(b => !b.isJoined);
         if (unjoinedRallies.length === 0) {
             //console.log("✅ Semua rally sudah diikuti.");
@@ -2240,6 +2447,7 @@ async function autoJoinRally() {
         console.error("❌ Error saat auto join:", err);
     }
 }
+*/
 
 async function monitorWebSocket() {
     if (window._originalWebSocket) {
