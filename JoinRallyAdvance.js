@@ -1706,7 +1706,6 @@ async function rallyMonster(loc, rallyTime = 5, troopIndex = 0, message = "") {
     }
 }
 */
-
 async function startRallyMonsterFromBookmarks(rallyTime = 5, troopIndex = 0, message = "") {
     const distance = (loc1, loc2) => {
         const dx = loc1[1] - loc2[1];
@@ -1723,16 +1722,26 @@ async function startRallyMonsterFromBookmarks(rallyTime = 5, troopIndex = 0, mes
 
     let rallyCount = 1;
     let i = 0;
-
-    await changeSkin(10729001);
-    await delay(2000);
+    let isSkinMonsterApplied = false;
 
     while (i < finalResults.length) {
-        const marchQueueUsed = await getMarchQueueUsed();
+        let marchQueueUsed = await getMarchQueueUsed();
+
         if (marchQueueUsed >= marchLimit) {
+            if (isSkinMonsterApplied) {
+                await changeSkin(); // Kembali ke skin default
+                isSkinMonsterApplied = false;
+            }
+
             console.log(`⏳ Queue penuh (${marchQueueUsed}/${marchLimit}), tunggu 1 menit...`);
             await delay(60000);
             continue;
+        }
+
+        if (!isSkinMonsterApplied) {
+            await changeSkin(10729001); // Skin rally monster
+            isSkinMonsterApplied = true;
+            await delay(2000);
         }
 
         const b = finalResults[i];
@@ -1743,16 +1752,18 @@ async function startRallyMonsterFromBookmarks(rallyTime = 5, troopIndex = 0, mes
         console.log(`📍 [${rallyCount}] Coba rally ${b.name}${levelText} @ (${x}, ${y}) | 📏 Jarak: ${dist}`);
 
         const success = await rallyMonster([x, y], rallyTime, troopIndex, message);
-
         if (success) {
             rallyCount++;
         }
 
-        i++; // Tetap lanjut ke monster berikutnya meskipun gagal rally
+        i++;
         await delay(5000);
     }
 
-    await changeSkin();
+    if (isSkinMonsterApplied) {
+        await changeSkin(); // Kembali ke skin default di akhir
+    }
+
     console.log("✅ Semua rally dari bookmark selesai.");
 }
 
