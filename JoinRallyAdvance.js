@@ -1749,7 +1749,7 @@ async function startRallyMonsterFromBookmarks(rallyTime = 5, troopIndex = 0, mes
         const levelText = b.level ? ` Lv.${b.level}` : "";
         const dist = Math.round(distance(kingdomData.loc, b.loc));
 
-        console.log(`📍 [${rallyCount}] Coba rally ${b.name}${levelText} @ (${x}, ${y}) | 📏 Jarak: ${dist}`);
+        console.log(`📍 [Rally ${rallyCount}] Sisa ${finalResults.length - i - 1} → ${b.name}${levelText} @ (${x}, ${y}) | 📏 Jarak: ${dist}`);
 
         const success = await rallyMonster([x, y], rallyTime, troopIndex, message);
         if (success) {
