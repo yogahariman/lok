@@ -1397,6 +1397,40 @@ async function scheduleSkillActivate(codes = [10001]) {
     }
 }
 
+
+function getSortedUniqueBookmarks() {
+    if (!kingdomData?.loc || kingdomData.loc.length !== 3) {
+        console.warn("❗ Lokasi kingdom tidak valid.");
+        return [];
+    }
+
+    const distance = (loc1, loc2) => {
+        const dx = loc1[1] - loc2[1];
+        const dy = loc1[2] - loc2[2];
+        return Math.sqrt(dx * dx + dy * dy);
+    };
+
+    const sorted = [...bookmarkResults].sort((a, b) => {
+        const nameComp = a.name.localeCompare(b.name);
+        if (nameComp !== 0) return nameComp;
+        if (a.level !== b.level) return b.level - a.level;
+
+        const distA = distance(kingdomData.loc, a.loc);
+        const distB = distance(kingdomData.loc, b.loc);
+        return distA - distB;
+    });
+
+    const seen = new Set();
+    const unique = sorted.filter(item => {
+        const key = item.loc.join(",");
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+    });
+
+    return unique;
+}
+
 async function bookmarkFromFieldData(allowedBookmark, fieldData) {
     const existingLocs = new Set(bookmarkResults.map(b => b.loc.join(","))); // lokasi yang sudah ada
     let index = bookmarkResults.length + 1; // index global berdasarkan jumlah sebelumnya
@@ -1438,39 +1472,13 @@ async function bookmarkSave(limit = undefined) {
         return;
     }
 
-    if (!kingdomData?.loc || kingdomData.loc.length !== 3) {
-        console.warn("❗ Lokasi kingdom tidak valid.");
+    const sortedUnique = getSortedUniqueBookmarks();
+    if (sortedUnique.length === 0) {
+        console.warn("⚠️ Tidak ada bookmark yang bisa disimpan.");
         return;
     }
 
-    const distance = (loc1, loc2) => {
-        // Euclidean distance
-        const dx = loc1[1] - loc2[1];
-        const dy = loc1[2] - loc2[2];
-        return Math.sqrt(dx * dx + dy * dy);
-    };
-
-    const sorted = [...bookmarkResults].sort((a, b) => {
-        const nameComp = a.name.localeCompare(b.name);
-        if (nameComp !== 0) return nameComp;
-
-        if (a.level !== b.level) return b.level - a.level;
-
-        const distA = distance(kingdomData.loc, a.loc);
-        const distB = distance(kingdomData.loc, b.loc);
-        return distA - distB;
-    });
-
-    // Hilangkan duplikat berdasarkan loc
-    const seen = new Set();
-    const uniqueResults = sorted.filter(item => {
-        const key = item.loc.join(",");
-        if (seen.has(key)) return false;
-        seen.add(key);
-        return true;
-    });
-
-    const finalResults = typeof limit === "number" ? uniqueResults.slice(0, limit) : uniqueResults;
+    const finalResults = typeof limit === "number" ? sortedUnique.slice(0, limit) : sortedUnique;
 
     for (const item of finalResults) {
         const body = JSON.stringify({
@@ -1564,37 +1572,91 @@ async function startRallyMonsterFromLoc(x, y, rallyTime = 5, troopIndex = 0, mes
     await rallyMonster([x, y], rallyTime, troopIndex, message);
 }
 
+// async function startRallyMonsterFromBookmarks(rallyTime = 5, troopIndex = 0, message = "") {
+//     if (!kingdomData?.loc || kingdomData.loc.length !== 3) {
+//         console.warn("❗ Lokasi kingdom tidak valid.");
+//         return;
+//     }
+
+//     const distance = (loc1, loc2) => {
+//         const dx = loc1[1] - loc2[1];
+//         const dy = loc1[2] - loc2[2];
+//         return Math.sqrt(dx * dx + dy * dy);
+//     };
+
+//     // Urutkan bookmarkResults
+//     const sorted = [...bookmarkResults].sort((a, b) => {
+//         const nameComp = a.name.localeCompare(b.name);
+//         if (nameComp !== 0) return nameComp;
+//         if (a.level !== b.level) return b.level - a.level;
+
+//         const distA = distance(kingdomData.loc, a.loc);
+//         const distB = distance(kingdomData.loc, b.loc);
+//         return distA - distB;
+//     });
+
+//     // Hilangkan duplikat berdasarkan lokasi
+//     const seen = new Set();
+//     const finalResults = sorted.filter(item => {
+//         const key = item.loc.join(",");
+//         if (seen.has(key)) return false;
+//         seen.add(key);
+//         return true;
+//     });
+
+//     if (finalResults.length === 0) {
+//         console.warn("⚠️ Tidak ada monster yang bisa dirally.");
+//         return;
+//     }
+
+//     let current = 0;
+//     let rallyCount = 1;
+
+//     while (current < finalResults.length) {
+//         const marchQueueUsed = await getMarchQueueUsed();
+//         const sisaQueue = marchLimit - marchQueueUsed;
+
+//         if (sisaQueue <= 0) {
+//             console.log(`⏳ Queue penuh (${marchQueueUsed}/${marchLimit}), tunggu 1 menit...`);
+//             await delay(60000);
+//             continue;
+//         }
+
+//         const batch = finalResults.slice(current, current + sisaQueue);
+
+
+//         // for (const b of batch) {
+//         //     const [, x, y] = b.loc;
+//         //     const levelText = b.level ? ` Lv.${b.level}` : "";
+//         //     console.log(`📍 [${rallyCount}] Rally ${b.name}${levelText} @ (${x}, ${y})`);
+
+//         //     await rallyMonster([x, y], rallyTime, troopIndex, message);
+//         //     rallyCount++;
+//         //     await delay(5000);
+//         // }
+
+//         for (const b of batch) {
+//             const [, x, y] = b.loc;
+//             const levelText = b.level ? ` Lv.${b.level}` : "";
+//             const dist = Math.round(distance(kingdomData.loc, b.loc)); // dibulatkan ke bilangan bulat
+
+//             console.log(`📍 [${rallyCount}] Rally ${b.name}${levelText} @ (${x}, ${y}) | 📏 Jarak: ${dist}`);
+
+//             await rallyMonster([x, y], rallyTime, troopIndex, message);
+//             rallyCount++;
+//             await delay(5000);
+//         }
+
+
+//         current += sisaQueue;
+//     }
+
+//     console.log("✅ Semua rally dari bookmark selesai.");
+// }
+
 async function startRallyMonsterFromBookmarks(rallyTime = 5, troopIndex = 0, message = "") {
-    if (!kingdomData?.loc || kingdomData.loc.length !== 3) {
-        console.warn("❗ Lokasi kingdom tidak valid.");
-        return;
-    }
 
-    const distance = (loc1, loc2) => {
-        const dx = loc1[1] - loc2[1];
-        const dy = loc1[2] - loc2[2];
-        return Math.sqrt(dx * dx + dy * dy);
-    };
-
-    // Urutkan bookmarkResults
-    const sorted = [...bookmarkResults].sort((a, b) => {
-        const nameComp = a.name.localeCompare(b.name);
-        if (nameComp !== 0) return nameComp;
-        if (a.level !== b.level) return b.level - a.level;
-
-        const distA = distance(kingdomData.loc, a.loc);
-        const distB = distance(kingdomData.loc, b.loc);
-        return distA - distB;
-    });
-
-    // Hilangkan duplikat berdasarkan lokasi
-    const seen = new Set();
-    const finalResults = sorted.filter(item => {
-        const key = item.loc.join(",");
-        if (seen.has(key)) return false;
-        seen.add(key);
-        return true;
-    });
+    const finalResults = getSortedUniqueBookmarks();
 
     if (finalResults.length === 0) {
         console.warn("⚠️ Tidak ada monster yang bisa dirally.");
@@ -1616,16 +1678,6 @@ async function startRallyMonsterFromBookmarks(rallyTime = 5, troopIndex = 0, mes
 
         const batch = finalResults.slice(current, current + sisaQueue);
 
-
-        // for (const b of batch) {
-        //     const [, x, y] = b.loc;
-        //     const levelText = b.level ? ` Lv.${b.level}` : "";
-        //     console.log(`📍 [${rallyCount}] Rally ${b.name}${levelText} @ (${x}, ${y})`);
-
-        //     await rallyMonster([x, y], rallyTime, troopIndex, message);
-        //     rallyCount++;
-        //     await delay(5000);
-        // }
 
         for (const b of batch) {
             const [, x, y] = b.loc;
