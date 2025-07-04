@@ -1396,58 +1396,6 @@ async function scheduleSkillActivate(codes = [10001]) {
         setTimeout(() => scheduleSkillActivate(codes), 3 * 60 * 1000); // Retry 3 menit
     }
 }
-/*
-async function bookmarkFromFieldData(allowedBookmark, fieldData) {
-    for (const obj of fieldData.objects) {
-        // Lewati objek yang sudah occupied
-        if (obj.occupied) continue;
-
-        const codeStr = String(obj.code);
-        const bookmarkData = allowedBookmark[codeStr];
-
-        // Cek apakah objek diizinkan dan level cukup
-        if (bookmarkData && obj.level >= bookmarkData.minLevel) {
-            const result = {
-                name: bookmarkData.name,
-                level: obj.level,
-                loc: obj.loc
-            };
-            bookmarkResults.push(result);
-
-            console.log(`📍 Bookmarked: ${bookmarkData.name} Lv.${obj.level} at ${obj.loc.join(",")}`);
-        }
-    }
-}
-*/
-/*
-async function bookmarkFromFieldData(allowedBookmark, fieldData) {
-    //const bookmarkResults = []; // pastikan ini ada di dalam fungsi kalau bukan variabel global
-
-    for (const obj of fieldData.objects) {
-        if (obj.occupied) continue;
-
-        const codeStr = String(obj.code);
-        const bookmarkData = allowedBookmark[codeStr];
-
-        if (
-            bookmarkData &&
-            obj.level >= bookmarkData.minLevel &&
-            (bookmarkData.maxLevel === undefined || obj.level <= bookmarkData.maxLevel)
-        ) {
-            const result = {
-                name: bookmarkData.name,
-                level: obj.level,
-                loc: obj.loc
-            };
-            bookmarkResults.push(result);
-
-            console.log(`📍 Bookmarked: ${bookmarkData.name} Lv.${obj.level} at ${obj.loc.join(",")}`);
-        }
-    }
-
-    //return bookmarkResults;
-}
-*/
 
 async function bookmarkFromFieldData(allowedBookmark, fieldData) {
     const existingLocs = new Set(bookmarkResults.map(b => b.loc.join(","))); // lokasi yang sudah ada
@@ -1483,44 +1431,6 @@ async function bookmarkFromFieldData(allowedBookmark, fieldData) {
         }
     }
 }
-/*
-async function bookmarkSave() {
-    if (!Array.isArray(bookmarkResults)) {
-        console.warn("❗ bookmarkResults tidak ditemukan.");
-        return;
-    }
-
-    const seen = new Set();
-    const uniqueResults = bookmarkResults.filter(item => {
-        const key = item.loc.join(",");
-        if (seen.has(key)) return false;
-        seen.add(key);
-        return true;
-    });
-
-    for (const item of uniqueResults) {
-        const body = JSON.stringify({
-            name: `${item.name} Lv.${item.level}`,
-            loc: item.loc,
-            mark: 1
-        });
-
-        await delay(1000);
-        await sendRequest({
-            url: "https://api-lok-live.leagueofkingdoms.com/api/kingdom/bookmark/add",
-            token: token,
-            body: body,
-            returnResponse: false
-        });
-
-        console.log(`✅ Saved bookmark: ${item.name} Lv.${item.level} at ${item.loc.join(",")}`);
-    }
-
-    // Kosongkan setelah disimpan
-    bookmarkResults = [];
-    console.log("🧹 bookmarkResults dikosongkan setelah disimpan.");
-}
-*/
 
 async function bookmarkSave(limit = undefined) {
     if (!Array.isArray(bookmarkResults)) {
