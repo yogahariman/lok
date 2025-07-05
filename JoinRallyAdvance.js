@@ -12,7 +12,7 @@ let bookmarkResults = [];
 //localStorage.setItem('bookmarkResults_bk', JSON.stringify(bookmarkResults));
 //bookmarkResults = JSON.parse(localStorage.getItem('bookmarkResults_bk')) || [];
 
-//bookmarkResults = bookmarkResults.filter(item => !item.name.toLowerCase().includes("Crystal"));
+//bookmarkResults = bookmarkResults.filter(item => item.name !== "Crystal Mine");
 //await startRallyMonsterFromBookmarks();
 //bookmarkResults=[];
 
