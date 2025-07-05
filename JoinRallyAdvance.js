@@ -12,6 +12,9 @@ let bookmarkResults = [];
 //localStorage.setItem('bookmarkResults_bk', JSON.stringify(bookmarkResults));
 //bookmarkResults = JSON.parse(localStorage.getItem('bookmarkResults_bk')) || [];
 
+//bookmarkResults = bookmarkResults.filter(item => !item.name.toLowerCase().includes("Crystal"));
+//await startRallyMonsterFromBookmarks();
+//bookmarkResults=[];
 
 //const delayJoin = 5000; // 5 detik delay sebelum join rally
 //let autoOpen = false;
