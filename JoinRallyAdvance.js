@@ -2129,6 +2129,24 @@ async function autoJoinRally() {
     }
 
     try {
+
+        // 🔁 Cek march queue sebelum lanjut
+        marchQueueUsed = await getMarchQueueUsed();
+        if (marchQueueUsed >= marchLimit) {
+            console.log(`⏳ March queue penuh (${marchQueueUsed}/${marchLimit}), menunggu 30 detik...`);
+
+            await delay(30000); // tunggu 30 detik
+
+            // Cek ulang setelah delay
+            marchQueueUsed = await getMarchQueueUsed();
+            if (marchQueueUsed >= marchLimit) {
+                console.log(`⛔ Masih penuh (${marchQueueUsed}/${marchLimit}), batal join rally.`);
+                return;
+            }
+
+            //console.log("✅ Slot march tersedia setelah menunggu, lanjut join rally...");
+        }
+
         const rallyList = await sendRequest({
             url: "https://api-lok-live.leagueofkingdoms.com/api/alliance/battle/list/v2",
             token: token,
@@ -2207,12 +2225,6 @@ async function autoJoinRally() {
             } = battle;
 
             const monsterInfo = allowedMonsters[monsterCode];
-            //const isAllowed = monsterInfo && monsterLevel >= monsterInfo.minLevel;
-
-            //if (!isAllowed) {
-            //    console.log("❌ Tidak join rally:", monsterInfo?.name || "Unknown", "(Level:", monsterLevel, ")");
-            //    continue;
-            //}
 
             // 🔁 Cek march queue sebelum lanjut
             marchQueueUsed = await getMarchQueueUsed();
