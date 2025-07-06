@@ -69,16 +69,16 @@ function b64xorEnc(obj, password) {
 }
 
 /*
-xorPassword = ".0d172qwfg634.";
+xor_password = ".0d172qwfg634.";
 const s= "VRICQ1h...";
-console.log("Hasil decrypt:", b64xorDec(s, xorPassword));
+console.log("Hasil decrypt:", b64xorDec(s, xor_password));
 // ✅ Coba decode string s
 try {
-  const result = b64xorDec(s, xorPassword);
+  const result = b64xorDec(s, xor_password);
   console.log("Hasil decrypt:", result);
  
   // ✅ Coba encode lagi
-  const encrypted = b64xorEnc(result, xorPassword);
+  const encrypted = b64xorEnc(result, xor_password);
   console.log("Hasil encrypt ulang:", encrypted);
  
   // Opsional: cek sama seperti input awal?
