@@ -7,7 +7,7 @@ let kingdomData = null;
 let marchLimit = null;
 let marchQueueUsed = null;
 let rallyProcessCount = 0;
-const rallyProcessLimit = 130;
+const rallyProcessLimit = 150;
 
 // Decode base64 to bytes
 function base64ToBytes(b64) {
