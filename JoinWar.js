@@ -166,6 +166,30 @@ function decodePayloadArray(payload) {
     }
 }
 
+async function getMarchLimit() {
+    if (!token || !xor_password) {
+        console.warn("⏳ Token belum tersedia.");
+        return null;
+    }
+
+    const response = await sendRequest({
+        url: "https://api-lok-live.leagueofkingdoms.com/api/kingdom/profile/troops",
+        token: token,
+        body: "{}",
+        returnResponse: true
+    });
+
+    // Pastikan response valid dan berisi properti yang diharapkan
+    if (response && response.result && response.troops && response.troops.info) {
+        const marchLimit = response.troops.info.marchLimit;
+        console.log("✅ marchLimit:", marchLimit);
+        return marchLimit;
+    } else {
+        console.warn("⚠️ Gagal mendapatkan marchLimit dari response:", response);
+        return null;
+    }
+}
+
 async function getMarchQueueUsed() {
     if (!token || !xor_password) {
         console.warn("⏳ Token belum tersedia.");
