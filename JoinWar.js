@@ -213,15 +213,19 @@ async function getMarchQueueUsed() {
     }
 }
 
-//const loc = [723, 1983];
-//sendGatherCM(loc);
-//sendGatherCM([723, 1983]);
-async function sendGatherCM(loc) {
-    await sendMarch(loc, 1, 3); // marchType 1 = gathering, preset index 3
+// marchType 1 = gathering
+// marchType 2 = attack/rally castle
+// marchType 5 = attack/rally monster
+// marchType 7 = support
+// marchType 8 = Join rally
+// sendSupport(123, 456);
+// sendGatherCM(789, 101);
+async function sendGatherCM(x, y) {
+    await sendMarch([x, y], 1, 3); // marchType 1 = gathering, preset index 3
 }
 
-async function sendSupport(loc) {
-    await sendMarch(loc, 7, 2); // marchType 7 = support, preset index 2
+async function sendSupport(x, y) {
+    await sendMarch([x, y], 7, 2); // marchType 7 = support, preset index 2
 }
 
 async function sendMarch(loc, marchType, troopIndex) {
