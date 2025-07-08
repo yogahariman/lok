@@ -243,6 +243,29 @@ async function sendMarch(loc, marchType, troopIndex) {
     }
 }
 
+async function getMarchQueueUsed() {
+    if (!token || !xor_password) {
+        console.warn("⏳ Token belum tersedia.");
+        return 0;
+    }
+
+    const response = await sendRequest({
+        url: "https://api-lok-live.leagueofkingdoms.com/api/kingdom/profile/troops",
+        token: token,
+        body: "{}",
+        returnResponse: true
+    });
+
+    if (response?.result && Array.isArray(response.troops?.field)) {
+        const marchQueueUsed = response.troops.field.length;
+        //console.log("Jumlah march queue yang digunakan:", marchQueueUsed);
+        return marchQueueUsed;
+    } else {
+        console.warn("⚠️ Field troops tidak ditemukan atau bukan array:", response);
+        return 0;
+    }
+}
+
 async function sendTelegramMessage(token, message) {
     const localKey = `telegram_chat_id_${token.slice(0, 10)}`;
 
