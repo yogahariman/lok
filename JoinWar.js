@@ -4,7 +4,7 @@ let regionHash = null;
 let xor_password = null;
 let kingdomData = null;
 let marchLimit = null;
-//let marchQueueUsed = null;
+let marchQueueUsed = null;
 
 
 //const delayJoin = 5000; // 5 detik delay sebelum join rally
@@ -166,6 +166,29 @@ function decodePayloadArray(payload) {
     }
 }
 
+async function getMarchQueueUsed() {
+    if (!token || !xor_password) {
+        console.warn("⏳ Token belum tersedia.");
+        return 0;
+    }
+
+    const response = await sendRequest({
+        url: "https://api-lok-live.leagueofkingdoms.com/api/kingdom/profile/troops",
+        token: token,
+        body: "{}",
+        returnResponse: true
+    });
+
+    if (response?.result && Array.isArray(response.troops?.field)) {
+        const marchQueueUsed = response.troops.field.length;
+        //console.log("Jumlah march queue yang digunakan:", marchQueueUsed);
+        return marchQueueUsed;
+    } else {
+        console.warn("⚠️ Field troops tidak ditemukan atau bukan array:", response);
+        return 0;
+    }
+}
+
 //const loc = [723, 1983];
 //sendGatherCM(loc);
 //sendGatherCM([723, 1983]);
@@ -240,29 +263,6 @@ async function sendMarch(loc, marchType, troopIndex) {
         console.log(`✅ March dikirim: ${marchType === 1 ? 'Gathering' : 'Support'} ke (${loc[0]}, ${loc[1]})`);
     } catch (err) {
         console.error("❌ Gagal kirim march:", err);
-    }
-}
-
-async function getMarchQueueUsed() {
-    if (!token || !xor_password) {
-        console.warn("⏳ Token belum tersedia.");
-        return 0;
-    }
-
-    const response = await sendRequest({
-        url: "https://api-lok-live.leagueofkingdoms.com/api/kingdom/profile/troops",
-        token: token,
-        body: "{}",
-        returnResponse: true
-    });
-
-    if (response?.result && Array.isArray(response.troops?.field)) {
-        const marchQueueUsed = response.troops.field.length;
-        //console.log("Jumlah march queue yang digunakan:", marchQueueUsed);
-        return marchQueueUsed;
-    } else {
-        console.warn("⚠️ Field troops tidak ditemukan atau bukan array:", response);
-        return 0;
     }
 }
 
