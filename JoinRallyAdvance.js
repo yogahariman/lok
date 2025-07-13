@@ -9,12 +9,12 @@ let marchQueueUsed = null;
 let bookmarkResults = [];
 
 // Simpan ke localStorage sebagai string JSON
-//bookmarkResults = bookmarkResults.filter(item => !["crystal", "cavern"].some(kw => item.name.toLowerCase().includes(kw)));
 //localStorage.setItem('bookmarkResults_bk', JSON.stringify(bookmarkResults));
-//await startRallyMonsterFromBookmarks();
-//bookmarkResults=[];
 //bookmarkResults = JSON.parse(localStorage.getItem('bookmarkResults_bk')) || [];
 
+//bookmarkResults = bookmarkResults.filter(item => !["crystal", "cavern"].some(kw => item.name.toLowerCase().includes(kw)));
+//await startRallyMonsterFromBookmarks();
+//bookmarkResults=[];
 
 //const delayJoin = 5000; // 5 detik delay sebelum join rally
 //let autoOpen = false;
@@ -2130,23 +2130,6 @@ async function autoJoinRally() {
 
     try {
 
-        // 🔁 Cek march queue sebelum lanjut
-        marchQueueUsed = await getMarchQueueUsed();
-        if (marchQueueUsed >= marchLimit) {
-            console.log(`⏳ March queue penuh (${marchQueueUsed}/${marchLimit}), menunggu 30 detik...`);
-
-            await delay(30000); // tunggu 30 detik
-
-            // Cek ulang setelah delay
-            marchQueueUsed = await getMarchQueueUsed();
-            if (marchQueueUsed >= marchLimit) {
-                console.log(`⛔ Masih penuh (${marchQueueUsed}/${marchLimit}), batal join rally.`);
-                return;
-            }
-
-            //console.log("✅ Slot march tersedia setelah menunggu, lanjut join rally...");
-        }
-
         const rallyList = await sendRequest({
             url: "https://api-lok-live.leagueofkingdoms.com/api/alliance/battle/list/v2",
             token: token,
@@ -2207,6 +2190,23 @@ async function autoJoinRally() {
         }
 
         checkAndResetRallyCount(); // Cek dan reset jumlah rally pukul 0 UTC
+
+        // 🔁 Cek march queue sebelum lanjut
+        marchQueueUsed = await getMarchQueueUsed();
+        if (marchQueueUsed >= marchLimit) {
+            console.log(`⏳ March queue penuh (${marchQueueUsed}/${marchLimit}), menunggu 30 detik...`);
+
+            await delay(30000); // tunggu 30 detik
+
+            // Cek ulang setelah delay
+            marchQueueUsed = await getMarchQueueUsed();
+            if (marchQueueUsed >= marchLimit) {
+                console.log(`⛔ Masih penuh (${marchQueueUsed}/${marchLimit}), batal join rally.`);
+                return;
+            }
+
+            //console.log("✅ Slot march tersedia setelah menunggu, lanjut join rally...");
+        }
 
         await changeSkin(10729001);
         for (const battle of unjoinedRallies) {
