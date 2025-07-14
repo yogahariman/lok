@@ -225,7 +225,7 @@ async function sendGatherCM(x, y) {
 }
 
 async function sendSupport(x, y) {
-    await sendMarch([x, y], 7, 2); // marchType 7 = support, preset index 2
+    await sendMarch([x, y], 7, 3); // marchType 7 = support, preset index 2
 }
 
 async function sendMarch(loc, marchType, troopIndex) {
