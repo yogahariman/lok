@@ -15,6 +15,14 @@ let bookmarkResults = [];
 //await startRallyMonsterFromBookmarks();
 //bookmarkResults=[];
 
+// (async () => {
+//     while (true) {
+//       await sendSupport(400, 1800);
+//       await delay(5000);
+//     }
+//   })();
+  
+
 //const delayJoin = 5000; // 5 detik delay sebelum join rally
 //let autoOpen = false;
 //const delayCheckListRally = 60000; // 60 detik delay untuk check list rally
@@ -742,14 +750,14 @@ async function scheduleHelpAll() {
 
         await helpAll();
 
-        // Jalankan helpAll setiap 1 jam
+        // Jalankan helpAll setiap 30 menit
         setInterval(async () => {
             try {
                 await helpAll();
             } catch (err) {
                 console.error("❌ Gagal menjalankan helpAll dalam interval:", err);
             }
-        }, 1 * 60 * 60 * 1000); // 1 jam
+        }, 30 * 60 * 1000);
 
     } catch (error) {
         console.error("❌ Terjadi kesalahan di schedule Help All:", error);
@@ -1354,6 +1362,8 @@ async function scheduleSkillActivate(codes = [10001]) {
             body: "{}",
             returnResponse: true
         });
+
+        if (!Array.isArray(codes)) codes = [codes];
 
         // Ambil skill yang sesuai dari daftar
         const targetSkills = skills.filter(skill => codes.includes(skill.code));
@@ -2695,6 +2705,60 @@ async function handleAuthResponse(xhr) {
             //Join Rally
             await autoJoinRally();
 
+            const setting = window._lokSettings || {};
+
+            if (setting.claimVIP) {
+                await claimVIP();
+                await delay(5000);
+            }
+
+            if (setting.claimDSAVIP) {
+                await claimDSAVIP();
+                await delay(5000);
+            }
+
+            if (setting.scheduleHelpAll) {
+                scheduleHelpAll();
+                await delay(5000);
+            }
+
+            if (setting.scheduleAutoDonate) {
+                scheduleAutoDonate();
+                await delay(5000);
+            }
+
+            if (setting.scheduleAutoOpenFreeChest) {
+                scheduleAutoOpenFreeChest();
+                await delay(5000);
+            }
+
+            if (setting.scheduleBuyCaravan) {
+                scheduleBuyCaravan();
+                await delay(5000);
+            }
+
+            if (setting.scheduleResourceHarvest) {
+                scheduleResourceHarvest();
+                await delay(5000);
+            }
+
+            if (setting.scheduleClaimDailyQuest) {
+                scheduleClaimDailyQuest();
+                await delay(5000);
+            }
+
+
+            if (setting.scheduleSummonMonster) {
+                scheduleSkillActivate(10023);
+                await delay(3 * 60 * 1000);
+            }
+
+            if (setting.scheduleInstantHarvest) {
+                scheduleSkillActivate(10001);
+                //await delay(5000);
+            }
+
+            /*
             //claim VIP reward
             await claimVIP();
             await delay(10 * 1000);
@@ -2722,7 +2786,7 @@ async function handleAuthResponse(xhr) {
             // daily Quest
             await delay(5 * 60 * 1000);
             scheduleClaimDailyQuest();
-
+            */
         }
 
     } catch (err) {
