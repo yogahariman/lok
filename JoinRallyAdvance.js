@@ -2747,15 +2747,14 @@ async function handleAuthResponse(xhr) {
                 await delay(5000);
             }
 
-
-            if (setting.scheduleSummonMonster) {
-                scheduleSkillActivate(10023);
+            if (setting.scheduleInstantHarvest) {
+                scheduleSkillActivate(10001);
                 await delay(3 * 60 * 1000);
             }
 
-            if (setting.scheduleInstantHarvest) {
-                scheduleSkillActivate(10001);
-                //await delay(5000);
+            if (setting.scheduleSummonMonster) {
+                scheduleSkillActivate(10023);
+                //await delay(3 * 60 * 1000);
             }
 
             /*
