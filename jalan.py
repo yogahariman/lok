@@ -26,7 +26,7 @@ def geser_map(arah):
     elif arah == 'kanan':
         pyautogui.moveTo(drag_start_x+360, drag_start_y)
         pyautogui.mouseDown()
-        pyautogui.dragRel(-drag_distance, 0, duration=drag_duration)  # drag ke kiri → map ke kanan
+        pyautogui.dragRel(-drag_distance+200, 0, duration=drag_duration)  # drag ke kiri → map ke kanan
 
     pyautogui.mouseUp()
 
