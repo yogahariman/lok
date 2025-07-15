@@ -1867,7 +1867,68 @@ async function sendSupport(x, y) {
     await sendMarch([x, y], 7, 3); // marchType 7 = support, preset index 2
 }
 
-async function sendMarch(loc, marchType, troopIndex) {
+async function sendGatherDSC(x, y) {
+    try {
+        const dragoList = await sendRequest({
+            url: "https://api-lok-live.leagueofkingdoms.com/api/drago/lair/list",
+            token: token,
+            body: "{}",
+            returnResponse: true
+        });
+
+        const drago = dragoList.dragos
+            .filter(drago => drago.lair?.status === 1 && drago.level < 30)
+            .sort((a, b) => b.level - a.level)[0];  // Ambil yang level tertinggi
+
+        const dragoId = drago?._id || null;
+
+        console.log("Drago ID terpilih (lair.status === 1 dan level < 30):", dragoId);
+
+    } catch (err) {
+        console.error("Gagal mengambil daftar drago:", err);
+    }
+
+    await sendMarch([x, y], 1, 3, dragoId); // marchType 1 = gathering, preset index 3
+}
+
+async function attackMonster(x, y) {
+    const toLoc = [kingdomData.loc[0], ...[x, y]];
+
+    const payload_marchInfo = {
+        fromId: kingdomData.fieldObjectId,
+        toLoc: toLoc
+    };
+
+    let marchInfoResponse, marchInfo;
+    try {
+        marchInfoResponse = await sendRequest({
+            url: "https://api-lok-live.leagueofkingdoms.com/api/field/march/info",
+            token: token,
+            body: b64xorEnc(payload_marchInfo, xor_password),
+            returnResponse: true
+        });
+        marchInfo = b64xorDec(marchInfoResponse, xor_password);
+    } catch (err) {
+        console.error("❌ Gagal ambil march info:", err);
+        return;
+    }
+    
+    const monsterLevel = marchInfo?.fo?.level;
+
+    let selectedTroop;
+
+    if (monsterLevel <= 6) {
+        selectedTroop = 0;
+    } else if (monsterLevel <= 7) {
+        selectedTroop = 1;
+    } else if (monsterLevel >= 8) {
+        selectedTroop = 2;
+    }    
+
+    await sendMarch([x, y], 5, selectedTroop); // marchType 7 = support, preset index 2    
+}
+
+async function sendMarch(loc, marchType, troopIndex, dragoId) {
 
     // 🔁 Cek march queue sebelum lanjut
     marchQueueUsed = await getMarchQueueUsed();
@@ -1917,7 +1978,8 @@ async function sendMarch(loc, marchType, troopIndex) {
         fromId: kingdomData.fieldObjectId,
         marchType,
         toLoc,
-        marchTroops: troops
+        marchTroops: troops,
+        ...(dragoId !== undefined ? { dragoId } : {})
     };
 
     try {
