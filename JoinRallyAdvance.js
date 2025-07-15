@@ -1868,6 +1868,8 @@ async function sendSupport(x, y) {
 }
 
 async function sendGatherDSC(x, y) {
+    let dragoId = null;  // deklarasi di awal supaya bisa diakses di luar try-catch
+
     try {
         const dragoList = await sendRequest({
             url: "https://api-lok-live.leagueofkingdoms.com/api/drago/lair/list",
@@ -1880,7 +1882,7 @@ async function sendGatherDSC(x, y) {
             .filter(drago => drago.lair?.status === 1 && drago.level < 30)
             .sort((a, b) => b.level - a.level)[0];  // Ambil yang level tertinggi
 
-        const dragoId = drago?._id || null;
+        dragoId = drago?._id || null;
 
         console.log("Drago ID terpilih (lair.status === 1 dan level < 30):", dragoId);
 
@@ -1888,8 +1890,14 @@ async function sendGatherDSC(x, y) {
         console.error("Gagal mengambil daftar drago:", err);
     }
 
-    await sendMarch([x, y], 1, 3, dragoId); // marchType 1 = gathering, preset index 3
+    if (dragoId) {
+        await sendMarch([x, y], 1, 3, dragoId);
+    } else {
+        console.warn("Tidak ada Drago yang tersedia untuk dikirim.");
+    }
+    
 }
+
 
 async function attackMonster(x, y) {
     const toLoc = [kingdomData.loc[0], ...[x, y]];
