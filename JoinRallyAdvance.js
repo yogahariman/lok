@@ -1875,12 +1875,12 @@ async function sendSupport(x, y) {
         });
 
         const drago = dragoList.dragos
-            .filter(drago => drago.lair?.status === 1 && drago.level < 30)
+            .filter(drago => drago.lair?.status === 1)
             .sort((a, b) => b.level - a.level)[0];  // Ambil yang level tertinggi
 
         dragoId = drago?._id || null;
 
-        console.log("Drago ID terpilih (lair.status === 1 dan level < 30):", dragoId);
+        console.log("Drago ID terpilih:", dragoId);
 
     } catch (err) {
         console.error("Gagal mengambil daftar drago:", err);
