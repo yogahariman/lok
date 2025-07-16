@@ -16,11 +16,11 @@ let bookmarkResults = [];
 //bookmarkResults=[];
 
 // (async () => {
-//     while (true) {
+//     for (let i = 0; i < 10; i++) {
 //       await sendSupport(400, 1800);
 //       await delay(5000);
 //     }
-//   })();
+//   })();  
   
 
 //const delayJoin = 5000; // 5 detik delay sebelum join rally
