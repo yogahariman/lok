@@ -1864,7 +1864,33 @@ async function sendGatherCM(x, y) {
 }
 
 async function sendSupport(x, y) {
-    await sendMarch([x, y], 7, 3); // marchType 7 = support, preset index 2
+    let dragoId = null;  // deklarasi di awal supaya bisa diakses di luar try-catch
+
+    try {
+        const dragoList = await sendRequest({
+            url: "https://api-lok-live.leagueofkingdoms.com/api/drago/lair/list",
+            token: token,
+            body: "{}",
+            returnResponse: true
+        });
+
+        const drago = dragoList.dragos
+            .filter(drago => drago.lair?.status === 1 && drago.level < 30)
+            .sort((a, b) => b.level - a.level)[0];  // Ambil yang level tertinggi
+
+        dragoId = drago?._id || null;
+
+        console.log("Drago ID terpilih (lair.status === 1 dan level < 30):", dragoId);
+
+    } catch (err) {
+        console.error("Gagal mengambil daftar drago:", err);
+    }
+
+    if (dragoId) {
+        await sendMarch([x, y], 7, 3, dragoId);
+    } else {
+        await sendMarch([x, y], 7, 3);
+    }
 }
 
 async function sendGatherDSC(x, y) {
