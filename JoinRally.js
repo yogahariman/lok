@@ -471,7 +471,7 @@ async function autoJoinRally() {
 
             //console.log("✅ Join rally:", monsterInfo.name, "(Level:", monsterLevel, ")");
             rallyProcessCount++;
-            if (rallyProcessCount >= rallyProcessLimit) {
+            if (rallyProcessCount >= 180) {
                 continue;
             }
             if (rallyProcessCount === 1)
