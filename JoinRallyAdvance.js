@@ -1466,7 +1466,7 @@ async function bookmarkFromFieldData(allowedBookmark, fieldData) {
         ) {
             const locKey = obj.loc.join(",");
             if (existingLocs.has(locKey)) {
-                //console.log(`⚠️ Already bookmarked: ${bookmarkData.name} Lv.${obj.level} at ${locKey}`);
+                console.log(`⚠️ Already bookmarked: ${bookmarkData.name} Lv.${obj.level} at ${locKey}`);
                 continue; // skip penambahan data
             }
 
