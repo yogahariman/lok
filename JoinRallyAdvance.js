@@ -1480,8 +1480,8 @@ async function bookmarkFromFieldData(allowedBookmark, fieldData) {
             bookmarkResults.push(result);
 
             //console.log(`${index++}. 📍 Bookmarked: ${bookmarkData.name} Lv.${obj.level} at ${locKey}`);
-            const coords = obj.loc.slice(1, 3).map(n => String(n).padStart(5, ' ')).join(",");
-            console.log(`📍 [${coords}] ${bookmarkData.name} Lv.${obj.level}`);
+            const coords = obj.loc.slice(1, 3).map(n => String(n).padStart(4, ' ')).join(",");
+            console.log(`📍 ${index++}. [${coords}] ${bookmarkData.name} Lv.${obj.level}`);
             
         }
     }
