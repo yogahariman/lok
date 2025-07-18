@@ -1466,7 +1466,7 @@ async function bookmarkFromFieldData(allowedBookmark, fieldData) {
         ) {
             const locKey = obj.loc.join(",");
             if (existingLocs.has(locKey)) {
-                console.log(`⚠️ Already bookmarked: ${bookmarkData.name} Lv.${obj.level} at ${locKey}`);
+                //console.log(`⚠️ Already bookmarked: ${bookmarkData.name} Lv.${obj.level} at ${locKey}`);
                 continue; // skip penambahan data
             }
 
@@ -1479,7 +1479,10 @@ async function bookmarkFromFieldData(allowedBookmark, fieldData) {
             };
             bookmarkResults.push(result);
 
-            console.log(`${index++}. 📍 Bookmarked: ${bookmarkData.name} Lv.${obj.level} at ${locKey}`);
+            //console.log(`${index++}. 📍 Bookmarked: ${bookmarkData.name} Lv.${obj.level} at ${locKey}`);
+            const coords = locKey.slice(1, 3).map(c => c.padStart(4, ' ')).join(",");
+            console.log(`${String(index++).padStart(3, ' ')}. 📍 [${coords}] ${bookmarkData.name} Lv.${obj.level}`);
+
         }
     }
 }
