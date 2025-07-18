@@ -1481,7 +1481,13 @@ async function bookmarkFromFieldData(allowedBookmark, fieldData) {
 
             //console.log(`${index++}. 📍 Bookmarked: ${bookmarkData.name} Lv.${obj.level} at ${locKey}`);
             const coords = obj.loc.slice(1, 3).map(n => String(n).padStart(4, ' ')).join(",");
-            console.log(`📍 ${index++}. [${coords}] ${bookmarkData.name} Lv.${obj.level}`);
+            const color = bookmarkData.color || "orange"; // default warna jika tidak ada
+            
+            console.log(
+              `%c📍 ${String(index++).padStart(2)}. [${coords}] ${bookmarkData.name} Lv.${obj.level}`,
+              `color: ${color}; font-weight: bold;`
+            );
+            
             
         }
     }
