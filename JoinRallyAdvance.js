@@ -7,13 +7,16 @@ let kingdomData = null;
 let marchLimit = null;
 let marchQueueUsed = null;
 let bookmarkResults = [];
+let bookmarkCM = [];
 
 // Simpan ke localStorage sebagai string JSON
-//bookmarkResults = bookmarkResults.filter(item => !["crystal", "cavern"].some(kw => item.name.toLowerCase().includes(kw)));
-//localStorage.setItem('bookmarkResults_bk', JSON.stringify(bookmarkResults));
-//bookmarkResults = JSON.parse(localStorage.getItem('bookmarkResults_bk')) || [];
-//await startRallyMonsterFromBookmarks();
-//bookmarkResults=[];
+// bookmarkCM = bookmarkResults.filter(item => ["crystal", "cavern"].some(kw => item.name.toLowerCase().includes(kw)));
+// localStorage.setItem('bookmarkCM_bk', JSON.stringify(bookmarkCM));
+// bookmarkResults = bookmarkResults.filter(item => !["crystal", "cavern"].some(kw => item.name.toLowerCase().includes(kw)));
+// localStorage.setItem('bookmarkResults_bk', JSON.stringify(bookmarkResults));
+// bookmarkResults = JSON.parse(localStorage.getItem('bookmarkResults_bk')) || [];
+// await startRallyMonsterFromBookmarks();
+// bookmarkResults=[];
 
 // (async () => {
 //     for (let i = 0; i < 10; i++) {
