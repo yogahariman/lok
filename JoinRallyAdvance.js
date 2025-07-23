@@ -1831,7 +1831,7 @@ async function startAttackMonsterFromBookmarks(bookmarks = bookmarkMonsterNormal
         await changeSkin(); // Kembali ke skin default di akhir
     }
 
-    console.log("✅ Semua rally dari bookmark selesai.");
+    console.log("✅ Semua Monsters dari bookmark selesai.");
 }
 
 async function startRallyMonsterFromBookmarks(bookmarks = bookmarkMonsterRally) {
