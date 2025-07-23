@@ -11,17 +11,22 @@ let bookmarkMonsterNormal = [];
 let bookmarkMonsterRally = [];
 
 // Simpan ke localStorage sebagai string JSON
+//
 // bookmarkCM = bookmarkResults.filter(item => ["crystal", "cavern"].some(kw => item.name.toLowerCase().includes(kw)));
 // bookmarkMonsterNormal = bookmarkResults.filter(item => ["goblin"].some(kw => item.name.toLowerCase().includes(kw)));
 // bookmarkMonsterRally = bookmarkResults.filter(item => !["crystal", "cavern", "goblin"].some(kw => item.name.toLowerCase().includes(kw)));
-// bookmarkResults = bookmarkMonsterRally;
+//
 // localStorage.setItem('bookmarkCM_bk', JSON.stringify(bookmarkCM));
 // localStorage.setItem('bookmarkMonsterNormal_bk', JSON.stringify(bookmarkMonsterNormal));
-// localStorage.setItem('bookmarkResults_bk', JSON.stringify(bookmarkResults));
-// bookmarkResults = JSON.parse(localStorage.getItem('bookmarkResults_bk')) || [];
-// await startRallyMonsterFromBookmarks();
+// localStorage.setItem('bookmarkMonsterRally_bk', JSON.stringify(bookmarkMonsterRally));
+//
+// bookmarkMonsterRally = JSON.parse(localStorage.getItem('bookmarkMonsterRally_bk')) || [];
+// await startRallyMonsterFromBookmarks(bookmarkMonsterRally);
 // bookmarkResults=[];
-// await startAttackMonsterFromBookmarks();
+//
+// bookmarkMonsterNormal = JSON.parse(localStorage.getItem('bookmarkMonsterNormal_bk')) || [];
+// await startAttackMonsterFromBookmarks(bookmarkMonsterNormal);
+// bookmarkMonsterNormal = [];
 
 // (async () => {
 //     for (let i = 0; i < 10; i++) {
@@ -1764,14 +1769,14 @@ async function sendMarch(loc, marchType, troopIndex, dragoId) {
 }
 */
 
-async function startAttackMonsterFromBookmarks() {
+async function startAttackMonsterFromBookmarks(bookmarks = bookmarkMonsterNormal) {
     const distance = (loc1, loc2) => {
         const dx = loc1[1] - loc2[1];
         const dy = loc1[2] - loc2[2];
         return Math.sqrt(dx * dx + dy * dy);
     };
 
-    const finalResults = getSortedUniqueBookmarks(bookmarkMonsterNormal);
+    const finalResults = getSortedUniqueBookmarks(bookmarks);
 
     if (finalResults.length === 0) {
         console.warn("⚠️ Tidak ada monster yang bisa diserang.");
@@ -1829,14 +1834,19 @@ async function startAttackMonsterFromBookmarks() {
     console.log("✅ Semua rally dari bookmark selesai.");
 }
 
-async function startRallyMonsterFromBookmarks(rallyTime = 5, troopIndex = 0, message = "") {
+async function startRallyMonsterFromBookmarks(bookmarks = bookmarkMonsterRally) {
+
+    const rallyTime = 5;
+    const troopIndex = 0;
+    const message = "";
+
     const distance = (loc1, loc2) => {
         const dx = loc1[1] - loc2[1];
         const dy = loc1[2] - loc2[2];
         return Math.sqrt(dx * dx + dy * dy);
     };
 
-    const finalResults = getSortedUniqueBookmarks();
+    const finalResults = getSortedUniqueBookmarks(bookmarks);
 
     if (finalResults.length === 0) {
         console.warn("⚠️ Tidak ada monster yang bisa dirally.");
