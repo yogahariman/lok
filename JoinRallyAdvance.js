@@ -1548,6 +1548,18 @@ async function bookmarkDelete(indexOrRange) {
 // marchType 5 = attack/rally monster
 // marchType 7 = support
 // marchType 8 = Join rally
+function getMarchTypeName(marchType) {
+    switch (marchType) {
+        case 1: return 'Gathering';
+        case 2: return 'Attack/Rally Castle';
+        case 5: return 'Attack/Rally Monster';
+        case 7: return 'Support';
+        default: return `Unknown Type (${marchType})`;
+    }
+}
+
+
+
 // sendSupport(123, 456);
 // sendGatherCM(789, 101);
 async function sendGatherCM(x, y) {
@@ -1617,6 +1629,8 @@ async function sendGatherDSC(x, y) {
 
 async function sendMarch(loc, marchType, troopIndex, dragoId) {
     try {
+        const marchTypeName = getMarchTypeName(marchType);
+
         // 🔁 Cek march queue sebelum lanjut
         const marchQueueUsed = await getMarchQueueUsed();
         if (marchQueueUsed >= marchLimit) {
@@ -1651,9 +1665,10 @@ async function sendMarch(loc, marchType, troopIndex, dragoId) {
         });
 
         if (!canSendMarch) {
-            console.log(`❌ Gagal ${marchType === 1 ? 'Gathering' : 'Support'} ke (${loc[0]}, ${loc[1]}) karena jumlah troops kurang`);
+            console.log(`❌ Gagal ${marchTypeName} ke (${loc[0]}, ${loc[1]}) karena jumlah troops kurang`);
             return false;
         }
+
 
         const payload = {
             fromId: kingdomData.fieldObjectId,
@@ -1670,7 +1685,9 @@ async function sendMarch(loc, marchType, troopIndex, dragoId) {
             returnResponse: false
         });
 
-        console.log(`✅ March dikirim: ${marchType === 1 ? 'Gathering' : 'Support'} ke (${loc[0]}, ${loc[1]})`);
+        //console.log(`✅ March dikirim: ${marchType === 1 ? 'Gathering' : 'Support'} ke (${loc[0]}, ${loc[1]})`);
+        console.log(`✅ March dikirim: ${marchTypeName} ke (${loc[0]}, ${loc[1]})`);
+
         return true;
     } catch (err) {
         console.error("❌ Error saat proses sendMarch:", err);
@@ -1905,7 +1922,7 @@ async function rallyMonster(loc, rallyTime = 5, troopIndex = 0, message = "") {
     }
 
     if (marchInfo.marchType !== 5) {
-        console.log(`⛔ MarchType bukan untuk rally monster (marchType = ${marchInfo.marchType}).`);
+        console.log(`⛔ MarchType bukan untuk rally/attack monster (marchType = ${marchInfo.marchType}).`);
         return false;
     }
 
@@ -1970,6 +1987,12 @@ async function attackMonster(x, y) {
         console.error("❌ Gagal ambil march info:", err);
         return false;
     }
+
+    if (marchInfo.marchType !== 5) {
+        const marchTypeName = getMarchTypeName(marchInfo.marchType);
+        console.log(`⛔ MarchType bukan untuk rally/attack monster (marchType = ${marchTypeName}).`);
+        return false;
+    }    
     
     const monsterLevel = marchInfo?.fo?.level;
     if (monsterLevel === undefined) {
