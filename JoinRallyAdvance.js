@@ -15,18 +15,18 @@ let bookmarkMonsterRally = [];
 // bookmarkCM = bookmarkResults.filter(item => ["crystal", "cavern"].some(kw => item.name.toLowerCase().includes(kw)));
 // bookmarkMonsterNormal = bookmarkResults.filter(item => ["goblin"].some(kw => item.name.toLowerCase().includes(kw)));
 // bookmarkMonsterRally = bookmarkResults.filter(item => !["crystal", "cavern", "goblin"].some(kw => item.name.toLowerCase().includes(kw)));
-//
+
 // localStorage.setItem('bookmarkCM_bk', JSON.stringify(bookmarkCM));
 // localStorage.setItem('bookmarkMonsterNormal_bk', JSON.stringify(bookmarkMonsterNormal));
 // localStorage.setItem('bookmarkMonsterRally_bk', JSON.stringify(bookmarkMonsterRally));
-//
-// bookmarkMonsterRally = JSON.parse(localStorage.getItem('bookmarkMonsterRally_bk')) || [];
-// await startRallyMonsterFromBookmarks(bookmarkMonsterRally);
-// bookmarkResults=[];
-//
+
 // bookmarkMonsterNormal = JSON.parse(localStorage.getItem('bookmarkMonsterNormal_bk')) || [];
 // await startAttackMonsterFromBookmarks(bookmarkMonsterNormal);
 // bookmarkMonsterNormal = [];
+
+// bookmarkMonsterRally = JSON.parse(localStorage.getItem('bookmarkMonsterRally_bk')) || [];
+// await startRallyMonsterFromBookmarks(bookmarkMonsterRally);
+// bookmarkResults=[];
 
 // (async () => {
 //     for (let i = 0; i < 10; i++) {
