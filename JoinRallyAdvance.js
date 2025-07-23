@@ -13,7 +13,8 @@ let bookmarkMonsterRally = [];
 // Simpan ke localStorage sebagai string JSON
 // bookmarkCM = bookmarkResults.filter(item => ["crystal", "cavern"].some(kw => item.name.toLowerCase().includes(kw)));
 // bookmarkMonsterNormal = bookmarkResults.filter(item => ["goblin"].some(kw => item.name.toLowerCase().includes(kw)));
-// bookmarkResults = bookmarkResults.filter(item => !["crystal", "cavern"].some(kw => item.name.toLowerCase().includes(kw)));
+// bookmarkMonsterRally = bookmarkResults.filter(item => !["crystal", "cavern", "goblin"].some(kw => item.name.toLowerCase().includes(kw)));
+// bookmarkResults = bookmarkMonsterRally;
 // localStorage.setItem('bookmarkCM_bk', JSON.stringify(bookmarkCM));
 // localStorage.setItem('bookmarkMonsterNormal_bk', JSON.stringify(bookmarkMonsterNormal));
 // localStorage.setItem('bookmarkResults_bk', JSON.stringify(bookmarkResults));
