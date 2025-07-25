@@ -33,17 +33,10 @@ let bookmarkMonsterRally = [];
 //       await sendSupport(400, 1800);
 //       await delay(5000);
 //     }
-//   })();  
-  
+//   })();
 
-//const delayJoin = 5000; // 5 detik delay sebelum join rally
-//let autoOpen = false;
-//const delayCheckListRally = 60000; // 60 detik delay untuk check list rally
-//let autoJoinIntervalId = null;
-
-//const delayCheckListRally = typeof window.delayCheckListRally !== 'undefined'
-//    ? window.delayCheckListRally
-//    : 60000; // 60 detik delay untuk check list rally
+// use item
+// await useItem(10104106, 1); //Egg 10104105(green), 10104106(Red), 10104107(Yellow)
 
 // Decode base64 to bytes
 function base64ToBytes(b64) {
