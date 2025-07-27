@@ -1156,10 +1156,10 @@ async function instantHarvest() {
         }
 
         await changeSkin(10726001); // Aktifkan skin produksi
-        await delay(1000);
+        //await delay(1000);
 
         await changeTreasure(2); // Aktifkan treasure produksi
-        await delay(1000);
+        //await delay(1000);
 
         // Gunakan skill 10018 (increase production)
         await sendRequest({
@@ -1168,7 +1168,7 @@ async function instantHarvest() {
             body: JSON.stringify({ code: 10018 }),
             returnResponse: false
         });
-        await delay(1000);
+        //await delay(1000);
 
         // Gunakan skill 10001 (instant harvest)
         await sendRequest({
