@@ -1155,11 +1155,11 @@ async function instantHarvest() {
             return;
         }
 
-        await changeSkin(10726001); // Aktifkan skin produksi
-        //await delay(1000);
-
         await changeTreasure(2); // Aktifkan treasure produksi
         //await delay(1000);
+
+        await changeSkin(10726001); // Aktifkan skin produksi
+        await delay(1000);
 
         // Gunakan skill 10018 (increase production)
         await sendRequest({
@@ -1179,11 +1179,11 @@ async function instantHarvest() {
         });
         await delay(1000);
 
-        await changeSkin(); // Kembali ke skin normal
-        await delay(1000);
+        //await changeSkin(); // Kembali ke skin normal
+        //await delay(1000);
 
         await changeTreasure(); // Kembali ke treasure rally/monster
-        await delay(1000);
+        //await delay(1000);
 
         console.log("✅ Instant Harvest selesai");
     } catch (err) {
@@ -1239,7 +1239,7 @@ async function summonMonster() {
         console.log("🧙‍♂️ Memulai proses Summon Monster...");
 
         await changeSkin(10726001); // Aktifkan skin produksi       
-        await delay(2000);
+        await delay(1000);
 
         await sendRequest({
             url: "https://api-lok-live.leagueofkingdoms.com/api/skill/use",
@@ -1247,10 +1247,10 @@ async function summonMonster() {
             body: JSON.stringify({ code: 10023 }),
             returnResponse: false
         });
-        await delay(2000);
+        //await delay(2000);
 
-        await changeSkin(); // Kembali ke skin default atau sebelumnya
-        await delay(2000);
+        //await changeSkin(); // Kembali ke skin default atau sebelumnya
+        //await delay(2000);
 
         console.log("✅ Aktif skill Summon Monster selesai.");
     } catch (err) {
