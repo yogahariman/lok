@@ -12,10 +12,18 @@ let bookmarkMonsterRally = [];
 
 // Simpan ke localStorage sebagai string JSON
 //
+// // hapus area congress
 // bookmarkResults = bookmarkResults.filter(item => {
 //   const [, x, y] = item.loc;
 //   // Simpan hanya item yang TIDAK berada dalam area x: 900–1100 dan y: 900–1100
 //   return !(x > 900 && x < 1100 && y > 900 && y < 1100);
+// });
+
+
+// bookmarkResults = bookmarkResults.filter(item => {
+//   const [, x, y] = item.loc;
+//   // Simpan hanya item dengan x >= 1080
+//   return x >= 1080;
 // });
 
 // bookmarkCM = bookmarkResults.filter(item => ["crystal", "cavern"].some(kw => item.name.toLowerCase().includes(kw)));
