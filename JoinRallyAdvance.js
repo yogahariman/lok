@@ -12,15 +12,21 @@ let bookmarkMonsterRally = [];
 
 // Simpan ke localStorage sebagai string JSON
 //
+// bookmarkResults = bookmarkResults.filter(item => {
+//   const [, x, y] = item.loc;
+//   // Simpan hanya item yang TIDAK berada dalam area x: 900–1100 dan y: 900–1100
+//   return !(x > 900 && x < 1100 && y > 900 && y < 1100);
+// });
+
 // bookmarkCM = bookmarkResults.filter(item => ["crystal", "cavern"].some(kw => item.name.toLowerCase().includes(kw)));
 // bookmarkMonsterNormal = bookmarkResults.filter(item => ["goblin"].some(kw => item.name.toLowerCase().includes(kw)));
 // bookmarkMonsterRally = bookmarkResults.filter(item => !["crystal", "cavern", "goblin"].some(kw => item.name.toLowerCase().includes(kw)));
 
+// bookmarkResults=[];
+
 // localStorage.setItem('bookmarkCM_bk', JSON.stringify(bookmarkCM));
 // localStorage.setItem('bookmarkMonsterNormal_bk', JSON.stringify(bookmarkMonsterNormal));
 // localStorage.setItem('bookmarkMonsterRally_bk', JSON.stringify(bookmarkMonsterRally));
-
-// bookmarkResults=[];
 
 // bookmarkMonsterRally = JSON.parse(localStorage.getItem('bookmarkMonsterRally_bk')) || [];
 // await startRallyMonsterFromBookmarks(bookmarkMonsterRally);
