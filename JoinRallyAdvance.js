@@ -20,12 +20,12 @@ let bookmarkMonsterRally = [];
 // localStorage.setItem('bookmarkMonsterNormal_bk', JSON.stringify(bookmarkMonsterNormal));
 // localStorage.setItem('bookmarkMonsterRally_bk', JSON.stringify(bookmarkMonsterRally));
 
-// bookmarkMonsterNormal = JSON.parse(localStorage.getItem('bookmarkMonsterNormal_bk')) || [];
-// await startAttackMonsterFromBookmarks(bookmarkMonsterNormal);
-// bookmarkMonsterNormal = [];
-
 // bookmarkMonsterRally = JSON.parse(localStorage.getItem('bookmarkMonsterRally_bk')) || [];
 // await startRallyMonsterFromBookmarks(bookmarkMonsterRally);
+
+// bookmarkMonsterNormal = JSON.parse(localStorage.getItem('bookmarkMonsterNormal_bk')) || [];
+// await startAttackMonsterFromBookmarks(bookmarkMonsterNormal);
+
 // bookmarkResults=[];
 
 // (async () => {
