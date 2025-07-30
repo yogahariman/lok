@@ -36,11 +36,11 @@ let bookmarkMonsterRally = [];
 // localStorage.setItem('bookmarkMonsterNormal_bk', JSON.stringify(bookmarkMonsterNormal));
 // localStorage.setItem('bookmarkMonsterRally_bk', JSON.stringify(bookmarkMonsterRally));
 
-// bookmarkMonsterRally = JSON.parse(localStorage.getItem('bookmarkMonsterRally_bk')) || [];
-// await startRallyMonsterFromBookmarks(bookmarkMonsterRally);
-
 // bookmarkMonsterNormal = JSON.parse(localStorage.getItem('bookmarkMonsterNormal_bk')) || [];
 // await startAttackMonsterFromBookmarks(bookmarkMonsterNormal);
+
+// bookmarkMonsterRally = JSON.parse(localStorage.getItem('bookmarkMonsterRally_bk')) || [];
+// await startRallyMonsterFromBookmarks(bookmarkMonsterRally);
 
 // (async () => {
 //     for (let i = 0; i < 10; i++) {
