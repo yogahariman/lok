@@ -20,12 +20,6 @@ let bookmarkMonsterRally = [];
 // });
 
 
-// bookmarkResults = bookmarkResults.filter(item => {
-//   const [, x, y] = item.loc;
-//   // Simpan hanya item dengan x >= 1080
-//   return x >= 1080;
-// });
-
 // bookmarkCM = bookmarkResults.filter(item => ["crystal", "cavern"].some(kw => item.name.toLowerCase().includes(kw)));
 // bookmarkMonsterNormal = bookmarkResults.filter(item => ["goblin"].some(kw => item.name.toLowerCase().includes(kw)));
 // bookmarkMonsterRally = bookmarkResults.filter(item => !["crystal", "cavern", "goblin"].some(kw => item.name.toLowerCase().includes(kw)));
@@ -40,6 +34,11 @@ let bookmarkMonsterRally = [];
 // await startAttackMonsterFromBookmarks(bookmarkMonsterNormal);
 
 // bookmarkMonsterRally = JSON.parse(localStorage.getItem('bookmarkMonsterRally_bk')) || [];
+// bookmarkMonsterRally = bookmarkMonsterRally.filter(item => {
+//   const [, x] = item.loc;
+//   // Simpan hanya item dengan x >= 1050
+//   return x >= 1050;
+// });
 // await startRallyMonsterFromBookmarks(bookmarkMonsterRally);
 
 // (async () => {
