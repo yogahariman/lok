@@ -12,14 +12,6 @@ let bookmarkMonsterRally = [];
 
 // Simpan ke localStorage sebagai string JSON
 //
-// // hapus area congress
-// bookmarkResults = bookmarkResults.filter(item => {
-//   const [, x, y] = item.loc;
-//   // Simpan hanya item yang TIDAK berada dalam area x: 900–1100 dan y: 900–1100
-//   return !(x > 900 && x < 1100 && y > 900 && y < 1100);
-// });
-
-
 // bookmarkCM = bookmarkResults.filter(item => ["crystal", "cavern"].some(kw => item.name.toLowerCase().includes(kw)));
 // bookmarkMonsterNormal = bookmarkResults.filter(item => ["goblin"].some(kw => item.name.toLowerCase().includes(kw)));
 // bookmarkMonsterRally = bookmarkResults.filter(item => !["crystal", "cavern", "goblin"].some(kw => item.name.toLowerCase().includes(kw)));
@@ -35,9 +27,16 @@ let bookmarkMonsterRally = [];
 
 // bookmarkMonsterRally = JSON.parse(localStorage.getItem('bookmarkMonsterRally_bk')) || [];
 // bookmarkMonsterRally = bookmarkMonsterRally.filter(item => {
-//   const [, x] = item.loc;
-//   // Simpan hanya item dengan x >= 1050
-//   return x >= 1050;
+//   const [, x, y] = item.loc;
+
+//   // Forbidden Area 1: x antara 950–1090 dan y antara 950–1090
+//   const inFirstForbiddenArea = x > 950 && x < 1090 && y > 950 && y < 1090;
+
+//   // Forbidden Area 2: x <= 1024
+//   const inSecondForbiddenArea = x <= 1024;
+
+//   // Simpan hanya jika TIDAK berada di salah satu area terlarang
+//   return !(inFirstForbiddenArea || inSecondForbiddenArea);
 // });
 // await startRallyMonsterFromBookmarks(bookmarkMonsterRally);
 
@@ -49,7 +48,8 @@ let bookmarkMonsterRally = [];
 //   })();
 
 // use item
-// await useItem(10104106, 1); //Egg 10104105(green), 10104106(Red), 10104107(Yellow)
+// Egg 10104105(green), 10104106(Red), 10104107(Yellow)
+// (async () => { for (let i = 0; i < 10; i++) await useItem(10104106, 1); })();
 
 // Decode base64 to bytes
 function base64ToBytes(b64) {
