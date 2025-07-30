@@ -49,7 +49,7 @@ let bookmarkMonsterRally = [];
 
 // use item
 // Egg 10104105(green), 10104106(Red), 10104107(Yellow)
-// (async () => { for (let i = 0; i < 10; i++) await useItem(10104106, 1); })();
+// (async () => { for (let i = 0; i < 16; i++) await useItem(10104106, 1), await delay(500); })();
 
 // Decode base64 to bytes
 function base64ToBytes(b64) {
