@@ -6,9 +6,9 @@ let kingdomData = null;
 let marchLimit = null;
 let marchQueueUsed = null;
 let bookmarkResults = [];
-let bookmarkCM = [];
-let bookmarkMonsterNormal = [];
-let bookmarkMonsterRally = [];
+//let bookmarkCM = [];
+//let bookmarkMonsterNormal = [];
+//let bookmarkMonsterRally = [];
 
 // Simpan ke localStorage sebagai string JSON
 //
