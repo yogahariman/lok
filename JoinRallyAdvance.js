@@ -1452,7 +1452,7 @@ async function bookmarkFromFieldData(allowedBookmark, fieldData) {
     }
 }
 
-async function bookmarkSave() {
+async function BookmarkSave() {
     // Filter bookmark berdasarkan kategori
     const bookmarkCM = bookmarkResults.filter(item =>
         ["crystal", "cavern"].some(kw => item.name.toLowerCase().includes(kw))
@@ -1475,8 +1475,8 @@ async function bookmarkSave() {
     localStorage.setItem('bookmarkMonsterRally_bk', JSON.stringify(bookmarkMonsterRally));
 }
 
-
-async function bookmarkSaveInGame(limit = undefined) {
+/*
+async function BookmarkSaveInGame(limit = undefined) {
     if (!Array.isArray(bookmarkResults)) {
         console.warn("❗ bookmarkResults tidak ditemukan.");
         return;
@@ -1577,6 +1577,7 @@ async function bookmarkDeleteInGame(indexOrRange) {
         }
     }
 }
+*/
 
 // marchType 1 = gathering
 // marchType 2 = attack/rally castle
@@ -1595,13 +1596,13 @@ function getMarchTypeName(marchType) {
 
 
 
-// sendSupport(123, 456);
-// sendGatherCM(789, 101);
-async function sendGatherCM(x, y) {
+// SendSupport(123, 456);
+// SendGatherCM(789, 101);
+async function SendGatherCM(x, y) {
     await sendMarch([x, y], 1, 3); // marchType 1 = gathering, preset index 3
 }
 
-async function sendSupport(x, y) {
+async function SendSupport(x, y) {
     let dragoId = null;  // deklarasi di awal supaya bisa diakses di luar try-catch
 
     try {
@@ -1631,7 +1632,7 @@ async function sendSupport(x, y) {
     }
 }
 
-async function sendGatherDSC(x, y) {
+async function SendGatherDSC(x, y) {
     let dragoId = null;  // deklarasi di awal supaya bisa diakses di luar try-catch
 
     try {
