@@ -1452,7 +1452,31 @@ async function bookmarkFromFieldData(allowedBookmark, fieldData) {
     }
 }
 
-async function bookmarkSave(limit = undefined) {
+async function bookmarkSave() {
+    // Filter bookmark berdasarkan kategori
+    const bookmarkCM = bookmarkResults.filter(item =>
+        ["crystal", "cavern"].some(kw => item.name.toLowerCase().includes(kw))
+    );
+
+    const bookmarkMonsterNormal = bookmarkResults.filter(item =>
+        ["goblin"].some(kw => item.name.toLowerCase().includes(kw))
+    );
+
+    const bookmarkMonsterRally = bookmarkResults.filter(item =>
+        !["crystal", "cavern", "goblin"].some(kw => item.name.toLowerCase().includes(kw))
+    );
+
+    // Kosongkan array utama setelah dipisah
+    bookmarkResults = [];
+
+    // Simpan ke localStorage (synchronous, tapi tetap bisa dibungkus async)
+    localStorage.setItem('bookmarkCM_bk', JSON.stringify(bookmarkCM));
+    localStorage.setItem('bookmarkMonsterNormal_bk', JSON.stringify(bookmarkMonsterNormal));
+    localStorage.setItem('bookmarkMonsterRally_bk', JSON.stringify(bookmarkMonsterRally));
+}
+
+
+async function bookmarkSaveInGame(limit = undefined) {
     if (!Array.isArray(bookmarkResults)) {
         console.warn("❗ bookmarkResults tidak ditemukan.");
         return;
@@ -1489,7 +1513,7 @@ async function bookmarkSave(limit = undefined) {
     console.log("🧹 bookmarkResults dikosongkan setelah disimpan.");
 }
 
-async function bookmarkDelete(indexOrRange) {
+async function bookmarkDeleteInGame(indexOrRange) {
     const bookmarks = kingdomData.bookmarks;
     if (!Array.isArray(bookmarks) || bookmarks.length === 0) {
         console.warn("Tidak ada bookmark untuk dihapus.");
@@ -2080,6 +2104,29 @@ async function attackMonster(x, y) {
     await sendMarch([x, y], 5, selectedTroop); // marchType 7 = support, preset index 2    
 }
 */
+
+async function GoblinAttack() {
+    let bookmarkMonsterNormal = JSON.parse(localStorage.getItem('bookmarkMonsterNormal_bk')) || [];
+    await startAttackMonsterFromBookmarks(bookmarkMonsterNormal);
+}
+async function DKRally() {
+    let bookmarkMonsterRally = JSON.parse(localStorage.getItem('bookmarkMonsterRally_bk')) || [];
+
+    bookmarkMonsterRally = bookmarkMonsterRally.filter(item => {
+        const [, x, y] = item.loc;
+
+        // Forbidden Area 1: x antara 950–1090 dan y antara 950–1090
+        const inFirstForbiddenArea = x > 950 && x < 1090 && y > 950 && y < 1090;
+
+        // Forbidden Area 2: x <= 1024
+        const inSecondForbiddenArea = x <= 1024;
+
+        return !(inFirstForbiddenArea || inSecondForbiddenArea);
+    });
+
+    await startRallyMonsterFromBookmarks(bookmarkMonsterRally);
+}
+
 
 async function exportCvCRankToCSV(eventId, filename = `CvC_Rank_${getTodayKey()}.csv`) {
     if (!token || !xor_password) {
