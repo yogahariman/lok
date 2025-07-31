@@ -1452,7 +1452,8 @@ async function bookmarkFromFieldData(allowedBookmark, fieldData) {
     }
 }
 
-async function BookmarkSave() {
+//async function BookmarkSave() {
+async function save() {
     // Filter bookmark berdasarkan kategori
     const bookmarkCM = bookmarkResults.filter(item =>
         ["crystal", "cavern"].some(kw => item.name.toLowerCase().includes(kw))
@@ -1598,11 +1599,13 @@ function getMarchTypeName(marchType) {
 
 // SendSupport(123, 456);
 // SendGatherCM(789, 101);
-async function SendGatherCM(x, y) {
+//async function SendGatherCM(x, y) {
+async function cm(x, y) {
     await sendMarch([x, y], 1, 3); // marchType 1 = gathering, preset index 3
 }
 
-async function SendSupport(x, y) {
+// async function SendSupport(x, y) {
+async function support(x, y) {
     let dragoId = null;  // deklarasi di awal supaya bisa diakses di luar try-catch
 
     try {
@@ -1632,7 +1635,8 @@ async function SendSupport(x, y) {
     }
 }
 
-async function SendGatherDSC(x, y) {
+//async function SendGatherDSC(x, y) {
+async function dsc(x, y) {
     let dragoId = null;  // deklarasi di awal supaya bisa diakses di luar try-catch
 
     try {
@@ -2106,11 +2110,13 @@ async function attackMonster(x, y) {
 }
 */
 
-async function GoblinAttack() {
+//async function GoblinAttack() {
+async function goblin() {
     let bookmarkMonsterNormal = JSON.parse(localStorage.getItem('bookmarkMonsterNormal_bk')) || [];
     await startAttackMonsterFromBookmarks(bookmarkMonsterNormal);
 }
-async function DKRally() {
+//async function DKRally() {
+async function dk() {
     let bookmarkMonsterRally = JSON.parse(localStorage.getItem('bookmarkMonsterRally_bk')) || [];
 
     bookmarkMonsterRally = bookmarkMonsterRally.filter(item => {
