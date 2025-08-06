@@ -1476,6 +1476,10 @@ async function save() {
     localStorage.setItem('bookmarkMonsterRally_bk', JSON.stringify(bookmarkMonsterRally));
 }
 
+function load() {
+  bookmarkResults = JSON.parse(localStorage.getItem('bookmarkMonsterRally_bk')) || [];
+}
+
 /*
 async function BookmarkSaveInGame(limit = undefined) {
     if (!Array.isArray(bookmarkResults)) {
