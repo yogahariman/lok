@@ -2116,6 +2116,20 @@ async function goblin() {
     await startAttackMonsterFromBookmarks(bookmarkMonsterNormal);
 }
 //async function DKRally() {
+async function dk_all() {
+    let bookmarkMonsterRally = JSON.parse(localStorage.getItem('bookmarkMonsterRally_bk')) || [];
+
+    bookmarkMonsterRally = bookmarkMonsterRally.filter(item => {
+        const [, x, y] = item.loc;
+
+        // Forbidden Area 1: x antara 950–1090 dan y antara 950–1090
+        const inForbiddenArea = x > 950 && x < 1090 && y > 950 && y < 1090;
+
+        return !inForbiddenArea;
+    });
+
+    await startRallyMonsterFromBookmarks(bookmarkMonsterRally);
+}
 async function dk_kanan() {
     let bookmarkMonsterRally = JSON.parse(localStorage.getItem('bookmarkMonsterRally_bk')) || [];
 
@@ -2140,6 +2154,18 @@ async function dk_bawah() {
     bookmarkMonsterRally = bookmarkMonsterRally.filter(item => {
         const [, , y] = item.loc;
         return y <= 850;
+    });
+
+
+    await startRallyMonsterFromBookmarks(bookmarkMonsterRally);
+}
+
+async function dk_atas() {
+    let bookmarkMonsterRally = JSON.parse(localStorage.getItem('bookmarkMonsterRally_bk')) || [];
+
+    bookmarkMonsterRally = bookmarkMonsterRally.filter(item => {
+        const [, , y] = item.loc;
+        return y >= 1150;
     });
 
 
