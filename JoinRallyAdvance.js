@@ -2116,7 +2116,7 @@ async function goblin() {
     await startAttackMonsterFromBookmarks(bookmarkMonsterNormal);
 }
 //async function DKRally() {
-async function dk() {
+async function dk_kanan() {
     let bookmarkMonsterRally = JSON.parse(localStorage.getItem('bookmarkMonsterRally_bk')) || [];
 
     bookmarkMonsterRally = bookmarkMonsterRally.filter(item => {
@@ -2130,6 +2130,18 @@ async function dk() {
 
         return !(inFirstForbiddenArea || inSecondForbiddenArea);
     });
+
+    await startRallyMonsterFromBookmarks(bookmarkMonsterRally);
+}
+
+async function dk_bawah() {
+    let bookmarkMonsterRally = JSON.parse(localStorage.getItem('bookmarkMonsterRally_bk')) || [];
+
+    bookmarkMonsterRally = bookmarkMonsterRally.filter(item => {
+        const [, , y] = item.loc;
+        return y <= 850;
+    });
+
 
     await startRallyMonsterFromBookmarks(bookmarkMonsterRally);
 }
