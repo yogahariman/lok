@@ -1837,15 +1837,15 @@ async function startAttackMonsterFromBookmarks(bookmarks = bookmarkMonsterNormal
                 isSkinMonsterApplied = false;
             }
 
-            console.log(`⏳ Queue penuh (${marchQueueUsed}/${marchLimit}), tunggu 1 menit...`);
-            await delay(60000);
+            console.log(`⏳ Queue penuh (${marchQueueUsed}/${marchLimit}), tunggu 15 detik...`);
+            await delay(15000);
             continue;
         }
 
         if (!isSkinMonsterApplied) {
             await changeSkin(10729001);
             isSkinMonsterApplied = true;
-            await delay(2000);
+            await delay(1000);
         }
 
         const b = finalResults[i];
@@ -1863,7 +1863,7 @@ async function startAttackMonsterFromBookmarks(bookmarks = bookmarkMonsterNormal
         }
 
         i++;
-        await delay(5000);
+        await delay(1000);
     }
 
     if (isSkinMonsterApplied) {
