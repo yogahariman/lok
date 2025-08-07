@@ -2157,13 +2157,28 @@ async function dk() {
 
     await startRallyMonsterFromBookmarks(bookmarkMonsterRally);
 }
-
+/*
 async function dk_bawah() {
     let bookmarkMonsterRally = JSON.parse(localStorage.getItem('bookmarkMonsterRally_bk')) || [];
 
     bookmarkMonsterRally = bookmarkMonsterRally.filter(item => {
         const [, , y] = item.loc;
         return y <= 850;
+    });
+
+
+    await startRallyMonsterFromBookmarks(bookmarkMonsterRally);
+}*/
+async function dk_bawah() {
+    let bookmarkMonsterRally = JSON.parse(localStorage.getItem('bookmarkMonsterRally_bk')) || [];
+
+    bookmarkMonsterRally = bookmarkMonsterRally.filter(item => {
+        const [, x, y] = item.loc;
+
+        const inForbiddenArea1 = x > 950 && x < 1090 && y > 950 && y < 1090;
+        const inForbiddenArea2 = x < 1024 && y > 850;
+
+        return !(inForbiddenArea1 || inForbiddenArea2);
     });
 
 
