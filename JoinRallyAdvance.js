@@ -2140,6 +2140,7 @@ async function dk_ForbiddenCongress() {
     await startRallyMonsterFromBookmarks(bookmarkMonsterRally);
 }
 
+/*
 async function dk() {
     let bookmarkMonsterRally = JSON.parse(localStorage.getItem('bookmarkMonsterRally_bk')) || [];
 
@@ -2154,6 +2155,23 @@ async function dk() {
 
         return !(inFirstForbiddenArea || inSecondForbiddenArea);
     });
+
+    await startRallyMonsterFromBookmarks(bookmarkMonsterRally);
+}
+*/
+async function dk() {
+    let bookmarkMonsterRally = JSON.parse(localStorage.getItem('bookmarkMonsterRally_bk')) || [];
+
+    bookmarkMonsterRally = bookmarkMonsterRally.filter(item => {
+        const [, x, y] = item.loc;
+
+        const inForbiddenArea1 = x > 950 && x < 1090 && y > 950 && y < 1090;
+        const inForbiddenArea2 = x < 1024 && y > 850;
+        const inForbiddenArea3 = x < 900 && y <= 850;
+
+        return !(inForbiddenArea1 || inForbiddenArea2 || inForbiddenArea3);
+    });
+
 
     await startRallyMonsterFromBookmarks(bookmarkMonsterRally);
 }
