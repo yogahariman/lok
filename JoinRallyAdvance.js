@@ -2131,8 +2131,8 @@ async function dk_CongressIsForbiddenArea() {
     bookmarkMonsterRally = bookmarkMonsterRally.filter(item => {
         const [, x, y] = item.loc;
 
-        // Forbidden Area 1: x antara 950–1090 dan y antara 950–1090
-        const inForbiddenArea = x > 950 && x < 1090 && y > 950 && y < 1090;
+        // Forbidden Area 1: x antara 950–1090 dan y antara 900–1090
+        const inForbiddenArea = x > 950 && x < 1090 && y > 900 && y < 1090;
 
         return !inForbiddenArea;
     });
