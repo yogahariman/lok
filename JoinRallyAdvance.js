@@ -2125,7 +2125,7 @@ async function dk_all() {
     await startRallyMonsterFromBookmarks(bookmarkMonsterRally);
 }
 
-async function dk_ForbiddenCongress() {
+async function dk_CongressIsForbiddenArea() {
     let bookmarkMonsterRally = JSON.parse(localStorage.getItem('bookmarkMonsterRally_bk')) || [];
 
     bookmarkMonsterRally = bookmarkMonsterRally.filter(item => {
@@ -2140,25 +2140,6 @@ async function dk_ForbiddenCongress() {
     await startRallyMonsterFromBookmarks(bookmarkMonsterRally);
 }
 
-/*
-async function dk() {
-    let bookmarkMonsterRally = JSON.parse(localStorage.getItem('bookmarkMonsterRally_bk')) || [];
-
-    bookmarkMonsterRally = bookmarkMonsterRally.filter(item => {
-        const [, x, y] = item.loc;
-
-        // Forbidden Area 1: x antara 950–1090 dan y antara 950–1090
-        const inFirstForbiddenArea = x > 950 && x < 1090 && y > 950 && y < 1090;
-
-        // Forbidden Area 2: x <= 1024
-        const inSecondForbiddenArea = x <= 1024;
-
-        return !(inFirstForbiddenArea || inSecondForbiddenArea);
-    });
-
-    await startRallyMonsterFromBookmarks(bookmarkMonsterRally);
-}
-*/
 async function dk() {
     let bookmarkMonsterRally = JSON.parse(localStorage.getItem('bookmarkMonsterRally_bk')) || [];
 
@@ -2175,18 +2156,7 @@ async function dk() {
 
     await startRallyMonsterFromBookmarks(bookmarkMonsterRally);
 }
-/*
-async function dk_bawah() {
-    let bookmarkMonsterRally = JSON.parse(localStorage.getItem('bookmarkMonsterRally_bk')) || [];
 
-    bookmarkMonsterRally = bookmarkMonsterRally.filter(item => {
-        const [, , y] = item.loc;
-        return y <= 850;
-    });
-
-
-    await startRallyMonsterFromBookmarks(bookmarkMonsterRally);
-}*/
 async function dk_bawah() {
     let bookmarkMonsterRally = JSON.parse(localStorage.getItem('bookmarkMonsterRally_bk')) || [];
 
