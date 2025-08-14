@@ -2147,10 +2147,12 @@ async function dk() {
         const [, x, y] = item.loc;
 
         const inForbiddenArea1 = x > 950 && x < 1090 && y > 950 && y < 1090;
-        const inForbiddenArea2 = x < 1024 && y > 850;
-        const inForbiddenArea3 = x < 900 && y <= 850;
+        const inForbiddenArea2 = x <= 1024;
+        //const inForbiddenArea2 = x < 1024 && y > 850;
+        //const inForbiddenArea3 = x < 900 && y <= 850;
 
-        return !(inForbiddenArea1 || inForbiddenArea2 || inForbiddenArea3);
+        return !(inForbiddenArea1 || inForbiddenArea2);
+        //return !(inForbiddenArea1 || inForbiddenArea2 || inForbiddenArea3);
     });
 
 
