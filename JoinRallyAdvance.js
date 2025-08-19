@@ -2120,11 +2120,12 @@ async function goblin() {
     await startAttackMonsterFromBookmarks(bookmarkMonsterNormal);
 }
 //async function DKRally() {
-async function dk_all() {
+async function dk() {
     let bookmarkMonsterRally = JSON.parse(localStorage.getItem('bookmarkMonsterRally_bk')) || [];
     await startRallyMonsterFromBookmarks(bookmarkMonsterRally);
 }
 
+/*
 async function dk_CongressIsForbiddenArea() {
     let bookmarkMonsterRally = JSON.parse(localStorage.getItem('bookmarkMonsterRally_bk')) || [];
 
@@ -2139,7 +2140,8 @@ async function dk_CongressIsForbiddenArea() {
 
     await startRallyMonsterFromBookmarks(bookmarkMonsterRally);
 }
-
+*/
+/*
 async function dk() {
     let bookmarkMonsterRally = JSON.parse(localStorage.getItem('bookmarkMonsterRally_bk')) || [];
 
@@ -2158,7 +2160,8 @@ async function dk() {
 
     await startRallyMonsterFromBookmarks(bookmarkMonsterRally);
 }
-
+*/
+/*
 async function dk_bawah() {
     let bookmarkMonsterRally = JSON.parse(localStorage.getItem('bookmarkMonsterRally_bk')) || [];
 
@@ -2174,7 +2177,8 @@ async function dk_bawah() {
 
     await startRallyMonsterFromBookmarks(bookmarkMonsterRally);
 }
-
+*/
+/*
 async function dk_atas() {
     let bookmarkMonsterRally = JSON.parse(localStorage.getItem('bookmarkMonsterRally_bk')) || [];
 
@@ -2186,7 +2190,7 @@ async function dk_atas() {
 
     await startRallyMonsterFromBookmarks(bookmarkMonsterRally);
 }
-
+*/
 
 async function exportCvCRankToCSV(eventId, filename = `CvC_Rank_${getTodayKey()}.csv`) {
     if (!token || !xor_password) {
