@@ -47,8 +47,8 @@ def on_press(key):
         pass
 
 def on_release(key):
-    if key == Key.esc:
-        return False  # keluar dari script kalau tekan ESC
+    if key == Key.end:
+        return False  # keluar dari script kalau tekan End
 
 print("Tekan panah arah untuk geser map. Tekan ESC untuk keluar.")
 with Listener(on_press=on_press, on_release=on_release) as listener:
