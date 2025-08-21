@@ -165,6 +165,10 @@ function decodePayloadArray(payload) {
 function delay(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
+function delayRandom(min=1000, max=3000) {
+    return new Promise(r => setTimeout(r, Math.floor(Math.random() * (max - min + 1)) + min));
+}
+
 
 function getTodayKey() {
     const now = new Date();
@@ -257,7 +261,7 @@ async function sendRequest({
             //console.log("✅ Request sent (no response returned)");
         }
     } catch (err) {
-        console.error("❌ Gagal mengirim request:", err);
+        console.warn("❌ Gagal mengirim request:", err);
         return null;
     }
 }
@@ -2398,6 +2402,7 @@ async function autoJoinRally() {
 
     try {
 
+        await delayRandom();
         const rallyList = await sendRequest({
             url: "https://api-lok-live.leagueofkingdoms.com/api/alliance/battle/list/v2",
             token: token,
@@ -2476,6 +2481,7 @@ async function autoJoinRally() {
             //console.log("✅ Slot march tersedia setelah menunggu, lanjut join rally...");
         }
 
+        await delayRandom();
         await changeSkin(10729001);
         for (const battle of unjoinedRallies) {
             //const battleId = battle._id;
@@ -2521,7 +2527,7 @@ async function autoJoinRally() {
 
             // Gunakan AP jika < 50
             await useActionPoint();
-            await delay(1000);
+            await delayRandom();
 
             await sendRequest({
                 url: "https://api-lok-live.leagueofkingdoms.com/api/alliance/info/my",
@@ -2529,7 +2535,7 @@ async function autoJoinRally() {
                 body: "{}",
                 returnResponse: false
             });
-            await delay(1000);
+            await delayRandom();
 
             await sendRequest({
                 url: "https://api-lok-live.leagueofkingdoms.com/api/alliance/battle/list/v2",
@@ -2537,7 +2543,7 @@ async function autoJoinRally() {
                 body: "{}",
                 returnResponse: false
             });
-            await delay(1000);
+            await delayRandom();
 
             const battleInfo = await sendRequest({
                 url: "https://api-lok-live.leagueofkingdoms.com/api/alliance/battle/info",
@@ -2545,7 +2551,7 @@ async function autoJoinRally() {
                 body: JSON.stringify({ rallyMoId: battleId }),
                 returnResponse: true
             });
-            await delay(1000);
+            await delayRandom();
             //console.log("📥 /alliance/battle/info", battleInfo);
 
 
@@ -2560,7 +2566,7 @@ async function autoJoinRally() {
                 body: b64xorEnc(payload_marchInfo, xor_password),
                 returnResponse: true
             });
-            await delay(1000);
+            await delayRandom();
             const marchInfo = b64xorDec(marchInfoResponse, xor_password);
             //console.log("📥 Save Troops Response : ", marchInfo);
 
@@ -2601,7 +2607,7 @@ async function autoJoinRally() {
                 body: payload_rally_encrypted,
                 returnResponse: false
             });
-            await delay(1000);
+            await delayRandom();
         }
         await changeSkin();
     } catch (err) {
