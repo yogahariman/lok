@@ -165,10 +165,11 @@ function decodePayloadArray(payload) {
 function delay(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
-function delayRandom(min=1000, max=3000) {
-    return new Promise(r => setTimeout(r, Math.floor(Math.random() * (max - min + 1)) + min));
-}
 
+function delayRandom(min = 1000, max = 3000) {
+    const ms = Math.floor(Math.random() * (max - min + 1)) + min;
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
 
 function getTodayKey() {
     const now = new Date();
@@ -261,7 +262,7 @@ async function sendRequest({
             //console.log("✅ Request sent (no response returned)");
         }
     } catch (err) {
-        console.warn("❌ Gagal mengirim request:", err);
+        console.log("❌ Gagal mengirim request:", err);
         return null;
     }
 }
@@ -2401,7 +2402,6 @@ async function autoJoinRally() {
     }
 
     try {
-
         await delayRandom();
         const rallyList = await sendRequest({
             url: "https://api-lok-live.leagueofkingdoms.com/api/alliance/battle/list/v2",
