@@ -821,7 +821,7 @@ async function scheduleAutoDonate() {
 
             if (response.numDonation <= 0) {
                 console.log("⚠️ Tidak ada sisa donasi.");
-                await delay(60 * 60 * 1000);
+                await delay(3 * 60 * 60 * 1000);
                 continue;
             }
 
@@ -846,13 +846,13 @@ async function scheduleAutoDonate() {
 
             if (!response_donate_all.result) {
                 console.log("⚠️ Donasi tidak terkirim!");
-                await delay(60 * 60 * 1000);
+                await delay(3 * 60 * 60 * 1000);
                 continue;
             }
 
             console.log("✅ Donasi berhasil dikirim!");
-            // Tunggu 1 jam sebelum donasi berikutnya
-            await delay(60 * 60 * 1000);
+            // Tunggu 3 jam sebelum donasi berikutnya
+            await delay(3 * 60 * 60 * 1000);
 
 
         } catch (err) {
@@ -2529,21 +2529,21 @@ async function autoJoinRally() {
             await useActionPoint();
             await delayRandom();
 
-            await sendRequest({
-                url: "https://api-lok-live.leagueofkingdoms.com/api/alliance/info/my",
-                token: token,
-                body: "{}",
-                returnResponse: false
-            });
-            await delayRandom();
+            // await sendRequest({
+            //     url: "https://api-lok-live.leagueofkingdoms.com/api/alliance/info/my",
+            //     token: token,
+            //     body: "{}",
+            //     returnResponse: false
+            // });
+            // await delayRandom();
 
-            await sendRequest({
-                url: "https://api-lok-live.leagueofkingdoms.com/api/alliance/battle/list/v2",
-                token: token,
-                body: "{}",
-                returnResponse: false
-            });
-            await delayRandom();
+            // await sendRequest({
+            //     url: "https://api-lok-live.leagueofkingdoms.com/api/alliance/battle/list/v2",
+            //     token: token,
+            //     body: "{}",
+            //     returnResponse: false
+            // });
+            // await delayRandom();
 
             const battleInfo = await sendRequest({
                 url: "https://api-lok-live.leagueofkingdoms.com/api/alliance/battle/info",
@@ -2786,27 +2786,28 @@ async function handleAuthResponse(xhr) {
 
             if (setting.claimVIP) {
                 await claimVIP();
-                await delay(5000);
+                await delay(2000);
             }
 
             if (setting.claimDSAVIP) {
                 await claimDSAVIP();
-                await delay(5000);
+                await delay(2000);
             }
 
             if (setting.scheduleHelpAll) {
-                scheduleHelpAll();
-                await delay(5000);
+                //scheduleHelpAll();
+                await helpAll();
+                await delay(2000);
             }
 
             if (setting.scheduleAutoDonate) {
                 scheduleAutoDonate();
-                await delay(5000);
+                await delay(2000);
             }
 
             if (setting.scheduleAutoOpenFreeChest) {
                 scheduleAutoOpenFreeChest();
-                await delay(5000);
+                await delay(2000);
             }
 
             if (setting.scheduleBuyCaravan) {
@@ -2815,8 +2816,8 @@ async function handleAuthResponse(xhr) {
             }
 
             if (setting.scheduleResourceHarvest) {
-                scheduleResourceHarvest();
-                await delay(5000);
+                //scheduleResourceHarvest();
+                //await delay(5000);
             }
 
             if (setting.scheduleClaimDailyQuest) {
@@ -2826,11 +2827,11 @@ async function handleAuthResponse(xhr) {
 
             if (setting.scheduleInstantHarvest) {
                 scheduleSkillActivate(10001);
-                await delay(3 * 60 * 1000);
+                await delay(1 * 60 * 1000);
             }
 
             if (setting.scheduleSummonMonster) {
-                scheduleSkillActivate(10023);
+                //scheduleSkillActivate(10023);
                 //await delay(3 * 60 * 1000);
             }
 
