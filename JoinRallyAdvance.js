@@ -2831,7 +2831,7 @@ async function handleAuthResponse(xhr) {
             }
 
             if (setting.scheduleSummonMonster) {
-                //scheduleSkillActivate(10023);
+                scheduleSkillActivate(10023);
                 //await delay(3 * 60 * 1000);
             }
 
