@@ -2125,11 +2125,33 @@ async function goblin() {
     await startAttackMonsterFromBookmarks(bookmarkMonsterNormal);
 }
 //async function DKRally() {
+/*
 async function dk() {
     let bookmarkMonsterRally = JSON.parse(localStorage.getItem('bookmarkMonsterRally_bk')) || [];
     await startRallyMonsterFromBookmarks(bookmarkMonsterRally);
 }
+*/
 
+async function dk() {
+    let bookmarkMonsterRally = JSON.parse(localStorage.getItem('bookmarkMonsterRally_bk')) || [];
+
+    bookmarkMonsterRally = bookmarkMonsterRally.filter(item => {
+        const [, x, y] = item.loc;
+
+        // Forbidden Area 1: kotak tengah
+        const inForbiddenArea1 = x > 950 && x < 1090 && y > 950 && y < 1090;
+
+        // Forbidden Area 2: kotak baru (850–1150, 800–980)
+        const inForbiddenArea2 = x >= 850 && x <= 1150 && y >= 800 && y <= 980;
+
+        return !(inForbiddenArea1 || inForbiddenArea2);
+    });
+
+    await startRallyMonsterFromBookmarks(bookmarkMonsterRally);
+}
+
+
+/*
 async function dk_CongressIsForbiddenArea() {
     let bookmarkMonsterRally = JSON.parse(localStorage.getItem('bookmarkMonsterRally_bk')) || [];
 
@@ -2144,27 +2166,8 @@ async function dk_CongressIsForbiddenArea() {
 
     await startRallyMonsterFromBookmarks(bookmarkMonsterRally);
 }
-
-/*
-async function dk() {
-    let bookmarkMonsterRally = JSON.parse(localStorage.getItem('bookmarkMonsterRally_bk')) || [];
-
-    bookmarkMonsterRally = bookmarkMonsterRally.filter(item => {
-        const [, x, y] = item.loc;
-
-        const inForbiddenArea1 = x > 950 && x < 1090 && y > 950 && y < 1090;
-        const inForbiddenArea2 = x <= 1024;
-        //const inForbiddenArea2 = x < 1024 && y > 850;
-        //const inForbiddenArea3 = x < 900 && y <= 850;
-
-        return !(inForbiddenArea1 || inForbiddenArea2);
-        //return !(inForbiddenArea1 || inForbiddenArea2 || inForbiddenArea3);
-    });
-
-
-    await startRallyMonsterFromBookmarks(bookmarkMonsterRally);
-}
 */
+
 /*
 async function dk_bawah() {
     let bookmarkMonsterRally = JSON.parse(localStorage.getItem('bookmarkMonsterRally_bk')) || [];
