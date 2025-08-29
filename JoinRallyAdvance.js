@@ -2130,7 +2130,6 @@ async function dk() {
     await startRallyMonsterFromBookmarks(bookmarkMonsterRally);
 }
 
-/*
 async function dk_CongressIsForbiddenArea() {
     let bookmarkMonsterRally = JSON.parse(localStorage.getItem('bookmarkMonsterRally_bk')) || [];
 
@@ -2145,7 +2144,7 @@ async function dk_CongressIsForbiddenArea() {
 
     await startRallyMonsterFromBookmarks(bookmarkMonsterRally);
 }
-*/
+
 /*
 async function dk() {
     let bookmarkMonsterRally = JSON.parse(localStorage.getItem('bookmarkMonsterRally_bk')) || [];
