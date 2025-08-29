@@ -3,6 +3,7 @@
 #pip install pynput
 #python /Drive/D/LOK/jalan.py
 
+
 from pynput.keyboard import Key, Listener, KeyCode
 import pyautogui
 
@@ -13,16 +14,19 @@ drag_start_y = 370
 drag_distance = 400  # seberapa jauh drag dilakukan
 drag_duration = 0.3  # waktu durasi drag
 
+# set untuk melacak tombol yang ditekan
+pressed_keys = set()
+
 def geser_map(arah):
 
     if arah == 'atas':
         pyautogui.moveTo(drag_start_x, drag_start_y-175)
         pyautogui.mouseDown()
         pyautogui.dragRel(0, drag_distance, duration=drag_duration)  # drag ke bawah → map ke atas
-    #elif arah == 'bawah':
-        #pyautogui.dragRel(0, -drag_distance, duration=drag_duration)  # drag ke atas → map ke bawah
-    #elif arah == 'kiri':
-    #    pyautogui.dragRel(drag_distance, 0, duration=drag_duration)  # drag ke kanan → map ke kiri
+    elif arah == 'bawah':
+        pyautogui.dragRel(0, -drag_distance, duration=drag_duration)  # drag ke atas → map ke bawah
+    elif arah == 'kiri':
+        pyautogui.dragRel(drag_distance, 0, duration=drag_duration)  # drag ke kanan → map ke kiri
     elif arah == 'kanan':
         pyautogui.moveTo(drag_start_x+360, drag_start_y)
         pyautogui.mouseDown()
@@ -31,6 +35,7 @@ def geser_map(arah):
     pyautogui.mouseUp()
 
 def on_press(key):
+    pressed_keys.add(key)
     try:
         if key == Key.up:
             geser_map('atas')
@@ -40,19 +45,78 @@ def on_press(key):
             geser_map('kiri')
         elif key == Key.right:
             geser_map('kanan')
-        elif key==KeyCode.from_char('p'): #mouse position
+        elif key == KeyCode.from_char('p'): # mouse position
             x, y = pyautogui.position()
-            print('X : {0} Y : {1} '.format(x,y))            
+            print('X : {0} Y : {1} '.format(x, y))
+
+        # cek kombinasi Ctrl + End untuk keluar
+        if Key.ctrl in pressed_keys and Key.end in pressed_keys:
+            print("Ctrl + End ditekan → keluar program.")
+            return False
+
     except:
         pass
 
 def on_release(key):
-    if key == Key.end:
-        return False  # keluar dari script kalau tekan End
+    # hapus dari set saat tombol dilepas
+    if key in pressed_keys:
+        pressed_keys.remove(key)
 
-print("Tekan panah arah untuk geser map. Tekan ESC untuk keluar.")
+print("Tekan panah arah untuk geser map. Tekan Ctrl + End untuk keluar.")
 with Listener(on_press=on_press, on_release=on_release) as listener:
     listener.join()
+
+
+# from pynput.keyboard import Key, Listener, KeyCode
+# import pyautogui
+
+# # Posisi awal drag (misalnya di tengah layar)
+# drag_start_x = 1550  # ganti sesuai resolusi layar kamu
+# drag_start_y = 370
+
+# drag_distance = 400  # seberapa jauh drag dilakukan
+# drag_duration = 0.3  # waktu durasi drag
+
+# def geser_map(arah):
+
+#     if arah == 'atas':
+#         pyautogui.moveTo(drag_start_x, drag_start_y-175)
+#         pyautogui.mouseDown()
+#         pyautogui.dragRel(0, drag_distance, duration=drag_duration)  # drag ke bawah → map ke atas
+#     #elif arah == 'bawah':
+#         #pyautogui.dragRel(0, -drag_distance, duration=drag_duration)  # drag ke atas → map ke bawah
+#     #elif arah == 'kiri':
+#     #    pyautogui.dragRel(drag_distance, 0, duration=drag_duration)  # drag ke kanan → map ke kiri
+#     elif arah == 'kanan':
+#         pyautogui.moveTo(drag_start_x+360, drag_start_y)
+#         pyautogui.mouseDown()
+#         pyautogui.dragRel(-drag_distance-200, 0, duration=drag_duration)  # drag ke kiri → map ke kanan
+
+#     pyautogui.mouseUp()
+
+# def on_press(key):
+#     try:
+#         if key == Key.up:
+#             geser_map('atas')
+#         elif key == Key.down:
+#             geser_map('bawah')
+#         elif key == Key.left:
+#             geser_map('kiri')
+#         elif key == Key.right:
+#             geser_map('kanan')
+#         elif key==KeyCode.from_char('p'): #mouse position
+#             x, y = pyautogui.position()
+#             print('X : {0} Y : {1} '.format(x,y))            
+#     except:
+#         pass
+
+# def on_release(key):
+#     if key == Key.end:
+#         return False  # keluar dari script kalau tekan End
+
+# print("Tekan panah arah untuk geser map. Tekan ESC untuk keluar.")
+# with Listener(on_press=on_press, on_release=on_release) as listener:
+#     listener.join()
 
 
 # import time
