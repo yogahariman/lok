@@ -2124,14 +2124,12 @@ async function goblin() {
     let bookmarkMonsterNormal = JSON.parse(localStorage.getItem('bookmarkMonsterNormal_bk')) || [];
     await startAttackMonsterFromBookmarks(bookmarkMonsterNormal);
 }
-//async function DKRally() {
-/*
+
 async function dk() {
     let bookmarkMonsterRally = JSON.parse(localStorage.getItem('bookmarkMonsterRally_bk')) || [];
     await startRallyMonsterFromBookmarks(bookmarkMonsterRally);
 }
-*/
-
+/*
 async function dk() {
     let bookmarkMonsterRally = JSON.parse(localStorage.getItem('bookmarkMonsterRally_bk')) || [];
 
@@ -2149,7 +2147,7 @@ async function dk() {
 
     await startRallyMonsterFromBookmarks(bookmarkMonsterRally);
 }
-
+*/
 
 /*
 async function dk_CongressIsForbiddenArea() {
