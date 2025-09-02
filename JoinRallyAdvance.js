@@ -313,8 +313,8 @@ function payloadJoinRally(saveTroopsGroup, rallyMoId) {
 function getTroopGroupByHP(monsterHP, marchInfo) {
     const troops = marchInfo?.saveTroops || kingdomData.saveTroops;
 
-    if (monsterHP <= 1000000) return troops[0];
-    if (monsterHP <= 2000000) return troops[1];
+    if (monsterHP <  2000000) return troops[0];
+    if (monsterHP <= 20000000) return troops[1];
     return troops[2];
 }
 
