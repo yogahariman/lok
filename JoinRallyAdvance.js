@@ -1656,13 +1656,16 @@ async function dsc(x, y) {
             returnResponse: true
         });
 
-        const drago = dragoList.dragos
-            .filter(drago => drago.lair?.status === 1 && drago.level < 30)
-            .sort((a, b) => b.level - a.level)[0];  // Ambil yang level tertinggi
+        // const drago = dragoList.dragos
+        //     .filter(drago => drago.lair?.status === 1 && drago.level < 30)
+        //     .sort((a, b) => b.level - a.level)[0];  // Ambil yang level tertinggi
+
+        // Ambil drago pertama dengan status 1
+        const drago = dragoList.dragos.find(d => d.lair?.status === 1);
 
         dragoId = drago?._id || null;
 
-        console.log("Drago ID terpilih (lair.status === 1 dan level < 30):", dragoId);
+        //console.log("Drago ID terpilih (lair.status === 1 dan level < 30):", dragoId);
 
     } catch (err) {
         console.error("Gagal mengambil daftar drago:", err);
@@ -2125,12 +2128,12 @@ async function goblin() {
     await startAttackMonsterFromBookmarks(bookmarkMonsterNormal);
 }
 
-// async function dk() {
-//     let bookmarkMonsterRally = JSON.parse(localStorage.getItem('bookmarkMonsterRally_bk')) || [];
-//     await startRallyMonsterFromBookmarks(bookmarkMonsterRally);
-// }
-
 async function dk() {
+    let bookmarkMonsterRally = JSON.parse(localStorage.getItem('bookmarkMonsterRally_bk')) || [];
+    await startRallyMonsterFromBookmarks(bookmarkMonsterRally);
+}
+
+async function dk_Doom3() {
     let bookmarkMonsterRally = JSON.parse(localStorage.getItem('bookmarkMonsterRally_bk')) || [];
 
     bookmarkMonsterRally = bookmarkMonsterRally.filter(item => {
