@@ -2500,6 +2500,8 @@ async function autoJoinRally() {
                 } = {}
             } = battle;
 
+            if (monsterHP > 30_000_000) continue;
+            
             const monsterInfo = allowedMonsters[monsterCode];
 
             // 🔁 Cek march queue sebelum lanjut
