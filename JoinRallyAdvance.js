@@ -2649,7 +2649,7 @@ async function monitorWebSocket() {
                 continue; // Lewatkan rally ini tanpa diproses
             }
 
-            await delay(30000);
+            await delay(5e3);
             try {
                 //console.log('[⏳] Memproses rally dari antrean...');
                 await autoJoinRally(); // Fungsi utama join rally
