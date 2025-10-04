@@ -2500,7 +2500,7 @@ async function autoJoinRally() {
                 } = {}
             } = battle;
 
-            if (monsterHP > 30_000_000) continue;
+            if (monsterHP > 35_000_000) continue;
             
             const monsterInfo = allowedMonsters[monsterCode];
 
