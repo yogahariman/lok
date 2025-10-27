@@ -1460,6 +1460,9 @@ async function bookmarkFromFieldData(allowedBookmark, fieldData) {
 //async function BookmarkSave() {
 async function save() {
     // Filter bookmark berdasarkan kategori
+    const bookmarkRSS = bookmarkResults.filter(item =>
+        ["rss"].some(kw => item.name.toLowerCase().includes(kw))
+    );
     const bookmarkCM = bookmarkResults.filter(item =>
         ["crystal", "cavern"].some(kw => item.name.toLowerCase().includes(kw))
     );
@@ -1469,13 +1472,14 @@ async function save() {
     );
 
     const bookmarkMonsterRally = bookmarkResults.filter(item =>
-        !["crystal", "cavern", "goblin"].some(kw => item.name.toLowerCase().includes(kw))
+        !["crystal", "cavern", "goblin","rss"].some(kw => item.name.toLowerCase().includes(kw))
     );
 
     // Kosongkan array utama setelah dipisah
     bookmarkResults = [];
 
     // Simpan ke localStorage (synchronous, tapi tetap bisa dibungkus async)
+    localStorage.setItem('bookmarkRSS_bk', JSON.stringify(bookmarkRSS));
     localStorage.setItem('bookmarkCM_bk', JSON.stringify(bookmarkCM));
     localStorage.setItem('bookmarkMonsterNormal_bk', JSON.stringify(bookmarkMonsterNormal));
     localStorage.setItem('bookmarkMonsterRally_bk', JSON.stringify(bookmarkMonsterRally));
@@ -1613,7 +1617,21 @@ async function cm(x, y) {
     await sendMarch([x, y], 1, 3); // marchType 1 = gathering, preset index 3
 }
 
-async function rss(x, y) {
+// rss(1202, 931); // langsung koordinat
+// rss(bookmarkResults[1]); // pakai objek bookmark
+async function rss(a, b) {
+    let x, y;
+
+    if (typeof a === 'object' && a.loc) {
+        // Jika input berupa objek bookmark seperti bookmarkResults[1]
+        x = a.loc[1];
+        y = a.loc[2];
+    } else {
+        // Jika input berupa dua angka (x, y)
+        x = a;
+        y = b;
+    }
+
     await changeTreasure(2); // Aktifkan treasure produksi
     await sendMarch([x, y], 1, 1); // marchType 1 = gathering, preset index 1
 }
