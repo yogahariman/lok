@@ -1413,6 +1413,39 @@ function getSortedUniqueBookmarks(bookmarks = bookmarkResults) {
     return unique;
 }
 
+function getSortedUniqueBookmarksRSS(bookmarks = bookmarkResults) {
+    if (!kingdomData?.loc || kingdomData.loc.length !== 3) {
+        console.warn("❗ Lokasi kingdom tidak valid.");
+        return [];
+    }
+
+    const distance = (loc1, loc2) => {
+        const dx = loc1[1] - loc2[1];
+        const dy = loc1[2] - loc2[2];
+        return Math.sqrt(dx * dx + dy * dy);
+    };
+
+    // Hapus sorting berdasarkan nama, urutkan hanya berdasarkan level & jarak
+    const sorted = [...bookmarks].sort((a, b) => {
+        if (a.level !== b.level) return b.level - a.level; // level tinggi dulu
+        const distA = distance(kingdomData.loc, a.loc);
+        const distB = distance(kingdomData.loc, b.loc);
+        return distA - distB; // yang lebih dekat dulu
+    });
+
+    // Hapus duplikat berdasarkan lokasi
+    const seen = new Set();
+    const unique = sorted.filter(item => {
+        const key = item.loc.join(",");
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+    });
+
+    return unique;
+}
+
+
 async function bookmarkFromFieldData(allowedBookmark, fieldData) {
     const existingLocs = new Set(bookmarkResults.map(b => b.loc.join(","))); // lokasi yang sudah ada
     let index = bookmarkResults.length + 1; // index global berdasarkan jumlah sebelumnya
@@ -1853,7 +1886,7 @@ async function startGatheringRSSFromBookmarks(bookmarks) {
     };
 
     // Pastikan hasil sudah unik dan tersortir
-    const finalResults = getSortedUniqueBookmarks(bookmarks) || [];
+    const finalResults = getSortedUniqueBookmarksRSS(bookmarks) || [];
 
     if (finalResults.length === 0) {
         console.warn("⚠️ Tidak ada RSS.");
