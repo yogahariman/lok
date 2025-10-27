@@ -1613,6 +1613,11 @@ async function cm(x, y) {
     await sendMarch([x, y], 1, 3); // marchType 1 = gathering, preset index 3
 }
 
+async function rss(x, y) {
+    await changeTreasure(2); // Aktifkan treasure produksi
+    await sendMarch([x, y], 1, 1); // marchType 1 = gathering, preset index 1
+}
+
 // async function SendSupport(x, y) {
 async function support(x, y) {
     let dragoId = null;  // deklarasi di awal supaya bisa diakses di luar try-catch
