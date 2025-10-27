@@ -1617,24 +1617,28 @@ async function cm(x, y) {
     await sendMarch([x, y], 1, 3); // marchType 1 = gathering, preset index 3
 }
 
-// rss(1202, 931); // langsung koordinat
-// rss(bookmarkResults[1]); // pakai objek bookmark
-async function rss(a, b) {
-    let x, y;
-
-    if (typeof a === 'object' && a.loc) {
-        // Jika input berupa objek bookmark seperti bookmarkResults[1]
-        x = a.loc[1];
-        y = a.loc[2];
-    } else {
-        // Jika input berupa dua angka (x, y)
-        x = a;
-        y = b;
-    }
-
-    await changeTreasure(2); // Aktifkan treasure produksi
-    await sendMarch([x, y], 1, 1); // marchType 1 = gathering, preset index 1
+async function rss() {
+    let bookmarkRSS = JSON.parse(localStorage.getItem('bookmarkRSS_bk')) || [];
+    await startGatheringRSSFromBookmarks(bookmarkRSS);
 }
+// // rss(1202, 931); // langsung koordinat
+// // rss(bookmarkResults[1]); // pakai objek bookmark
+// async function rss(a, b) {
+//     let x, y;
+
+//     if (typeof a === 'object' && a.loc) {
+//         // Jika input berupa objek bookmark seperti bookmarkResults[1]
+//         x = a.loc[1];
+//         y = a.loc[2];
+//     } else {
+//         // Jika input berupa dua angka (x, y)
+//         x = a;
+//         y = b;
+//     }
+
+//     await changeTreasure(2); // Aktifkan treasure produksi
+//     await sendMarch([x, y], 1, 1); // marchType 1 = gathering, preset index 1
+// }
 
 // async function SendSupport(x, y) {
 async function support(x, y) {
@@ -1838,6 +1842,60 @@ async function sendMarch(loc, marchType, troopIndex, dragoId) {
     }
 }
 */
+
+async function startGatheringRSSFromBookmarks(bookmarks) {
+    // Fungsi untuk menghitung jarak antar lokasi
+    const distance = (loc1, loc2) => {
+        if (!Array.isArray(loc1) || !Array.isArray(loc2)) return 0;
+        const dx = (loc1[1] ?? 0) - (loc2[1] ?? 0);
+        const dy = (loc1[2] ?? 0) - (loc2[2] ?? 0);
+        return Math.sqrt(dx * dx + dy * dy);
+    };
+
+    // Pastikan hasil sudah unik dan tersortir
+    const finalResults = getSortedUniqueBookmarks(bookmarks) || [];
+
+    if (finalResults.length === 0) {
+        console.warn("⚠️ Tidak ada RSS.");
+        return;
+    }
+
+    // Pastikan treasure diaktifkan hanya sekali
+    await changeTreasure(2);
+
+    // Loop untuk mengirim march
+    for (let i = 0; i < finalResults.length; i++) {
+        const marchQueueUsed = await getMarchQueueUsed();
+        if (marchQueueUsed >= marchLimit) {
+            console.log("🚫 March queue penuh, berhenti gather.");
+            break;
+        }
+
+        const b = finalResults[i];
+        if (!b?.loc || b.loc.length < 3) {
+            console.warn("⚠️ Bookmark tidak valid:", b);
+            continue;
+        }
+
+        const [, x, y] = b.loc;
+        const levelText = b.level ? `Lv.${b.level}` : "";
+        const dist = Math.round(distance(kingdomData.loc, b.loc));
+
+        console.log(`🏕️ Gathering ${b.name}${levelText} di (${x}, ${y}) — jarak ${dist}`);
+
+        try {
+            await sendMarch([x, y], 1, 1); // marchType 1 = gathering, preset index 1
+        } catch (err) {
+            console.error(`❌ Gagal kirim march ke (${x}, ${y}):`, err);
+        }
+
+        // Delay antar pengiriman untuk menghindari spam request
+        await delay(1000);
+    }
+
+    console.log("✅ Proses gather RSS selesai.");
+}
+
 
 async function startAttackMonsterFromBookmarks(bookmarks = bookmarkMonsterNormal) {
     const distance = (loc1, loc2) => {
