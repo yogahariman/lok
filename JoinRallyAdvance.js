@@ -1647,6 +1647,7 @@ function getMarchTypeName(marchType) {
 // SendGatherCM(789, 101);
 //async function SendGatherCM(x, y) {
 async function cm(x, y) {
+    await changeTreasure(3);
     await sendMarch([x, y], 1, 3); // marchType 1 = gathering, preset index 3
 }
 
@@ -1654,24 +1655,6 @@ async function rss() {
     let bookmarkRSS = JSON.parse(localStorage.getItem('bookmarkRSS_bk')) || [];
     await startGatheringRSSFromBookmarks(bookmarkRSS);
 }
-// // rss(1202, 931); // langsung koordinat
-// // rss(bookmarkResults[1]); // pakai objek bookmark
-// async function rss(a, b) {
-//     let x, y;
-
-//     if (typeof a === 'object' && a.loc) {
-//         // Jika input berupa objek bookmark seperti bookmarkResults[1]
-//         x = a.loc[1];
-//         y = a.loc[2];
-//     } else {
-//         // Jika input berupa dua angka (x, y)
-//         x = a;
-//         y = b;
-//     }
-
-//     await changeTreasure(2); // Aktifkan treasure produksi
-//     await sendMarch([x, y], 1, 1); // marchType 1 = gathering, preset index 1
-// }
 
 // async function SendSupport(x, y) {
 async function support(x, y) {
@@ -1732,6 +1715,7 @@ async function dsc(x, y) {
     }
 
     if (dragoId) {
+        await changeTreasure(3);
         await sendMarch([x, y], 1, 3, dragoId);
     } else {
         console.warn("Tidak ada Drago yang tersedia untuk dikirim.");
