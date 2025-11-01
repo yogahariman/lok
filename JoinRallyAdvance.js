@@ -491,7 +491,7 @@ async function changeSkin(skinCode = 10730001) {
     });
 
     // Cari skin ID berdasarkan skinCode yang diberikan
-    // const skin = response?.skins?.find(s => s.code === skinCode);
+    const skin = response?.skins?.find(s => s.code === skinCode);
     // if (!skin) {
     //     console.warn(`❌ Skin dengan code ${skinCode} tidak ditemukan.`);
     //     return null;
