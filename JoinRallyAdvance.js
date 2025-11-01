@@ -473,6 +473,7 @@ async function useActionPoint() {
 }
 
 // 10726001 (skin skill cooldown reduction)
+// 10728001 (skin reduce AP consumption & Drop rate)
 // 10729001 (skin reduce AP consumption)
 // 10730001 (skin drop rate)
 async function changeSkin(skinCode = 10730001) {
@@ -490,11 +491,28 @@ async function changeSkin(skinCode = 10730001) {
     });
 
     // Cari skin ID berdasarkan skinCode yang diberikan
-    const skin = response?.skins?.find(s => s.code === skinCode);
+    // const skin = response?.skins?.find(s => s.code === skinCode);
+    // if (!skin) {
+    //     console.warn(`❌ Skin dengan code ${skinCode} tidak ditemukan.`);
+    //     return null;
+    // }
     if (!skin) {
-        console.warn(`❌ Skin dengan code ${skinCode} tidak ditemukan.`);
-        return null;
-    }
+        // Jika skinCode = 10729001 dan tidak ditemukan, cek ulang pakai 10728001
+        if (skinCode === 10729001) {
+            const altSkin = response?.skins?.find(s => s.code === 10728001);
+            if (altSkin) {
+                console.log(`🔁 Skin code ${skinCode} tidak ditemukan, pakai pengganti 10728001.`);
+                skinCode = 10728001; // replace nilai skinCode
+                skin = altSkin;
+            }
+        }
+
+        // Jika tetap tidak ada setelah pengecekan ulang
+        if (!skin) {
+            console.warn(`❌ Skin dengan code ${skinCode} tidak ditemukan.`);
+            return null;
+        }
+    }    
 
     // Delay sebelum mengganti skin
     await delay(1000);
