@@ -2902,6 +2902,8 @@ async function handleAuthResponse(xhr) {
             //Join Rally
             await autoJoinRally();
 
+            await delay(3 * 60 * 1000);
+
             const setting = window._lokSettings || {};
 
             if (setting.claimVIP) {
@@ -2937,7 +2939,8 @@ async function handleAuthResponse(xhr) {
 
             if (setting.scheduleResourceHarvest) {
                 //scheduleResourceHarvest();
-                //await delay(5000);
+                await resourceHarvest();
+                await delay(5000);
             }
 
             if (setting.scheduleClaimDailyQuest) {
@@ -2947,7 +2950,7 @@ async function handleAuthResponse(xhr) {
 
             if (setting.scheduleInstantHarvest) {
                 scheduleSkillActivate(10001);
-                await delay(1 * 60 * 1000);
+                await delay(0.5 * 60 * 1000);
             }
 
             if (setting.scheduleSummonMonster) {
