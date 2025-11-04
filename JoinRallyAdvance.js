@@ -2249,19 +2249,28 @@ async function goblin() {
 //     await startRallyMonsterFromBookmarks(bookmarkMonsterRally);
 // }
 
+// dk();       // semua level
+// dk(5);      // level >= 5
+// dk(4, 6);   // level 4 sampai 6
 async function dk(minLevel, maxLevel) {
     // Ambil data dari localStorage
     let bookmarkMonsterRally = JSON.parse(localStorage.getItem('bookmarkMonsterRally_bk')) || [];
 
-    // Jika tidak ada parameter level, jalankan semua
     let filtered = bookmarkMonsterRally;
-    if (typeof minLevel !== 'undefined' && typeof maxLevel !== 'undefined') {
+
+    if (typeof minLevel === 'undefined') {
+        // Tidak ada argumen → semua level
+        console.log(`🔍 Menjalankan rally untuk semua level`);
+    } else if (typeof maxLevel === 'undefined') {
+        // Hanya minLevel → level >= minLevel
+        filtered = bookmarkMonsterRally.filter(item => item.level >= minLevel);
+        console.log(`🔍 Menjalankan rally untuk monster level >= ${minLevel}`);
+    } else {
+        // min dan max keduanya ada → filter di antara
         filtered = bookmarkMonsterRally.filter(item =>
             item.level >= minLevel && item.level <= maxLevel
         );
         console.log(`🔍 Menjalankan rally untuk monster level ${minLevel} - ${maxLevel}`);
-    } else {
-        console.log(`🔍 Menjalankan rally untuk semua level`);
     }
 
     console.log(filtered);
@@ -2269,6 +2278,7 @@ async function dk(minLevel, maxLevel) {
     // Jalankan hanya monster yang sudah difilter
     await startRallyMonsterFromBookmarks(filtered);
 }
+
 
 
 async function dk_Doom3() {
