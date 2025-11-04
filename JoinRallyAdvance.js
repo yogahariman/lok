@@ -1512,19 +1512,19 @@ async function bookmarkFromFieldData(allowedBookmark, fieldData) {
 async function save() {
     // Filter bookmark berdasarkan kategori
     const bookmarkRSS = bookmarkResults.filter(item =>
-        ["rss"].some(kw => item.name.toLowerCase().includes(kw))
+        ["rss"].some(kw => item.name.toLowerCase().includes(kw.toLowerCase()))
     );
     const bookmarkCM = bookmarkResults.filter(item =>
-        ["crystal", "cavern"].some(kw => item.name.toLowerCase().includes(kw))
+        ["crystal", "cavern"].some(kw => item.name.toLowerCase().includes(kw.toLowerCase()))
     );
 
     const bookmarkMonsterNormal = bookmarkResults.filter(item =>
-        ["goblin"].some(kw => item.name.toLowerCase().includes(kw))
+        ["goblin"].some(kw => item.name.toLowerCase().includes(kw.toLowerCase()))
     );
 
     const bookmarkMonsterRally = bookmarkResults.filter(item =>
-        // ["DeathKar", "Dragon", "Panta","Gargantua","Magdar","Spartoi"].some(kw => item.name.toLowerCase().includes(kw))
-        !["crystal", "cavern", "rss", "goblin"].some(kw => item.name.toLowerCase().includes(kw))
+        ["DeathKar", "Dragon", "Panta","Gargantua","Magdar","Spartoi"].some(kw => item.name.toLowerCase().includes(kw.toLowerCase()))
+        // !["crystal", "cavern", "rss", "goblin"].some(kw => item.name.toLowerCase().includes(kw))
     );
 
     // Kosongkan array utama setelah dipisah
