@@ -1523,7 +1523,8 @@ async function save() {
     );
 
     const bookmarkMonsterRally = bookmarkResults.filter(item =>
-        ["DeathKar", "Dragon", "Panta","Gargantua","Magdar","Spartoi"].some(kw => item.name.toLowerCase().includes(kw))
+        // ["DeathKar", "Dragon", "Panta","Gargantua","Magdar","Spartoi"].some(kw => item.name.toLowerCase().includes(kw))
+        !["crystal", "cavern", "rss", "goblin"].some(kw => item.name.toLowerCase().includes(kw))
     );
 
     // Kosongkan array utama setelah dipisah
