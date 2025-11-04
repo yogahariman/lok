@@ -1443,15 +1443,15 @@ function getSortedUniqueBookmarksRSS(bookmarks = bookmarkResults) {
         return Math.sqrt(dx * dx + dy * dy);
     };
 
-    // Hapus sorting berdasarkan nama, urutkan hanya berdasarkan level & jarak
+    // Urutkan berdasarkan level (desc), jarak (asc)
     const sorted = [...bookmarks].sort((a, b) => {
-        if (a.level !== b.level) return b.level - a.level; // level tinggi dulu
+        if (a.level !== b.level) return b.level - a.level;
         const distA = distance(kingdomData.loc, a.loc);
         const distB = distance(kingdomData.loc, b.loc);
-        return distA - distB; // yang lebih dekat dulu
+        return distA - distB;
     });
 
-    // Hapus duplikat berdasarkan lokasi
+    // Hapus duplikat lokasi
     const seen = new Set();
     const unique = sorted.filter(item => {
         const key = item.loc.join(",");
@@ -1460,8 +1460,25 @@ function getSortedUniqueBookmarksRSS(bookmarks = bookmarkResults) {
         return true;
     });
 
+    // Geser posisi bila nama sama dengan sebelumnya
+    for (let i = 0; i < unique.length - 1; i++) {
+        let j = i + 1;
+        while (j < unique.length && unique[i].name === unique[j].name) {
+            // Tukar posisi j dan j+1 jika ada
+            if (j + 1 < unique.length) {
+                const temp = unique[j];
+                unique[j] = unique[j + 1];
+                unique[j + 1] = temp;
+            } else {
+                break;
+            }
+            j++;
+        }
+    }
+
     return unique;
 }
+
 
 
 async function bookmarkFromFieldData(allowedBookmark, fieldData) {
