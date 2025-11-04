@@ -1523,7 +1523,7 @@ async function save() {
     );
 
     const bookmarkMonsterRally = bookmarkResults.filter(item =>
-        !["crystal", "cavern", "goblin","rss"].some(kw => item.name.toLowerCase().includes(kw))
+        ["DeathKar", "Dragon", "Panta","Gargantua","Magdar","Spartoi"].some(kw => item.name.toLowerCase().includes(kw))
     );
 
     // Kosongkan array utama setelah dipisah
@@ -2244,10 +2244,32 @@ async function goblin() {
     await startAttackMonsterFromBookmarks(bookmarkMonsterNormal);
 }
 
-async function dk() {
+// async function dk() {
+//     let bookmarkMonsterRally = JSON.parse(localStorage.getItem('bookmarkMonsterRally_bk')) || [];
+//     await startRallyMonsterFromBookmarks(bookmarkMonsterRally);
+// }
+
+async function dk(minLevel, maxLevel) {
+    // Ambil data dari localStorage
     let bookmarkMonsterRally = JSON.parse(localStorage.getItem('bookmarkMonsterRally_bk')) || [];
-    await startRallyMonsterFromBookmarks(bookmarkMonsterRally);
+
+    // Jika tidak ada parameter level, jalankan semua
+    let filtered = bookmarkMonsterRally;
+    if (typeof minLevel !== 'undefined' && typeof maxLevel !== 'undefined') {
+        filtered = bookmarkMonsterRally.filter(item =>
+            item.level >= minLevel && item.level <= maxLevel
+        );
+        console.log(`🔍 Menjalankan rally untuk monster level ${minLevel} - ${maxLevel}`);
+    } else {
+        console.log(`🔍 Menjalankan rally untuk semua level`);
+    }
+
+    console.log(filtered);
+
+    // Jalankan hanya monster yang sudah difilter
+    await startRallyMonsterFromBookmarks(filtered);
 }
+
 
 async function dk_Doom3() {
     let bookmarkMonsterRally = JSON.parse(localStorage.getItem('bookmarkMonsterRally_bk')) || [];
