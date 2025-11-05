@@ -1430,7 +1430,7 @@ function getSortedUniqueBookmarks(bookmarks = bookmarkResults) {
 
     return unique;
 }
-
+/*
 function getSortedUniqueBookmarksRSS(bookmarks = bookmarkResults) {
     if (!kingdomData?.loc || kingdomData.loc.length !== 3) {
         console.warn("❗ Lokasi kingdom tidak valid.");
@@ -1478,8 +1478,53 @@ function getSortedUniqueBookmarksRSS(bookmarks = bookmarkResults) {
 
     return unique;
 }
+*/
+function getSortedUniqueBookmarksRSS(bookmarks = bookmarkResults) {
+    if (!kingdomData?.loc || kingdomData.loc.length !== 3) {
+        console.warn("❗ Lokasi kingdom tidak valid.");
+        return [];
+    }
 
+    const distance = (loc1, loc2) => {
+        const dx = loc1[1] - loc2[1];
+        const dy = loc1[2] - loc2[2];
+        return Math.sqrt(dx * dx + dy * dy);
+    };
 
+    // 1️⃣ Urutkan berdasarkan level (desc), jarak (asc)
+    const sorted = [...bookmarks].sort((a, b) => {
+        if (a.level !== b.level) return b.level - a.level;
+        const distA = distance(kingdomData.loc, a.loc);
+        const distB = distance(kingdomData.loc, b.loc);
+        return distA - distB;
+    });
+
+    // 2️⃣ Hapus duplikat lokasi
+    const seen = new Set();
+    const unique = sorted.filter(item => {
+        const key = item.loc.join(",");
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+    });
+
+    // 3️⃣ Pastikan setiap 4 item berturut-turut punya nama berbeda
+    const result = [];
+    const pool = [...unique];
+
+    while (pool.length > 0) {
+        const windowNames = new Set(result.slice(-3).map(r => r.name));
+        const idx = pool.findIndex(item => !windowNames.has(item.name));
+        if (idx === -1) {
+            // jika tidak ada pilihan berbeda, ambil paling depan
+            result.push(pool.shift());
+        } else {
+            result.push(pool.splice(idx, 1)[0]);
+        }
+    }
+
+    return result;
+}
 
 async function bookmarkFromFieldData(allowedBookmark, fieldData) {
     const existingLocs = new Set(bookmarkResults.map(b => b.loc.join(","))); // lokasi yang sudah ada
