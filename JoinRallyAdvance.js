@@ -1508,18 +1508,41 @@ function getSortedUniqueBookmarksRSS(bookmarks = bookmarkResults) {
         return true;
     });
 
-    // 3️⃣ Pastikan setiap 4 item berturut-turut punya nama berbeda
-    const result = [];
-    const pool = [...unique];
+    // 3️⃣ Distribusi deterministik agar tiap 4 item berturut-turut beda nama
+    const grouped = {};
+    for (const item of unique) {
+        if (!grouped[item.name]) grouped[item.name] = [];
+        grouped[item.name].push(item);
+    }
 
-    while (pool.length > 0) {
-        const windowNames = new Set(result.slice(-3).map(r => r.name));
-        const idx = pool.findIndex(item => !windowNames.has(item.name));
-        if (idx === -1) {
-            // jika tidak ada pilihan berbeda, ambil paling depan
-            result.push(pool.shift());
-        } else {
-            result.push(pool.splice(idx, 1)[0]);
+    const nameKeys = Object.keys(grouped);
+    const result = [];
+
+    // Round-robin deterministik (berdasarkan urutan namaKeys)
+    let hasItem = true;
+    while (hasItem) {
+        hasItem = false;
+        for (const name of nameKeys) {
+            const item = grouped[name].shift();
+            if (item) {
+                result.push(item);
+                hasItem = true;
+            }
+        }
+    }
+
+    // 4️⃣ Jika jumlah nama unik < 4, pastikan tidak ada duplikat berurutan
+    for (let i = 1; i < result.length; i++) {
+        if (result[i].name === result[i - 1].name) {
+            // cari item berikutnya dengan nama berbeda dan tukar
+            for (let j = i + 1; j < result.length; j++) {
+                if (result[j].name !== result[i].name) {
+                    const temp = result[i];
+                    result[i] = result[j];
+                    result[j] = temp;
+                    break;
+                }
+            }
         }
     }
 
