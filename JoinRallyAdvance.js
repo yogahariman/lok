@@ -1549,9 +1549,53 @@ function getSortedUniqueBookmarksRSS(bookmarks = bookmarkResults) {
     return result;
 }
 
+// async function bookmarkFromFieldData(allowedBookmark, fieldData) {
+//     const existingLocs = new Set(bookmarkResults.map(b => b.loc.join(","))); // lokasi yang sudah ada
+//     let index = bookmarkResults.length + 1; // index global berdasarkan jumlah sebelumnya
+
+//     for (const obj of fieldData.objects) {
+//         if (obj.occupied) continue;
+
+//         const codeStr = String(obj.code);
+//         const bookmarkData = allowedBookmark[codeStr];
+
+//         if (
+//             bookmarkData &&
+//             obj.level >= bookmarkData.minLevel &&
+//             (bookmarkData.maxLevel === undefined || obj.level <= bookmarkData.maxLevel)
+//         ) {
+//             const locKey = obj.loc.join(",");
+//             if (existingLocs.has(locKey)) {
+//                 console.log(`⚠️ Already bookmarked: ${bookmarkData.name} Lv.${obj.level} at ${locKey}`);
+//                 continue; // skip penambahan data
+//             }
+
+//             existingLocs.add(locKey);
+
+//             const result = {
+//                 name: bookmarkData.name,
+//                 level: obj.level,
+//                 loc: obj.loc
+//             };
+//             bookmarkResults.push(result);
+
+//             //console.log(`${index++}. 📍 Bookmarked: ${bookmarkData.name} Lv.${obj.level} at ${locKey}`);
+//             const coords = obj.loc.slice(1, 3).map(n => String(n).padStart(4, ' ')).join(",");
+//             const color = bookmarkData.color || "orange"; // default warna jika tidak ada
+            
+//             console.log(
+//               `%c📍 ${String(index++).padStart(2)}. [${coords}] ${bookmarkData.name} Lv.${obj.level}`,
+//               `color: ${color}; font-weight: bold;`
+//             );
+            
+            
+//         }
+//     }
+// }
+
 async function bookmarkFromFieldData(allowedBookmark, fieldData) {
-    const existingLocs = new Set(bookmarkResults.map(b => b.loc.join(","))); // lokasi yang sudah ada
-    let index = bookmarkResults.length + 1; // index global berdasarkan jumlah sebelumnya
+    const existingLocs = new Set(bookmarkResults.map(b => b.loc.join(",")));
+    let index = bookmarkResults.length + 1;
 
     for (const obj of fieldData.objects) {
         if (obj.occupied) continue;
@@ -1566,8 +1610,10 @@ async function bookmarkFromFieldData(allowedBookmark, fieldData) {
         ) {
             const locKey = obj.loc.join(",");
             if (existingLocs.has(locKey)) {
-                console.log(`⚠️ Already bookmarked: ${bookmarkData.name} Lv.${obj.level} at ${locKey}`);
-                continue; // skip penambahan data
+                if (bookmarkData.display !== false) {
+                    console.log(`⚠️ Already bookmarked: ${bookmarkData.name} Lv.${obj.level} at ${locKey}`);
+                }
+                continue;
             }
 
             existingLocs.add(locKey);
@@ -1579,16 +1625,20 @@ async function bookmarkFromFieldData(allowedBookmark, fieldData) {
             };
             bookmarkResults.push(result);
 
-            //console.log(`${index++}. 📍 Bookmarked: ${bookmarkData.name} Lv.${obj.level} at ${locKey}`);
-            const coords = obj.loc.slice(1, 3).map(n => String(n).padStart(4, ' ')).join(",");
-            const color = bookmarkData.color || "orange"; // default warna jika tidak ada
-            
-            console.log(
-              `%c📍 ${String(index++).padStart(2)}. [${coords}] ${bookmarkData.name} Lv.${obj.level}`,
-              `color: ${color}; font-weight: bold;`
-            );
-            
-            
+            // default display = true jika tidak didefinisikan
+            const shouldDisplay = bookmarkData.display !== false;
+            if (shouldDisplay) {
+                const coords = obj.loc.slice(1, 3)
+                    .map(n => String(n).padStart(4, ' '))
+                    .join(",");
+                const color = bookmarkData.color || "orange";
+                console.log(
+                    `%c📍 ${String(index++).padStart(2)}. [${coords}] ${bookmarkData.name} Lv.${obj.level}`,
+                    `color: ${color}; font-weight: bold;`
+                );
+            } else {
+                index++;
+            }
         }
     }
 }
