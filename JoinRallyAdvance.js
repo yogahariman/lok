@@ -1191,6 +1191,12 @@ async function instantHarvest() {
             return;
         }
 
+        await useItem(10102001,1);await delay(1000);
+        await useItem(10102003,1);await delay(1000);
+        await useItem(10102005,1);await delay(1000);
+        await useItem(10102007,1);await delay(1000);
+        await useItem(10102009,1);await delay(1000);
+
         await changeTreasure(2); // Aktifkan treasure produksi
         //await delay(1000);
 
