@@ -1664,7 +1664,8 @@ async function save() {
     );
 
     const bookmarkMonsterRally = bookmarkResults.filter(item =>
-        ["DeathKar", "Dragon", "Panta","Gargantua","Magdar","Spartoi"].some(kw => item.name.toLowerCase().includes(kw.toLowerCase()))
+        !["crystal", "cavern", "rss", "goblin"].some(kw => item.name.toLowerCase().includes(kw.toLowerCase()))
+        //["DeathKar", "Dragon", "Panta","Gargantua","Magdar","Spartoi"].some(kw => item.name.toLowerCase().includes(kw.toLowerCase()))
         // !["crystal", "cavern", "rss", "goblin"].some(kw => item.name.toLowerCase().includes(kw))
     );
 
