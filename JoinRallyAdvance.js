@@ -1812,10 +1812,47 @@ async function cm(x, y) {
     await sendMarch([x, y], 1, 3); // marchType 1 = gathering, preset index 3
 }
 
-async function rss() {
-    let bookmarkRSS = JSON.parse(localStorage.getItem('bookmarkRSS_bk')) || [];
-    await startGatheringRSSFromBookmarks(bookmarkRSS);
+// async function rss() {
+//     let bookmarkRSS = JSON.parse(localStorage.getItem('bookmarkRSS_bk')) || [];
+//     await startGatheringRSSFromBookmarks(bookmarkRSS);
+// }
+
+async function rss(minLevel, maxLevel) {
+    const bookmarkRSSRaw = localStorage.getItem('bookmarkRSS_bk');
+    let bookmarkRSS = [];
+
+    try {
+        bookmarkRSS = JSON.parse(bookmarkRSSRaw) || [];
+    } catch (e) {
+        console.error("❌ Gagal parse bookmarkRSS_bk dari localStorage:", e);
+        return;
+    }
+
+    let filtered = bookmarkRSS;
+
+    if (minLevel === undefined && maxLevel === undefined) {
+        // Tidak ada argumen → semua level
+        console.log("🔍 Gathering RSS untuk semua level");
+    } else if (maxLevel === undefined) {
+        // Hanya minLevel → level >= minLevel
+        filtered = bookmarkRSS.filter(item => item.level >= minLevel);
+        console.log(`🔍 Gathering RSS untuk level >= ${minLevel}`);
+    } else {
+        // minLevel dan maxLevel keduanya ada → filter di antara
+        filtered = bookmarkRSS.filter(item =>
+            item.level >= minLevel && item.level <= maxLevel
+        );
+        console.log(`🔍 Gathering RSS untuk level ${minLevel} - ${maxLevel}`);
+    }
+
+    if (filtered.length === 0) {
+        console.warn("⚠️ Tidak ada RSS yang cocok dengan filter.");
+        return;
+    }
+
+    await startGatheringRSSFromBookmarks(filtered);
 }
+
 
 // async function SendSupport(x, y) {
 async function support(x, y) {
@@ -2416,7 +2453,7 @@ async function dk(minLevel, maxLevel) {
         console.log(`🔍 Menjalankan rally untuk monster level ${minLevel} - ${maxLevel}`);
     }
 
-    console.log(filtered);
+    // console.log(filtered);
 
     // Jalankan hanya monster yang sudah difilter
     await startRallyMonsterFromBookmarks(filtered);
