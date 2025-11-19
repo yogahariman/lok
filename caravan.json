@@ -2,10 +2,58 @@
 10101008 -> VIP 100
 10101009 -> VIP 500
 10101010 -> VIP 1000
+10101011 -> VIP 5000
+10101012 -> VIP 10000
+10101013 -> Food 1k
+10101014 -> Food 5k
+10101015 -> Food 10k
+10101016 -> Food 50k
+10101017 -> Food 100k
+10101018 -> Food 500k
+10101019 -> Food 1M
+10101020 -> Food 5M
+10101021 -> Food 10M
+10101022 -> Lumber 1k
+10101023 -> Lumber 5k
+10101024 -> Lumber 10k
+10101025 -> Lumber 50k
+10101026 -> Lumber 100k
+10101027 -> Lumber 500k
+10101028 -> Lumber 1M
+10101029 -> Lumber 5M
+10101030 -> Lumber 10M
+10101031 -> Stone 1k
+10101032 -> Stone 5k
+10101033 -> Stone 10k
+10101034 -> Stone 50k
+10101035 -> Stone 100k
+10101036 -> Stone 500k
+10101037 -> Stone 1M
+10101038 -> Stone 5M
+10101039 -> Stone 10M
+10101040 -> Gold 1k
+10101041 -> Gold 5k
+10101042 -> Gold 10k
+10101043 -> Gold 50k
+10101044 -> Gold 100k
+10101045 -> Gold 500k
+10101046 -> Gold 1M
+10101047 -> Gold 5M
+10101048 -> Gold 10M
 10101049 -> AP 10
 10101050 -> AP 20
 10101051 -> AP 50
 10101052 -> AP 100
+10102001 -> Food Boost 8 hours
+10102002 -> Food Boost 1 Day
+10102003 -> Lumber Boost 8 hours
+10102004 -> Lumber Boost 1 Day
+10102005 -> Stone Boost 8 hours
+10102006 -> Stone Boost 1 Day
+10102007 -> Gold Boost 8 hours
+10102008 -> Gold Boost 1 Day
+10102009 -> Gathering Boost 8 hours
+10102010 -> Gathering Boost 1 Day
 10103001 -> Speeds 1  minutes
 10103002 -> Speeds 5  minutes
 10103003 -> Speeds 10 minutes
@@ -16,6 +64,7 @@
 10103008 -> Speeds 1  Days
 10103009 -> Speeds 3  Days
 10103010 -> Speeds 7  Days
+
 
 09:54:11.079 XHRPOST
 https://api-lok-live.leagueofkingdoms.com/api/kingdom/caravan/buy
