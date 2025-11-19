@@ -1036,6 +1036,90 @@ async function scheduleAutoOpenFreeChest() {
     }
 }
 
+// async function buyCaravan() {
+//     if (!token || !xor_password) {
+//         console.warn("⏳ Token atau xor_password belum tersedia.");
+//         return null;
+//     }
+
+//     try {
+//         const caravanList = await sendRequest({
+//             url: "https://api-lok-live.leagueofkingdoms.com/api/kingdom/caravan/list",
+//             token,
+//             body: "{}",
+//             returnResponse: true
+//         });
+
+//         // const desiredCodes = [
+//         //     10101007, 10101008, 10101009, 10101010, // VIP
+//         //     10101049, 10101050, 10101051, 10101052, // AP
+//         //     10103001, 10103002, 10103003, 10103004, // Speed minutes
+//         //     10103005, 10103006, 10103007, 10103008, // Speed hours/days
+//         //     10103009, 10103010
+//         // ];
+
+//         const desiredCodes = [
+//             // VIP
+//             10101007, 10101008, 10101009, 10101010, 10101011, 10101012,
+
+//             // Food
+//             10101013, 10101014, 10101015, 10101016, 10101017, 10101018,
+//             10101019, 10101020, 10101021,
+
+//             // Lumber
+//             10101022, 10101023, 10101024, 10101025, 10101026, 10101027,
+//             10101028, 10101029, 10101030,
+
+//             // Stone
+//             10101031, 10101032, 10101033, 10101034, 10101035, 10101036,
+//             10101037, 10101038, 10101039,
+
+//             // Gold
+//             10101040, 10101041, 10101042, 10101043, 10101044, 10101045,
+//             10101046, 10101047, 10101048,
+
+//             // AP
+//             10101049, 10101050, 10101051, 10101052,
+
+//             // Boosts (Food, Lumber, Stone, Gold, Gathering)
+//             10102001, 10102002,
+//             10102003, 10102004,
+//             10102005, 10102006,
+//             10102007, 10102008,
+//             10102009, 10102010,
+
+//             // Speedups
+//             10103001, 10103002, 10103003, 10103004,
+//             10103005, 10103006, 10103007, 10103008,
+//             10103009, 10103010
+//         ];
+        
+
+//         const availableItems = (caravanList?.caravan?.items || []).filter(item => {
+//             return desiredCodes.includes(item.code) && item.amount > 0;
+//         });
+
+//         for (const item of availableItems) {
+//             console.log(`🛒 Membeli item: code=${item.code}, id=${item._id}`);
+//             await delay(1000);
+//             await sendRequest({
+//                 url: "https://api-lok-live.leagueofkingdoms.com/api/kingdom/caravan/buy",
+//                 token,
+//                 body: JSON.stringify({ caravanItemId: item._id }),
+//                 returnResponse: false
+//             });
+//         }
+
+//         console.log(`✅ Selesai membeli ${availableItems.length} item.`);
+
+//         return caravanList.caravan?.expired ?? null;
+
+//     } catch (err) {
+//         console.error("❌ Gagal membeli caravan:", err);
+//         return null;
+//     }
+// }
+
 async function buyCaravan() {
     if (!token || !xor_password) {
         console.warn("⏳ Token atau xor_password belum tersedia.");
@@ -1050,14 +1134,7 @@ async function buyCaravan() {
             returnResponse: true
         });
 
-        // const desiredCodes = [
-        //     10101007, 10101008, 10101009, 10101010, // VIP
-        //     10101049, 10101050, 10101051, 10101052, // AP
-        //     10103001, 10103002, 10103003, 10103004, // Speed minutes
-        //     10103005, 10103006, 10103007, 10103008, // Speed hours/days
-        //     10103009, 10103010
-        // ];
-
+        // Semua item yang ingin dibeli
         const desiredCodes = [
             // VIP
             10101007, 10101008, 10101009, 10101010, 10101011, 10101012,
@@ -1081,7 +1158,7 @@ async function buyCaravan() {
             // AP
             10101049, 10101050, 10101051, 10101052,
 
-            // Boosts (Food, Lumber, Stone, Gold, Gathering)
+            // Boosts
             10102001, 10102002,
             10102003, 10102004,
             10102005, 10102006,
@@ -1093,14 +1170,36 @@ async function buyCaravan() {
             10103005, 10103006, 10103007, 10103008,
             10103009, 10103010
         ];
-        
+
+        // Kategori khusus jika costItemCode = 10100005
+        const limitedCodes = [
+            // VIP
+            10101007, 10101008, 10101009, 10101010, 10101011, 10101012,
+
+            // AP
+            10101049, 10101050, 10101051, 10101052,
+
+            // Speedups
+            10103001, 10103002, 10103003, 10103004,
+            10103005, 10103006, 10103007, 10103008,
+            10103009, 10103010
+        ];
+
 
         const availableItems = (caravanList?.caravan?.items || []).filter(item => {
-            return desiredCodes.includes(item.code) && item.amount > 0;
+            if (item.amount <= 0) return false;
+
+            // Jika memakai item currency 10100005 → hanya beli item VIP, AP, Speedups
+            if (item.costItemCode === 10100005) {
+                return limitedCodes.includes(item.code);
+            }
+
+            // Selain itu → pakai desiredCodes penuh
+            return desiredCodes.includes(item.code);
         });
 
         for (const item of availableItems) {
-            console.log(`🛒 Membeli item: code=${item.code}, id=${item._id}`);
+            console.log(`🛒 Membeli item: code=${item.code}, costItemCode=${item.costItemCode}, id=${item._id}`);
             await delay(1000);
             await sendRequest({
                 url: "https://api-lok-live.leagueofkingdoms.com/api/kingdom/caravan/buy",
