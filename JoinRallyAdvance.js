@@ -1945,7 +1945,11 @@ function getMarchTypeName(marchType) {
 //async function SendGatherCM(x, y) {
 async function cm(x, y) {
     await changeTreasure(3);
-    await sendMarch([x, y], 1, 3); // marchType 1 = gathering, preset index 3
+    await sendMarch([x, y], 1, 3); // marchType 1 = gathering, troopIndex 3
+}
+
+async function ce(x, y) {
+    await sendMarch([x, y], 2, 3); // marchType 2 = Attack/Rally Castle, troopIndex 3
 }
 
 // async function rss() {
