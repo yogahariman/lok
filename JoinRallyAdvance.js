@@ -313,7 +313,7 @@ function payloadJoinRally(saveTroopsGroup, rallyMoId) {
 function getTroopGroupByHP(monsterHP, marchInfo) {
     const troops = marchInfo?.saveTroops || kingdomData.saveTroops;
 
-    if (monsterHP <  2000000) return troops[0];
+    if (monsterHP < 2000000) return troops[0];
     if (monsterHP <= 20000000) return troops[1];
     return troops[2];
 }
@@ -472,6 +472,98 @@ async function useActionPoint() {
     }
 }
 
+async function heal(speedHeal, targetDurationSeconds = null) {
+    if (!token || !xor_password) {
+        console.warn("⏳ Token belum tersedia.");
+        return;
+    }
+
+    // Mapping kode + durasi langsung dalam fungsi
+    const HEAL_SPEED = {
+        "1m": { code: 10103042, seconds: 60 },
+        "5m": { code: 10103043, seconds: 5 * 60 },
+        "10m": { code: 10103044, seconds: 10 * 60 },
+        "30m": { code: 10103045, seconds: 30 * 60 },
+        "1h": { code: 10103046, seconds: 60 * 60 },
+        "3h": { code: 10103047, seconds: 3 * 60 * 60 },
+        "8h": { code: 10103048, seconds: 8 * 60 * 60 },
+        "1d": { code: 10103049, seconds: 24 * 60 * 60 },
+        "3d": { code: 10103050, seconds: 3 * 24 * 60 * 60 },
+        "7d": { code: 10103051, seconds: 7 * 24 * 60 * 60 },
+    };
+
+    const selected = HEAL_SPEED[speedHeal];
+    if (!selected) {
+        console.warn(`⚠️ Speed up '${speedHeal}' tidak dikenal.`);
+        return;
+    }
+
+    const { code, seconds: speedInSeconds } = selected;
+
+    // Ambil data wounded
+    const hospitalWounded = await sendRequest({
+        url: "https://api-lok-live.leagueofkingdoms.com/api/kingdom/hospital/wounded",
+        token,
+        body: "{}",
+        returnResponse: true
+    });
+
+    // Hitung total waktu luka
+    let totalTime = 0;
+    if (hospitalWounded?.wounded?.list) {
+        for (const w of hospitalWounded.wounded.list) {
+            totalTime += w.time || 0;
+        }
+    }
+
+    if (totalTime <= 0) {
+        console.log("📭 Tidak ada wounded.");
+        return;
+    }
+
+    // Jika user menentukan target durasi -> pakai itu
+    const timeToHeal = targetDurationSeconds ?? totalTime;
+
+    // Batasi agar tidak lebih dari total actual wounded
+    const finalHealTime = Math.min(timeToHeal, totalTime);
+
+    // Hitung jumlah item yang dibutuhkan
+    const amount = Math.ceil(finalHealTime / speedInSeconds);
+
+    console.log(`Total wounded time: ${totalTime}s`);
+    console.log(`Requested heal time: ${finalHealTime}s`);
+    console.log(`Using speed: ${speedHeal} (${speedInSeconds}s)`);
+    console.log(`Amount needed: ${amount}`);
+
+    const itemPayload = { code, amount, isBuy: 0 };
+    const analyticsPayload = {
+        url: "item/use",
+        param: `${code}|${amount}`
+    };
+
+    await changeTreasure(1); // Pindah ke treasure page 2 dulu
+    // Request heal speed-up
+    await sendRequest({
+        url: "https://api-lok-live.leagueofkingdoms.com/api/kingdom/heal/speedup",
+        token,
+        body: b64xorEnc(itemPayload, xor_password),
+        returnResponse: false
+    });
+
+    // Kirim analitik
+    await sendRequest({
+        url: "https://api-lok-live.leagueofkingdoms.com/api/auth/analytics",
+        token,
+        body: JSON.stringify(analyticsPayload),
+        returnResponse: false
+    });
+
+    await changeTreasure(3); // Kembali ke treasure page 4
+
+    console.log(`✔ Heal applied for ${finalHealTime}s using ${speedHeal} x${amount}`);
+}
+
+
 // 10726001 (skin skill cooldown reduction)
 // 10728001 (skin reduce AP consumption & Drop rate)
 // 10729001 (skin reduce AP consumption)
@@ -512,7 +604,7 @@ async function changeSkin(skinCode = 10730001) {
             console.warn(`❌ Skin dengan code ${skinCode} tidak ditemukan.`);
             return null;
         }
-    }    
+    }
 
     // Delay sebelum mengganti skin
     await delay(1000);
@@ -554,7 +646,7 @@ async function changeTreasure(page = 3) {
         });
 
         const currentPage = treasureList.page;
-        console.log(`📦 Treasure saat ini di page ${currentPage+1}`);
+        console.log(`📦 Treasure saat ini di page ${currentPage + 1}`);
 
         if (currentPage === page) {
             console.log("🛑 Treasure sudah di page yang sama, tidak melakukan perubahan.");
@@ -579,7 +671,7 @@ async function changeTreasure(page = 3) {
             returnResponse: false
         });
 
-        console.log(`✅ Treasure berhasil diubah ke page ${page+1}`);
+        console.log(`✅ Treasure berhasil diubah ke page ${page + 1}`);
     } catch (error) {
         console.error("❌ Gagal mengganti treasure:", error);
     }
@@ -1093,7 +1185,7 @@ async function scheduleAutoOpenFreeChest() {
 //             10103005, 10103006, 10103007, 10103008,
 //             10103009, 10103010
 //         ];
-        
+
 
 //         const availableItems = (caravanList?.caravan?.items || []).filter(item => {
 //             return desiredCodes.includes(item.code) && item.amount > 0;
@@ -1327,11 +1419,11 @@ async function instantHarvest() {
             return;
         }
 
-        await useItem(10102001,1);await delay(1000);
-        await useItem(10102003,1);await delay(1000);
-        await useItem(10102005,1);await delay(1000);
-        await useItem(10102007,1);await delay(1000);
-        await useItem(10102009,1);await delay(1000);
+        await useItem(10102001, 1); await delay(1000);
+        await useItem(10102003, 1); await delay(1000);
+        await useItem(10102005, 1); await delay(1000);
+        await useItem(10102007, 1); await delay(1000);
+        await useItem(10102009, 1); await delay(1000);
 
         await changeTreasure(2); // Aktifkan treasure produksi
         //await delay(1000);
@@ -1724,13 +1816,13 @@ function getSortedUniqueBookmarksRSS(bookmarks = bookmarkResults) {
 //             //console.log(`${index++}. 📍 Bookmarked: ${bookmarkData.name} Lv.${obj.level} at ${locKey}`);
 //             const coords = obj.loc.slice(1, 3).map(n => String(n).padStart(4, ' ')).join(",");
 //             const color = bookmarkData.color || "orange"; // default warna jika tidak ada
-            
+
 //             console.log(
 //               `%c📍 ${String(index++).padStart(2)}. [${coords}] ${bookmarkData.name} Lv.${obj.level}`,
 //               `color: ${color}; font-weight: bold;`
 //             );
-            
-            
+
+
 //         }
 //     }
 // }
@@ -1816,7 +1908,7 @@ async function save() {
 }
 
 function load() {
-  bookmarkResults = JSON.parse(localStorage.getItem('bookmarkMonsterRally_bk')) || [];
+    bookmarkResults = JSON.parse(localStorage.getItem('bookmarkMonsterRally_bk')) || [];
 }
 
 /*
@@ -2058,7 +2150,7 @@ async function dsc(x, y) {
     } else {
         console.warn("Tidak ada Drago yang tersedia untuk dikirim.");
     }
-    
+
 }
 
 async function sendMarch(loc, marchType, troopIndex, dragoId) {
@@ -2485,8 +2577,8 @@ async function attackMonster(x, y) {
         const marchTypeName = getMarchTypeName(marchInfo.marchType);
         console.log(`⛔ MarchType bukan untuk rally/attack monster (marchType = ${marchTypeName}).`);
         return false;
-    }    
-    
+    }
+
     const monsterLevel = marchInfo?.fo?.level;
     if (monsterLevel === undefined) {
         console.warn("⚠️ Level monster tidak ditemukan.");
@@ -2969,7 +3061,7 @@ async function autoJoinRally() {
             } = battle;
 
             if (monsterHP > 45_000_000) continue;
-            
+
             const monsterInfo = allowedMonsters[monsterCode];
 
             // 🔁 Cek march queue sebelum lanjut

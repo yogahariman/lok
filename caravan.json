@@ -64,6 +64,47 @@
 10103008 -> Speeds 1  Days
 10103009 -> Speeds 3  Days
 10103010 -> Speeds 7  Days
+10103011 -> Speeds 30 Days
+10103012 -> Construction Speed Up 1 minutes
+10103013 -> Construction Speed Up 5 minutes
+10103014 -> Construction Speed Up 10 minutes
+10103015 -> Construction Speed Up 30 minutes
+10103016 -> Construction Speed Up 1 hour
+10103017 -> Construction Speed Up 3 hour
+10103018 -> Construction Speed Up 8 hour
+10103019 -> Construction Speed Up 1 Days
+10103020 -> Construction Speed Up 3 Days
+10103021 -> Construction Speed Up 7 Days
+10103022 -> Research Speed Up 1 minutes
+10103023 -> Research Speed Up 5 minutes
+10103024 -> Research Speed Up 10 minutes
+10103025 -> Research Speed Up 30 minutes
+10103026 -> Research Speed Up 1 hour
+10103027 -> Research Speed Up 3 hour
+10103028 -> Research Speed Up 8 hour
+10103029 -> Research Speed Up 1 Days
+10103030 -> Research Speed Up 3 Days
+10103031 -> Research Speed Up 7 Days
+10103032 -> Troop Training Speed Up 1 minutes
+10103033 -> Troop Training Speed Up 5 minutes
+10103034 -> Troop Training Speed Up 10 minutes
+10103035 -> Troop Training Speed Up 30 minutes
+10103036 -> Troop Training Speed Up 1 hour
+10103037 -> Troop Training Speed Up 3 hour
+10103038 -> Troop Training Speed Up 8 hour
+10103039 -> Troop Training Speed Up 1 Days
+10103040 -> Troop Training Speed Up 3 Days
+10103041 -> Troop Training Speed Up 7 Days
+10103042 -> Healing Speed Up 1 minutes
+10103043 -> Healing Speed Up 5 minutes
+10103044 -> Healing Speed Up 10 minutes
+10103045 -> Healing Speed Up 30 minutes
+10103046 -> Healing Speed Up 1 hour
+10103047 -> Healing Speed Up 3 hour
+10103048 -> Healing Speed Up 8 hour
+10103049 -> Healing Speed Up 1 Days
+10103050 -> Healing Speed Up 3 Days
+10103051 -> Healing Speed Up 7 Days
 
 
 09:54:11.079 XHRPOST
