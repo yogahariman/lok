@@ -510,16 +510,18 @@ async function heal(speedHeal, targetDurationSeconds = null) {
 
     // Hitung total waktu luka
     let totalTime = 0;
-    if (hospitalWounded?.wounded?.list) {
-        for (const w of hospitalWounded.wounded.list) {
-            totalTime += w.time || 0;
-        }
-    }
 
-    if (totalTime <= 0) {
+    if (Array.isArray(hospitalWounded?.wounded)) {
+        for (const group of hospitalWounded.wounded) {
+            for (const w of group) {
+                if (w?.time) totalTime += w.time;
+            }
+        }
+    } else {
         console.log("📭 Tidak ada wounded.");
         return;
     }
+
 
     // Jika user menentukan target durasi -> pakai itu
     const timeToHeal = targetDurationSeconds ?? totalTime;
