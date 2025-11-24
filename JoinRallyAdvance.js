@@ -472,13 +472,13 @@ async function useActionPoint() {
     }
 }
 
-async function heal(speedHeal, targetDurationSeconds = null) {
+async function heal(speedHeal, targetDuration = null) {
     if (!token || !xor_password) {
         console.warn("⏳ Token belum tersedia.");
         return;
     }
 
-    // Mapping item speed
+    // Mapping speed item
     const HEAL_SPEED = {
         "1m": { code: 10103042, seconds: 60 },
         "5m": { code: 10103043, seconds: 5 * 60 },
@@ -508,14 +508,12 @@ async function heal(speedHeal, targetDurationSeconds = null) {
         returnResponse: true
     });
 
-    // Hitung total wounded time (fix JSON)
+    // Hitung total wounded time
     let totalTime = 0;
-
     if (Array.isArray(hospitalWounded?.wounded)) {
-        for (const group of hospitalWounded.wounded) {
-            if (!Array.isArray(group)) continue;
-
-            for (const w of group) {
+        for (const g of hospitalWounded.wounded) {
+            if (!Array.isArray(g)) continue;
+            for (const w of g) {
                 if (w?.time) totalTime += w.time;
             }
         }
@@ -526,13 +524,32 @@ async function heal(speedHeal, targetDurationSeconds = null) {
         return;
     }
 
-    // Durasi yang ingin di-heal
-    const timeToHeal = targetDurationSeconds ?? totalTime;
+    // Parser target duration ("1h", "1d", dst) → detik
+    function parseDuration(str) {
+        const unit = str.slice(-1); // h/d
+        const value = parseInt(str.slice(0, -1), 10);
+        if (isNaN(value)) return null;
 
-    // Tidak boleh lebih dari total
+        if (unit === "h") return value * 60 * 60;
+        if (unit === "d") return value * 24 * 60 * 60;
+
+        return null;
+    }
+
+    // Tentukan berapa durasi yang ingin di-heal
+    let parsedTarget = null;
+
+    if (typeof targetDuration === "string") {
+        parsedTarget = parseDuration(targetDuration);
+    } else if (typeof targetDuration === "number") {
+        parsedTarget = targetDuration;
+    }
+
+    // Jika tidak ada target → heal semua
+    const timeToHeal = parsedTarget ?? totalTime;
     const finalHealTime = Math.min(timeToHeal, totalTime);
 
-    // Hitung jumlah speed item
+    // Hitung jumlah item
     const amount = Math.ceil(finalHealTime / speedInSeconds);
 
     console.log(`⏱ Total wounded time: ${totalTime.toFixed(2)}s`);
@@ -540,7 +557,6 @@ async function heal(speedHeal, targetDurationSeconds = null) {
     console.log(`⚡ Speed: ${speedHeal} (${speedInSeconds}s)`);
     console.log(`📦 Item needed: ${amount}`);
 
-    // Payload speed-up
     const itemPayload = { code, amount, isBuy: 0 };
     const analyticsPayload = {
         url: "item/use",
@@ -549,7 +565,6 @@ async function heal(speedHeal, targetDurationSeconds = null) {
 
     await changeTreasure(1);
 
-    // Apply heal speed
     await sendRequest({
         url: "https://api-lok-live.leagueofkingdoms.com/api/kingdom/heal/speedup",
         token,
@@ -557,7 +572,6 @@ async function heal(speedHeal, targetDurationSeconds = null) {
         returnResponse: false
     });
 
-    // Analytics
     await sendRequest({
         url: "https://api-lok-live.leagueofkingdoms.com/api/auth/analytics",
         token,
@@ -567,8 +581,9 @@ async function heal(speedHeal, targetDurationSeconds = null) {
 
     await changeTreasure(3);
 
-    console.log(`✔ Heal applied for ${finalHealTime}s using ${speedHeal} x${amount}`);
+    console.log(`✔ Heal applied for ${finalHealTime}s using ${speedHeal} ×${amount}`);
 }
+
 
 // 10726001 (skin skill cooldown reduction)
 // 10728001 (skin reduce AP consumption & Drop rate)
