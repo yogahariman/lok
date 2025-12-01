@@ -472,7 +472,119 @@ async function useActionPoint() {
     }
 }
 
-async function heal(speedHeal, targetDuration = null) {
+// async function heal(speedHeal, targetDuration = null) {
+//     if (!token || !xor_password) {
+//         console.warn("⏳ Token belum tersedia.");
+//         return;
+//     }
+
+//     // Mapping speed item
+//     const HEAL_SPEED = {
+//         "1m": { code: 10103042, seconds: 60 },
+//         "5m": { code: 10103043, seconds: 5 * 60 },
+//         "10m": { code: 10103044, seconds: 10 * 60 },
+//         "30m": { code: 10103045, seconds: 30 * 60 },
+//         "1h": { code: 10103046, seconds: 60 * 60 },
+//         "3h": { code: 10103047, seconds: 3 * 60 * 60 },
+//         "8h": { code: 10103048, seconds: 8 * 60 * 60 },
+//         "1d": { code: 10103049, seconds: 24 * 60 * 60 },
+//         "3d": { code: 10103050, seconds: 3 * 24 * 60 * 60 },
+//         "7d": { code: 10103051, seconds: 7 * 24 * 60 * 60 },
+//     };
+
+//     const selected = HEAL_SPEED[speedHeal];
+//     if (!selected) {
+//         console.warn(`⚠️ Speed up '${speedHeal}' tidak dikenal.`);
+//         return;
+//     }
+
+//     const { code, seconds: speedInSeconds } = selected;
+
+//     // Ambil data wounded
+//     const hospitalWounded = await sendRequest({
+//         url: "https://api-lok-live.leagueofkingdoms.com/api/kingdom/hospital/wounded",
+//         token,
+//         body: "{}",
+//         returnResponse: true
+//     });
+
+//     // Hitung total wounded time
+//     let totalTime = 0;
+//     if (Array.isArray(hospitalWounded?.wounded)) {
+//         for (const g of hospitalWounded.wounded) {
+//             if (!Array.isArray(g)) continue;
+//             for (const w of g) {
+//                 if (w?.time) totalTime += w.time;
+//             }
+//         }
+//     }
+
+//     if (totalTime <= 0) {
+//         console.log("📭 Tidak ada wounded.");
+//         return;
+//     }
+
+//     // Parser target duration ("1h", "1d", dst) → detik
+//     function parseDuration(str) {
+//         const unit = str.slice(-1); // h/d
+//         const value = parseInt(str.slice(0, -1), 10);
+//         if (isNaN(value)) return null;
+
+//         if (unit === "h") return value * 60 * 60;
+//         if (unit === "d") return value * 24 * 60 * 60;
+
+//         return null;
+//     }
+
+//     // Tentukan berapa durasi yang ingin di-heal
+//     let parsedTarget = null;
+
+//     if (typeof targetDuration === "string") {
+//         parsedTarget = parseDuration(targetDuration);
+//     } else if (typeof targetDuration === "number") {
+//         parsedTarget = targetDuration;
+//     }
+
+//     // Jika tidak ada target → heal semua
+//     const timeToHeal = parsedTarget ?? totalTime;
+//     const finalHealTime = Math.min(timeToHeal, totalTime);
+
+//     // Hitung jumlah item
+//     const amount = Math.ceil(finalHealTime / speedInSeconds);
+
+//     console.log(`⏱ Total wounded time: ${totalTime.toFixed(2)}s`);
+//     console.log(`🎯 Heal duration: ${finalHealTime.toFixed(2)}s`);
+//     console.log(`⚡ Speed: ${speedHeal} (${speedInSeconds}s)`);
+//     console.log(`📦 Item needed: ${amount}`);
+
+//     const itemPayload = { code, amount, isBuy: 0 };
+//     const analyticsPayload = {
+//         url: "item/use",
+//         param: `${code}|${amount}`
+//     };
+
+//     await changeTreasure(1);
+
+//     await sendRequest({
+//         url: "https://api-lok-live.leagueofkingdoms.com/api/kingdom/heal/speedup",
+//         token,
+//         body: b64xorEnc(itemPayload, xor_password),
+//         returnResponse: false
+//     });
+
+//     await sendRequest({
+//         url: "https://api-lok-live.leagueofkingdoms.com/api/auth/analytics",
+//         token,
+//         body: JSON.stringify(analyticsPayload),
+//         returnResponse: false
+//     });
+
+//     await changeTreasure(3);
+
+//     console.log(`✔ Heal applied for ${finalHealTime}s using ${speedHeal} ×${amount}`);
+// }
+
+async function heal(targetDuration = null, speedHeal = null) {
     if (!token || !xor_password) {
         console.warn("⏳ Token belum tersedia.");
         return;
@@ -480,27 +592,33 @@ async function heal(speedHeal, targetDuration = null) {
 
     // Mapping speed item
     const HEAL_SPEED = {
-        "1m": { code: 10103042, seconds: 60 },
-        "5m": { code: 10103043, seconds: 5 * 60 },
-        "10m": { code: 10103044, seconds: 10 * 60 },
-        "30m": { code: 10103045, seconds: 30 * 60 },
-        "1h": { code: 10103046, seconds: 60 * 60 },
-        "3h": { code: 10103047, seconds: 3 * 60 * 60 },
-        "8h": { code: 10103048, seconds: 8 * 60 * 60 },
-        "1d": { code: 10103049, seconds: 24 * 60 * 60 },
-        "3d": { code: 10103050, seconds: 3 * 24 * 60 * 60 },
-        "7d": { code: 10103051, seconds: 7 * 24 * 60 * 60 },
+        "1m":   { code: 10103042, seconds: 60 },
+        "5m":   { code: 10103043, seconds: 5 * 60 },
+        "10m":  { code: 10103044, seconds: 10 * 60 },
+        "30m":  { code: 10103045, seconds: 30 * 60 },
+        "1h":   { code: 10103046, seconds: 60 * 60 },
+        "3h":   { code: 10103047, seconds: 3 * 60 * 60 },
+        "8h":   { code: 10103048, seconds: 8 * 60 * 60 },
+        "1d":   { code: 10103049, seconds: 24 * 60 * 60 },
+        "3d":   { code: 10103050, seconds: 3 * 24 * 60 * 60 },
+        "7d":   { code: 10103051, seconds: 7 * 24 * 60 * 60 },
     };
 
-    const selected = HEAL_SPEED[speedHeal];
-    if (!selected) {
-        console.warn(`⚠️ Speed up '${speedHeal}' tidak dikenal.`);
-        return;
+    // Ambil jumlah item speed dari itemList
+    function getItemAmount(code) {
+        const found = itemList.items.find(i => i.code === code);
+        return found ? found.amount : 0;
     }
 
-    const { code, seconds: speedInSeconds } = selected;
+    function parseDuration(str) {
+        const unit = str.slice(-1);
+        const val = parseInt(str.slice(0, -1));
+        if (unit === "h") return val * 3600;
+        if (unit === "d") return val * 86400;
+        return null;
+    }
 
-    // Ambil data wounded
+    // Ambil total wounded time
     const hospitalWounded = await sendRequest({
         url: "https://api-lok-live.leagueofkingdoms.com/api/kingdom/hospital/wounded",
         token,
@@ -508,11 +626,9 @@ async function heal(speedHeal, targetDuration = null) {
         returnResponse: true
     });
 
-    // Hitung total wounded time
     let totalTime = 0;
-    if (Array.isArray(hospitalWounded?.wounded)) {
+    if (hospitalWounded?.wounded) {
         for (const g of hospitalWounded.wounded) {
-            if (!Array.isArray(g)) continue;
             for (const w of g) {
                 if (w?.time) totalTime += w.time;
             }
@@ -520,43 +636,93 @@ async function heal(speedHeal, targetDuration = null) {
     }
 
     if (totalTime <= 0) {
-        console.log("📭 Tidak ada wounded.");
+        console.log("📭 Tidak ada wounded");
         return;
     }
 
-    // Parser target duration ("1h", "1d", dst) → detik
-    function parseDuration(str) {
-        const unit = str.slice(-1); // h/d
-        const value = parseInt(str.slice(0, -1), 10);
-        if (isNaN(value)) return null;
-
-        if (unit === "h") return value * 60 * 60;
-        if (unit === "d") return value * 24 * 60 * 60;
-
-        return null;
-    }
-
-    // Tentukan berapa durasi yang ingin di-heal
+    // Tentukan target duration
     let parsedTarget = null;
-
-    if (typeof targetDuration === "string") {
+    if (!targetDuration) {
+        parsedTarget = totalTime;
+    } else if (typeof targetDuration === "string") {
         parsedTarget = parseDuration(targetDuration);
     } else if (typeof targetDuration === "number") {
         parsedTarget = targetDuration;
     }
 
-    // Jika tidak ada target → heal semua
-    const timeToHeal = parsedTarget ?? totalTime;
-    const finalHealTime = Math.min(timeToHeal, totalTime);
+    const finalHealTime = Math.min(parsedTarget, totalTime);
 
-    // Hitung jumlah item
-    const amount = Math.ceil(finalHealTime / speedInSeconds);
+    // Jika speedHeal spesifik → hanya gunakan satu jenis
+    if (speedHeal) {
+        const selected = HEAL_SPEED[speedHeal];
+        if (!selected) {
+            console.warn(`⚠️ Speed '${speedHeal}' tidak dikenal`);
+            return;
+        }
 
-    console.log(`⏱ Total wounded time: ${totalTime.toFixed(2)}s`);
-    console.log(`🎯 Heal duration: ${finalHealTime.toFixed(2)}s`);
-    console.log(`⚡ Speed: ${speedHeal} (${speedInSeconds}s)`);
-    console.log(`📦 Item needed: ${amount}`);
+        const amountNeeded = Math.ceil(finalHealTime / selected.seconds);
+        const stock = getItemAmount(selected.code);
 
+        if (stock < amountNeeded) {
+            console.warn(`⚠️ Stok tidak cukup: perlu ${amountNeeded}, tersedia ${stock}`);
+            return;
+        }
+
+        await applySpeed(selected.code, amountNeeded);
+        console.log(`✔ Heal applied (${speedHeal} × ${amountNeeded})`);
+        return;
+    }
+
+    // ==============================
+    // FITUR KOMBINASI TERBAIK
+    // ==============================
+
+    // Urutkan dari speed terbesar → terkecil
+    const speedArray = Object.entries(HEAL_SPEED)
+        .map(([key, val]) => ({ key, ...val }))
+        .sort((a, b) => b.seconds - a.seconds);
+
+    let remaining = finalHealTime;
+    const usagePlan = [];
+
+    for (const sp of speedArray) {
+        if (remaining <= 0) break;
+
+        const available = getItemAmount(sp.code);
+        if (available <= 0) continue;
+
+        const maxUse = Math.floor(remaining / sp.seconds);
+        if (maxUse <= 0) continue;
+
+        const use = Math.min(maxUse, available);
+        usagePlan.push({ code: sp.code, amount: use, key: sp.key });
+
+        remaining -= use * sp.seconds;
+    }
+
+    if (usagePlan.length === 0) {
+        console.warn("⚠️ Tidak ada item speed-up yang tersedia.");
+        return;
+    }
+
+    console.log("📦 Rencana penggunaan speed-up:");
+    usagePlan.forEach(r =>
+        console.log(`• ${r.key} × ${r.amount}`)
+    );
+
+    // Jalankan semua speed-up
+    for (const plan of usagePlan) {
+        await applySpeed(plan.code, plan.amount);
+    }
+
+    console.log(`✔ Heal applied menggunakan kombinasi optimal. Sisa tidak ter-heal: ${remaining}s`);
+}
+
+
+// =======================================
+// FUNGSI PEMBANTU APPLY SPEED
+// =======================================
+async function applySpeed(code, amount) {
     const itemPayload = { code, amount, isBuy: 0 };
     const analyticsPayload = {
         url: "item/use",
@@ -580,10 +746,7 @@ async function heal(speedHeal, targetDuration = null) {
     });
 
     await changeTreasure(3);
-
-    console.log(`✔ Heal applied for ${finalHealTime}s using ${speedHeal} ×${amount}`);
 }
-
 
 // 10726001 (skin skill cooldown reduction)
 // 10728001 (skin reduce AP consumption & Drop rate)
