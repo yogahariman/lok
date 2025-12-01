@@ -1651,6 +1651,43 @@ async function instantHarvest() {
     }
 }
 
+// async function scheduleInstantHarvest() {
+//     try {
+//         const { skills } = await sendRequest({
+//             url: "https://api-lok-live.leagueofkingdoms.com/api/skill/list",
+//             token,
+//             body: "{}",
+//             returnResponse: true
+//         });
+
+//         const skill = skills.find(s => s.code === 10001);
+//         if (!skill) {
+//             console.warn("⚠️ Skill 10001 tidak ditemukan.");
+//             return;
+//         }
+
+//         const waitMs = Math.max(
+//             new Date(skill.nextSkillTime).getTime() + 3 * 60 * 1000 - Date.now(),
+//             0
+//         );
+
+//         const totalSeconds = Math.floor(waitMs / 1000);
+//         const hours = Math.floor(totalSeconds / 3600);
+//         const minutes = Math.floor((totalSeconds % 3600) / 60);
+//         const seconds = totalSeconds % 60;
+
+//         console.log(`🕒 Menunggu ${hours} jam ${minutes} menit ${seconds} detik untuk Instant Harvest`);
+
+
+//         setTimeout(async () => {
+//             await instantHarvest();
+//             scheduleInstantHarvest(); // 🔁 Loop
+//         }, waitMs);
+//     } catch (error) {
+//         console.error("❌ Error saat scheduling:", error);
+//         setTimeout(scheduleInstantHarvest, 3 * 60 * 1000); // Retry in 3 minutes
+//     }
+// }
 async function scheduleInstantHarvest() {
     try {
         const { skills } = await sendRequest({
@@ -1667,7 +1704,7 @@ async function scheduleInstantHarvest() {
         }
 
         const waitMs = Math.max(
-            new Date(skill.nextSkillTime).getTime() + 3 * 60 * 1000 - Date.now(),
+            new Date(skill.nextSkillTime).getTime() + 1 * 60 * 1000 - Date.now(),
             0
         );
 
@@ -1678,16 +1715,42 @@ async function scheduleInstantHarvest() {
 
         console.log(`🕒 Menunggu ${hours} jam ${minutes} menit ${seconds} detik untuk Instant Harvest`);
 
-
         setTimeout(async () => {
+
+            // ==============================
+            // 🔻 Auto-disable AutoJoin
+            // ==============================
+            const prevAutoJoin = getAutoJoinStatus();  // simpan status sebelumnya
+            localStorage.setItem('autojoin_enabled', 'false');
+            updateAutoJoinButton();
+            console.log("⛔ AutoJoin disabled sementara untuk InstantHarvest");
+
+            // ==============================
+            // Jalankan Instant Harvest
+            // ==============================
+            await delay(1 * 60 * 1000); // delay tambahan sebelum eksekusi
             await instantHarvest();
+
+            // ==============================
+            // 🔺 Aktifkan kembali AutoJoin jika sebelumnya ON
+            // ==============================
+            if (prevAutoJoin) {
+                localStorage.setItem('autojoin_enabled', 'true');
+                updateAutoJoinButton();
+                console.log("▶️ AutoJoin diaktifkan kembali setelah InstantHarvest");
+            } else {
+                console.log("⛔ AutoJoin tetap OFF (karena sebelumnya OFF)");
+            }
+
             scheduleInstantHarvest(); // 🔁 Loop
         }, waitMs);
+
     } catch (error) {
         console.error("❌ Error saat scheduling:", error);
-        setTimeout(scheduleInstantHarvest, 3 * 60 * 1000); // Retry in 3 minutes
+        setTimeout(scheduleInstantHarvest, 1 * 60 * 1000); // Retry in 3 minutes
     }
 }
+
 
 async function summonMonster() {
     try {
@@ -3655,7 +3718,6 @@ function updateAutoJoinButton() {
     const btn = document.getElementById('autoJoinToggleBtn');
     if (!btn) return;
     btn.textContent = getAutoJoinStatus() ? '▶️ ON' : '⛔ OFF';
-    //btn.textContent = getAutoJoinStatus() ? '⛔ AutoJoin: ON (Click to OFF)' : '▶️ AutoJoin: OFF (Click to ON)';
 }
 
 function toggleAutoJoin() {
@@ -3666,43 +3728,12 @@ function toggleAutoJoin() {
 
     if (newStatus) {
         console.log("✅ AutoJoin ENABLED");
-        //autoJoinRally(); // Jalankan pertama
-        //autoJoinIntervalId = setInterval(autoJoinRally, delayCheckListRally);
         autoJoinRally();
-        //monitorWebSocket(); // Aktifkan monitoring kalau belum
 
     } else {
         console.log("⛔ AutoJoin DISABLED");
-        //if (autoJoinIntervalId !== null) {
-        //    clearInterval(autoJoinIntervalId);
-        //    autoJoinIntervalId = null;
-        //}
     }
 }
-/*
-function injectAutoJoinToggle() {
-    const existingBtn = document.getElementById('autoJoinToggleBtn');
-    if (existingBtn) return; // tombol sudah ada
-
-    const btn = document.createElement('button');
-    btn.id = 'autoJoinToggleBtn';
-    //btn.textContent = getAutoJoinStatus() ? '⛔ AutoJoin: ON (Click to OFF)' : '▶️ AutoJoin: OFF (Click to ON)';
-    btn.textContent = getAutoJoinStatus() ? '▶️ ON' : '⛔ OFF';
-    btn.style.position = 'fixed';
-    btn.style.bottom = '10px';
-    btn.style.right = '10px';
-    btn.style.zIndex = 9999;
-    btn.style.padding = '8px 12px';
-    btn.style.backgroundColor = '#333';
-    btn.style.color = '#fff';
-    btn.style.border = 'none';
-    btn.style.borderRadius = '5px';
-    btn.style.cursor = 'pointer';
-    btn.style.fontSize = '14px';
-    btn.addEventListener('click', toggleAutoJoin);
-    document.body.appendChild(btn);
-}
-*/
 
 function injectAutoJoinToggle() {
     const existingBtn = document.getElementById('autoJoinToggleBtn');
@@ -3741,16 +3772,6 @@ function injectAutoJoinToggle() {
     btn.addEventListener('click', toggleAutoJoin);
     document.body.appendChild(btn);
 }
-/*
-window.addEventListener('load', () => {
-    // Paksa autojoin OFF setiap refresh
-    localStorage.setItem('autojoin_enabled', 'false');
-    updateAutoJoinButton();
-
-    // Pantau per 2 detik apakah tombol perlu di-render ulang
-    setInterval(injectAutoJoinToggle, 2000);
-});
-*/
 window.addEventListener('load', () => {
     // Paksa autojoin OFF setiap refresh
     localStorage.setItem('autojoin_enabled', 'false');
