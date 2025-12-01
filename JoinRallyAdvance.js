@@ -1846,7 +1846,7 @@ async function scheduleSkillActivate(codes = [10001]) {
         const now = Date.now();
         const skillTimers = targetSkills.map(skill => {
             const nextSkillTime = new Date(skill.nextSkillTime).getTime();
-            const waitMs = Math.max(nextSkillTime + 3 * 60 * 1000 - now, 0);
+            const waitMs = Math.max(nextSkillTime + 1 * 60 * 1000 - now, 0);
             return { code: skill.code, waitMs };
         });
 
