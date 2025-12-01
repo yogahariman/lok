@@ -1639,7 +1639,7 @@ async function instantHarvest() {
         });
         await delay(1000);
 
-        //await changeSkin(); // Kembali ke skin normal
+        await changeSkin(); // Kembali ke skin normal
         //await delay(1000);
 
         await changeTreasure(); // Kembali ke treasure rally/monster
@@ -1772,7 +1772,7 @@ async function summonMonster() {
         });
         //await delay(2000);
 
-        //await changeSkin(); // Kembali ke skin default atau sebelumnya
+        await changeSkin(); // Kembali ke skin default atau sebelumnya
         //await delay(2000);
 
         console.log("✅ Aktif skill Summon Monster selesai.");
@@ -1864,8 +1864,31 @@ async function scheduleSkillActivate(codes = [10001]) {
         setTimeout(async () => {
             try {
                 if (nextSkill.code === 10001) {
-                    await instantHarvest();
-                } else if (nextSkill.code === 10023) {
+            // ==============================
+            // 🔻 Auto-disable AutoJoin
+            // ==============================
+            const prevAutoJoin = getAutoJoinStatus();  // simpan status sebelumnya
+            localStorage.setItem('autojoin_enabled', 'false');
+            updateAutoJoinButton();
+            console.log("⛔ AutoJoin disabled sementara untuk InstantHarvest");
+
+            // ==============================
+            // Jalankan Instant Harvest
+            // ==============================
+            await delay(1 * 60 * 1000); // delay tambahan sebelum eksekusi
+            await instantHarvest();
+
+            // ==============================
+            // 🔺 Aktifkan kembali AutoJoin jika sebelumnya ON
+            // ==============================
+            if (prevAutoJoin) {
+                localStorage.setItem('autojoin_enabled', 'true');
+                updateAutoJoinButton();
+                console.log("▶️ AutoJoin diaktifkan kembali setelah InstantHarvest");
+            } else {
+                console.log("⛔ AutoJoin tetap OFF (karena sebelumnya OFF)");
+            }
+        } else if (nextSkill.code === 10023) {
                     await summonMonster();
                 } else {
                     console.warn(`⚠️ Tidak ada handler untuk skill ${nextSkill.code}`);
