@@ -713,9 +713,12 @@ async function heal(targetDuration = null, speedHeal = null) {
     }
 
     // Eksekusi semua item yang direncanakan
+    await changeTreasure(1);
     for (const p of plan) {
         await useSpeedItem(p.code, p.amount);
     }
+    await changeTreasure();
+
 
     const usedSeconds = targetSeconds - remaining;
 
@@ -734,8 +737,6 @@ async function heal(targetDuration = null, speedHeal = null) {
             param: `${code}|${amount}`
         };
 
-        await changeTreasure(1);
-
         await sendRequest({
             url: "https://api-lok-live.leagueofkingdoms.com/api/kingdom/heal/speedup",
             token,
@@ -749,8 +750,6 @@ async function heal(targetDuration = null, speedHeal = null) {
             body: JSON.stringify(analyticsPayload),
             returnResponse: false
         });
-
-        await changeTreasure(3);
     }
 }
 
@@ -3652,11 +3651,6 @@ async function handleAuthResponse(xhr) {
                 await delay(2000);
             }
 
-            if (setting.scheduleBuyCaravan) {
-                scheduleBuyCaravan();
-                await delay(5000);
-            }
-
             if (setting.scheduleResourceHarvest) {
                 //scheduleResourceHarvest();
                 await resourceHarvest();
@@ -3668,14 +3662,19 @@ async function handleAuthResponse(xhr) {
                 await delay(5000);
             }
 
-            if (setting.scheduleInstantHarvest) {
-                scheduleSkillActivate(10001);
+            if (setting.scheduleSummonMonster) {
+                scheduleSkillActivate(10023);
                 await delay(0.5 * 60 * 1000);
             }
 
-            if (setting.scheduleSummonMonster) {
-                scheduleSkillActivate(10023);
-                //await delay(3 * 60 * 1000);
+            if (setting.scheduleInstantHarvest) {
+                scheduleSkillActivate(10001);
+                // await delay(0.5 * 60 * 1000);
+            }
+
+            if (setting.scheduleBuyCaravan) {
+                scheduleBuyCaravan();
+                await delay(5000);
             }
 
             /*
