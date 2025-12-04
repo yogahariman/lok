@@ -135,7 +135,7 @@ function decodePayloadArray(payload) {
 }
 */
 
-function decodePayloadArray(payload) {
+async function decodePayloadArray(payload) {
     if (!payload || !Array.isArray(payload)) {
         console.error("❌ Data payload bukan array.");
         return null;
@@ -158,6 +158,79 @@ function decodePayloadArray(payload) {
         return jsonData;
     } catch (err) {
         console.error("❌ Gagal mendekode payload:", err);
+        return null;
+    }
+}
+
+async function decodeGzipPayload(payload) {
+    if (!payload) return null;
+
+    let bytes;
+
+    // Jika payload string base64
+    if (typeof payload === "string") {
+        try {
+            const bin = atob(payload);
+            bytes = new Uint8Array(bin.length);
+            for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+        } catch {
+            // fallback: string biasa
+            return payload;
+        }
+    } 
+    // Jika array / Uint8Array / ArrayBuffer
+    else if (Array.isArray(payload) || ArrayBuffer.isView(payload)) {
+        bytes = new Uint8Array(payload);
+    } 
+    else if (payload instanceof ArrayBuffer) {
+        bytes = new Uint8Array(payload);
+    } 
+    else {
+        console.error("❌ Unsupported payload type:", payload);
+        return null;
+    }
+
+    // --- 1) Coba native GZIP decompress ---
+    try {
+        if (typeof DecompressionStream !== "undefined") {
+            const ds = new DecompressionStream("gzip");
+            const stream = new Response(new Blob([bytes]).stream().pipeThrough(ds));
+            const text = await stream.text();
+
+            try {
+                return JSON.parse(text);
+            } catch {
+                return text;
+            }
+        }
+    } catch (e) {
+        console.warn("Native gzip failed:", e);
+    }
+
+
+    // --- 2) Fallback ke fflate.gunzipSync() tanpa @require ---
+    try {
+        if (!window.fflate) {
+            await new Promise((resolve, reject) => {
+                const s = document.createElement("script");
+                s.src = "https://cdn.jsdelivr.net/npm/fflate@0.7.5/umd/index.js";
+                s.onload = resolve;
+                s.onerror = reject;
+                document.head.appendChild(s);
+            });
+        }
+
+        const plain = window.fflate.gunzipSync(bytes);
+        const text = new TextDecoder().decode(plain);
+
+        try {
+            return JSON.parse(text);
+        } catch {
+            return text;
+        }
+
+    } catch (e) {
+        console.error("❌ Fflate gunzip failed:", e);
         return null;
     }
 }
@@ -3248,7 +3321,7 @@ async function autoJoinRally() {
         });
 
         //console.log("📥 Rally list response:", rallyList);
-        const rallyListJson = decodePayloadArray(rallyList.payload);
+        const rallyListJson = await decodePayloadArray(rallyList.payload);
         //console.log("📥 Rally list response:", rallyListJson);
 
         if (!rallyListJson.result || !Array.isArray(rallyListJson.battles) || rallyListJson.battles.length === 0) {
@@ -3505,7 +3578,7 @@ async function monitorWebSocket() {
         // Simpan instance
         window._webSocketInstances.push(ws);
 
-        ws.addEventListener('message', (event) => {
+        ws.addEventListener('message', async (event) => {
             const data = event.data;
             if (typeof data !== 'string' || !data.startsWith('42')) return;
 
@@ -3533,8 +3606,13 @@ async function monitorWebSocket() {
                 }
                 else if (path === '/field/objects/v4') {
                     if (window.allowedBookmark && Object.keys(window.allowedBookmark).length > 0) {
+
+                        const decoded = await decodePayloadArray(message.packs);
+                        const decrypted = b64xorDec(decoded, xor_password);
+                        bookmarkFromFieldData(allowedBookmark, decrypted);
+
                         //const fieldData = b64xorDec(decodePayloadArray(message.packs), xor_password);
-                        bookmarkFromFieldData(allowedBookmark, b64xorDec(decodePayloadArray(message.packs), xor_password)); // ✅ pakai await
+                        //bookmarkFromFieldData(allowedBookmark, b64xorDec(decodePayloadArray(message.packs), xor_password)); // ✅ pakai await
                         //console.log('Field Data:', fieldData);
                     }
                 }
