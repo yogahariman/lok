@@ -7,8 +7,8 @@ import sys
 # ===============================
 # Konfigurasi XY Target
 # ===============================
-x_start, x_stop, x_step = 300, 1600, 100
-y_start, y_stop, y_step = 600, 1800, 100
+x_start, x_stop, x_step = 350, 1650, 100
+y_start, y_stop, y_step = 650, 1850, 100
 
 xy_targets = []
 for xx in range(x_start, x_stop + 1, x_step):
