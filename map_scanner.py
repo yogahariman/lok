@@ -52,8 +52,8 @@ def automation_loop():
             # 5. ENTER
             pyautogui.press('enter')
 
-            # 6. Pause 2 seconds
-            time.sleep(2)
+            # 6. Pause 1 seconds
+            time.sleep(1)
 
         running = False  # stop after one full loop
 
