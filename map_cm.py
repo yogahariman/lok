@@ -85,7 +85,7 @@ def automation_loop():
             pyautogui.press('enter')
 
             # 6. Delay
-            time.sleep(1.5)
+            time.sleep(2)
 
             current_index += 1  # ⬅️ LANJUT STEP
 
