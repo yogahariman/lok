@@ -1,73 +1,63 @@
+# map_cm.py
 from pynput.keyboard import Key, Listener
 import pyautogui
 import time
 import threading
 import sys
-import json
-import os
 import math
 
 # ===============================
-# Load XY Target dari JSON
+# XY CENTER
 # ===============================
-JSON_FILE = "xy_target.json"
-
-if not os.path.exists(JSON_FILE):
-    print(f"❌ File {JSON_FILE} tidak ditemukan")
-    sys.exit(1)
-
-with open(JSON_FILE, "r") as f:
-    data = json.load(f)
-
-# Center
-center = data.get("center", {"x": 1000, "y": 1000})
-cx, cy = center["x"], center["y"]
-
-# Targets
-xy_targets = [(t["x"], t["y"]) for t in data.get("targets", [])]
-
-if not xy_targets:
-    print("❌ xy_targets kosong")
-    sys.exit(1)
+XY_CENTER = (1024, 1024)
 
 # ===============================
-# Euclidean Distance
+# Konfigurasi XY Target
 # ===============================
-def euclidean_distance(x, y):
-    return math.sqrt((x - cx) ** 2 + (y - cy) ** 2)
+x_start, x_stop, x_step = 650, 1450, 100
+y_start, y_stop, y_step = 1050, 1850, 100
 
-# Sort: terdekat → terjauh
-xy_targets.sort(key=lambda p: euclidean_distance(p[0], p[1]))
+xy_targets = []
+for x in range(x_start, x_stop + 1, x_step):
+    for y in range(y_start, y_stop + 1, y_step):
+        xy_targets.append((x, y))
 
-print(f"🎯 Center : ({cx}, {cy})")
-print("📍 Target terurut:")
-for i, (x, y) in enumerate(xy_targets, 1):
-    print(f"{i}. ({x}, {y}) | d = {euclidean_distance(x, y):.2f}")
+# ===============================
+# Urutkan berdasarkan jarak dari center
+# ===============================
+def euclidean_distance(p, center):
+    return math.hypot(p[0] - center[0], p[1] - center[1])
+
+xy_targets = sorted(
+    xy_targets,
+    key=lambda p: euclidean_distance(p, XY_CENTER)
+)
 
 # ===============================
 # Control Flags
 # ===============================
 running = False
 exit_program = False
+current_index = 0   # ⬅️ SIMPAN POSISI TERAKHIR
 
 # ===============================
 # Main Automation Loop
 # ===============================
 def automation_loop():
-    global running, exit_program
+    global running, exit_program, current_index
 
     while not exit_program:
         if not running:
             time.sleep(0.2)
             continue
 
-        for xx, yy in xy_targets:
+        while current_index < len(xy_targets):
             if not running or exit_program:
                 break
 
-            print(f"➡ Move to ({xx}, {yy})")
+            xx, yy = xy_targets[current_index]
 
-            # 1. Klik field koordinat (sesuaikan posisi)
+            # 1. Klik kolom X,Y
             pyautogui.moveTo(1539, 475, duration=0.2)
             pyautogui.click()
             time.sleep(0.2)
@@ -77,7 +67,7 @@ def automation_loop():
             time.sleep(0.2)
 
             # 3. TAB
-            pyautogui.press("tab")
+            pyautogui.press('tab')
             time.sleep(0.2)
 
             # 4. Input Y
@@ -85,13 +75,18 @@ def automation_loop():
             time.sleep(0.2)
 
             # 5. ENTER
-            pyautogui.press("enter")
+            pyautogui.press('enter')
 
-            # 6. Delay antar target
+            # 6. Delay
             time.sleep(1.5)
 
-        running = False
-        print("⏹ Selesai satu putaran")
+            current_index += 1  # ⬅️ LANJUT STEP
+
+        # Jika semua target sudah diproses
+        if current_index >= len(xy_targets):
+            print("✅ SEMUA TARGET SELESAI")
+            running = False
+            current_index = 0
 
 # ===============================
 # Keyboard Listener
@@ -102,27 +97,33 @@ def on_press(key):
     global running, exit_program
     pressed_keys.add(key)
 
-    # ⛔ EXIT TOTAL (Ctrl + End)
+    # ⛔ EXIT TOTAL (CTRL + END)
     if (Key.ctrl_l in pressed_keys or Key.ctrl_r in pressed_keys) and key == Key.end:
         print("⛔ EXIT PROGRAM")
         exit_program = True
         return False
-
-    # ▶ START
+    
+    # ▶⏸ TOGGLE START / PAUSE (HOME)
     if key == Key.home:
-        running = True
-        print("▶ START")
+        running = not running
+        state = "▶ START / RESUME" if running else "⏸ PAUSE"
+        print(f"{state} (index {current_index})")    
 
-    # ⏸ PAUSE
-    elif key == Key.end:
-        running = False
-        print("⏸ PAUSE")
+    # # ▶ START / RESUME
+    # if key == Key.home:
+    #     running = True
+    #     print(f"▶ START / RESUME dari index {current_index}")
+
+    # # ⏸ PAUSE
+    # elif key == Key.end:
+    #     running = False
+    #     print(f"⏸ PAUSE di index {current_index}")
 
 def on_release(key):
     pressed_keys.discard(key)
 
 # ===============================
-# Run
+# Run Threads
 # ===============================
 threading.Thread(target=automation_loop, daemon=True).start()
 

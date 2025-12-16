@@ -20,21 +20,24 @@ for xx in range(x_start, x_stop + 1, x_step):
 # ===============================
 running = False
 exit_program = False
+current_index = 0   # ⬅️ SIMPAN POSISI TERAKHIR
 
 # ===============================
 # Main Automation Loop
 # ===============================
 def automation_loop():
-    global running, exit_program
+    global running, exit_program, current_index
 
     while not exit_program:
         if not running:
             time.sleep(0.2)
             continue
 
-        for xx, yy in xy_targets:
+        while current_index < len(xy_targets):
             if not running or exit_program:
                 break
+
+            xx, yy = xy_targets[current_index]
 
             # 1. Move cursor to fixed coordinate
             pyautogui.moveTo(1539, 475, duration=0.2)
@@ -56,11 +59,16 @@ def automation_loop():
             # 5. ENTER
             pyautogui.press('enter')
 
-            # 6. Pause 1 seconds
+            # 6. Pause
             time.sleep(1.5)
 
-        running = False  # stop after one full loop
+            current_index += 1  # ⬅️ LANJUT KE STEP BERIKUTNYA
 
+        # Jika selesai semua target → reset
+        if current_index >= len(xy_targets):
+            print("✅ SEMUA TARGET SELESAI")
+            running = False
+            current_index = 0
 
 # ===============================
 # Keyboard Listener
@@ -72,27 +80,31 @@ def on_press(key):
 
     pressed_keys.add(key)
 
-    # ⛔ EXIT (HARUS PALING ATAS)
+    # ⛔ EXIT TOTAL (CTRL + END)
     if (Key.ctrl_l in pressed_keys or Key.ctrl_r in pressed_keys) and key == Key.end:
         print("⛔ EXIT PROGRAM")
         exit_program = True
         return False
 
-    # ▶ START
-    elif key == Key.home:
-        running = True
-        print("▶ START")
+    # ▶⏸ TOGGLE START / PAUSE (HOME)
+    if key == Key.home:
+        running = not running
+        state = "▶ START / RESUME" if running else "⏸ PAUSE"
+        print(f"{state} (index {current_index})")    
 
-    # ⏸ PAUSE
-    elif key == Key.end:
-        running = False
-        print("⏸ PAUSE")
+    # # ▶ START / RESUME
+    # elif key == Key.home:
+    #     running = True
+    #     print(f"▶ START / RESUME dari index {current_index}")
 
+    # # ⏸ PAUSE
+    # elif key == Key.end:
+    #     running = False
+    #     print(f"⏸ PAUSE di index {current_index}")
 
 def on_release(key):
     if key in pressed_keys:
         pressed_keys.remove(key)
-
 
 # ===============================
 # Run Threads
