@@ -8,7 +8,7 @@ import sys
 # Konfigurasi XY Target
 # ===============================
 x_start, x_stop, x_step = 350, 1650, 100
-y_start, y_stop, y_step = 650, 1850, 100
+y_start, y_stop, y_step = 650, 1550, 100
 
 xy_targets = []
 for xx in range(x_start, x_stop + 1, x_step):
@@ -39,21 +39,25 @@ def automation_loop():
             # 1. Move cursor to fixed coordinate
             pyautogui.moveTo(1539, 475, duration=0.2)
             pyautogui.click()
+            time.sleep(0.2)
 
             # 2. Input xx
             pyautogui.typewrite(str(xx))
+            time.sleep(0.2)
 
             # 3. TAB
             pyautogui.press('tab')
+            time.sleep(0.2)
 
             # 4. Input yy
             pyautogui.typewrite(str(yy))
+            time.sleep(0.2)
 
             # 5. ENTER
             pyautogui.press('enter')
 
             # 6. Pause 1 seconds
-            time.sleep(1)
+            time.sleep(1.5)
 
         running = False  # stop after one full loop
 
