@@ -5,6 +5,7 @@ import time
 import threading
 import sys
 import math
+import json
 
 # ===============================
 # XY CENTER
@@ -14,13 +15,19 @@ XY_CENTER = (1024, 1024)
 # ===============================
 # Konfigurasi XY Target
 # ===============================
-x_start, x_stop, x_step = 650, 1450, 100
-y_start, y_stop, y_step = 1050, 1850, 100
+# x_start, x_stop, x_step = 650, 1450, 100
+# y_start, y_stop, y_step = 1050, 1850, 100
 
-xy_targets = []
-for x in range(x_start, x_stop + 1, x_step):
-    for y in range(y_start, y_stop + 1, y_step):
-        xy_targets.append((x, y))
+# xy_targets = []
+# for x in range(x_start, x_stop + 1, x_step):
+#     for y in range(y_start, y_stop + 1, y_step):
+#         xy_targets.append((x, y))
+
+with open("map_cm.json", "r") as f:
+    data = json.load(f)
+
+# jika JSON bentuk {"xy_targets": [[x,y], ...]}
+xy_targets = [tuple(p) for p in data["xy_targets"]]
 
 # ===============================
 # Urutkan berdasarkan jarak dari center
