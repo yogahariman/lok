@@ -23,7 +23,7 @@ XY_CENTER = (1024, 1024)
 #     for y in range(y_start, y_stop + 1, y_step):
 #         xy_targets.append((x, y))
 
-with open("map_cm.json", "r") as f:
+with open("map_scan.json", "r") as f:
     data = json.load(f)
 
 # jika JSON bentuk {"xy_targets": [[x,y], ...]}
