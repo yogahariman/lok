@@ -366,8 +366,8 @@ function createJoinRallyPayload(codes, amounts, rallyMoId) {
     };
 }
 
-function payloadJoinRally(saveTroopsGroup, rallyMoId) {
-    const marchTroops = saveTroopsGroup.map(({ code, amount }) => ({
+function payloadAutoJoinRally(troops, rallyMoId) {
+    const marchTroops = troops.map(({ code, amount }) => ({
         code,
         level: 0,
         select: 0,
@@ -382,6 +382,30 @@ function payloadJoinRally(saveTroopsGroup, rallyMoId) {
 
     return { marchTroops, rallyMoId };
 }
+
+function payloadSendmarch(troops, toLoc, marchType, dragoId) {
+    const marchTroops = troops.map(({ code, amount }) => ({
+        code,
+        level: 0,
+        select: 0,
+        amount,
+        dead: 0,
+        wounded: 0,
+        hp: 0,
+        attack: 0,
+        defense: 0,
+        seq: 0
+    }));
+
+    return {
+        fromId: kingdomData.fieldObjectId,
+        marchType,
+        toLoc,
+        marchTroops,
+        ...(dragoId !== undefined ? { dragoId } : {})
+    };
+}
+
 
 function getTroopGroupByHP(monsterHP, marchInfo) {
     const troops = marchInfo?.saveTroops || kingdomData.saveTroops;
@@ -2389,7 +2413,92 @@ function getMarchTypeName(marchType) {
     }
 }
 
+async function sendMarch(loc, marchType, troopIndex, dragoId) {
+    try {
+        const marchTypeName = getMarchTypeName(marchType);
 
+        // 🔁 Cek march queue sebelum lanjut
+        const marchQueueUsed = await getMarchQueueUsed();
+        if (marchQueueUsed >= marchLimit) {
+            console.log(`⛔ March queue penuh (${marchQueueUsed}/${marchLimit}), batal ${marchType === 1 ? 'Gathering' : 'Support'} ke (${loc[0]}, ${loc[1]})`);
+            return false;
+        }
+
+        const toLoc = [kingdomData.loc[0], ...loc];
+
+        const payload_marchInfo = {
+            fromId: kingdomData.fieldObjectId,
+            toLoc: toLoc
+        };
+
+        const marchInfoResponse = await sendRequest({
+            url: "https://api-lok-live.leagueofkingdoms.com/api/field/march/info",
+            token: token,
+            //body: b64xorEnc(payload_marchInfo, xor_password),
+            body: JSON.stringify(payload_marchInfo),
+            returnResponse: true
+        });
+
+        if (marchInfoResponse.fo.occupied) return false;
+
+        //const marchInfo = b64xorDec(marchInfoResponse, xor_password);
+        const marchInfo = marchInfoResponse;
+
+        const troops = marchInfo?.saveTroops?.[troopIndex];
+        if (!troops) {
+            console.warn(`⚠️ Troops preset ke-${troopIndex} tidak ditemukan.`);
+            return false;
+        }
+
+        const canSendMarch = troops.every(saveTroop => {
+            const troopInMarch = marchInfo.troops.find(troop => troop.code === saveTroop.code);
+            return troopInMarch && saveTroop.amount <= troopInMarch.amount;
+        });
+
+        if (!canSendMarch) {
+            console.log(`❌ Gagal ${marchTypeName} ke (${loc[0]}, ${loc[1]}) karena jumlah troops kurang`);
+            return false;
+        }
+
+        // const marchTroops = troops.map(t => ({
+        //     code: t.code,
+        //     level: 0,
+        //     select: t.select ?? 0,
+        //     amount: t.amount ?? 0,
+        //     dead: 0,
+        //     wounded: 0,
+        //     hp: 0,
+        //     attack: 0,
+        //     defense: 0,
+        //     seq: 0
+        // }));
+
+        // const payload = {
+        //     fromId: kingdomData.fieldObjectId,
+        //     marchType: marchInfoResponse.marchType,
+        //     toLoc,
+        //     //marchTroops: troops,
+        //     marchTroops,
+        //     ...(dragoId !== undefined ? { dragoId } : {})
+        // };
+
+        await sendRequest({
+            url: "https://api-lok-live.leagueofkingdoms.com/api/field/march/start",
+            token: token,
+            //body: b64xorEnc(payload, xor_password),
+            body: JSON.stringify(payloadSendmarch(troops, toLoc, marchInfoResponse.marchType, dragoId)),
+            returnResponse: false
+        });
+
+        //console.log(`✅ March dikirim: ${marchType === 1 ? 'Gathering' : 'Support'} ke (${loc[0]}, ${loc[1]})`);
+        console.log(`✅ March dikirim: ${marchTypeName} ke (${loc[0]}, ${loc[1]})`);
+
+        return true;
+    } catch (err) {
+        console.error("❌ Error saat proses sendMarch:", err);
+        return false;
+    }
+}
 
 // SendSupport(123, 456);
 // SendGatherCM(789, 101);
@@ -2511,162 +2620,6 @@ async function dsc(x, y) {
     }
 
 }
-
-async function sendMarch(loc, marchType, troopIndex, dragoId) {
-    try {
-        const marchTypeName = getMarchTypeName(marchType);
-
-        // 🔁 Cek march queue sebelum lanjut
-        const marchQueueUsed = await getMarchQueueUsed();
-        if (marchQueueUsed >= marchLimit) {
-            console.log(`⛔ March queue penuh (${marchQueueUsed}/${marchLimit}), batal ${marchType === 1 ? 'Gathering' : 'Support'} ke (${loc[0]}, ${loc[1]})`);
-            return false;
-        }
-
-        const toLoc = [kingdomData.loc[0], ...loc];
-
-        const payload_marchInfo = {
-            fromId: kingdomData.fieldObjectId,
-            toLoc: toLoc
-        };
-
-        const marchInfoResponse = await sendRequest({
-            url: "https://api-lok-live.leagueofkingdoms.com/api/field/march/info",
-            token: token,
-            //body: b64xorEnc(payload_marchInfo, xor_password),
-            body: JSON.stringify(payload_marchInfo),
-            returnResponse: true
-        });
-
-        if (marchInfoResponse.fo.occupied) return false;
-
-        //const marchInfo = b64xorDec(marchInfoResponse, xor_password);
-        const marchInfo = marchInfoResponse;
-
-        const troops = marchInfo?.saveTroops?.[troopIndex];
-        if (!troops) {
-            console.warn(`⚠️ Troops preset ke-${troopIndex} tidak ditemukan.`);
-            return false;
-        }
-
-        const canSendMarch = troops.every(saveTroop => {
-            const troopInMarch = marchInfo.troops.find(troop => troop.code === saveTroop.code);
-            return troopInMarch && saveTroop.amount <= troopInMarch.amount;
-        });
-
-        if (!canSendMarch) {
-            console.log(`❌ Gagal ${marchTypeName} ke (${loc[0]}, ${loc[1]}) karena jumlah troops kurang`);
-            return false;
-        }
-
-        const marchTroops = troops.map(t => ({
-            code: t.code,
-            level: 0,
-            select: t.select ?? 0,
-            amount: t.amount ?? 0,
-            dead: 0,
-            wounded: 0,
-            hp: 0,
-            attack: 0,
-            defense: 0,
-            seq: 0
-        }));
-
-        const payload = {
-            fromId: kingdomData.fieldObjectId,
-            marchType: marchInfoResponse.marchType,
-            toLoc,
-            //marchTroops: troops,
-            marchTroops,
-            ...(dragoId !== undefined ? { dragoId } : {})
-        };
-
-        await sendRequest({
-            url: "https://api-lok-live.leagueofkingdoms.com/api/field/march/start",
-            token: token,
-            //body: b64xorEnc(payload, xor_password),
-            body: JSON.stringify(payload),
-            returnResponse: false
-        });
-
-        //console.log(`✅ March dikirim: ${marchType === 1 ? 'Gathering' : 'Support'} ke (${loc[0]}, ${loc[1]})`);
-        console.log(`✅ March dikirim: ${marchTypeName} ke (${loc[0]}, ${loc[1]})`);
-
-        return true;
-    } catch (err) {
-        console.error("❌ Error saat proses sendMarch:", err);
-        return false;
-    }
-}
-
-/*
-async function sendMarch(loc, marchType, troopIndex, dragoId) {
-
-    // 🔁 Cek march queue sebelum lanjut
-    marchQueueUsed = await getMarchQueueUsed();
-    if (marchQueueUsed >= marchLimit) {
-        console.log(`⛔ March queue penuh (${marchQueueUsed}/${marchLimit}), batal ${marchType === 1 ? 'Gathering' : 'Support'} ke (${loc[0]}, ${loc[1]})`);
-        return;
-    }
-    //const toLoc = [kingdomData.worldId, ...loc];
-    const toLoc = [kingdomData.loc[0], ...loc];
-
-    const payload_marchInfo = {
-        fromId: kingdomData.fieldObjectId,
-        toLoc: toLoc
-    };
-
-    let marchInfoResponse, marchInfo;
-    try {
-        marchInfoResponse = await sendRequest({
-            url: "https://api-lok-live.leagueofkingdoms.com/api/field/march/info",
-            token: token,
-            body: b64xorEnc(payload_marchInfo, xor_password),
-            returnResponse: true
-        });
-        marchInfo = b64xorDec(marchInfoResponse, xor_password);
-    } catch (err) {
-        console.error("❌ Gagal ambil march info:", err);
-        return;
-    }
-
-    const troops = marchInfo?.saveTroops?.[troopIndex];
-    if (!troops) {
-        console.warn(`⚠️ Troops preset ke-${troopIndex} tidak ditemukan.`);
-        return;
-    }
-
-    const canSendMarch = troops.every(saveTroop => {
-        const troopInMarch = marchInfo.troops.find(troop => troop.code === saveTroop.code);
-        return troopInMarch && saveTroop.amount <= troopInMarch.amount;
-    });
-
-    if (!canSendMarch) {
-        console.log(`❌ Gagal ${marchType === 1 ? 'Gathering' : 'Support'} ke (${loc[0]}, ${loc[1]}) karena jumlah troops kurang`);
-        return;
-    }
-
-    const payload = {
-        fromId: kingdomData.fieldObjectId,
-        marchType,
-        toLoc,
-        marchTroops: troops,
-        ...(dragoId !== undefined ? { dragoId } : {})
-    };
-
-    try {
-        await sendRequest({
-            url: "https://api-lok-live.leagueofkingdoms.com/api/field/march/start",
-            token: token,
-            body: b64xorEnc(payload, xor_password),
-            returnResponse: false
-        });
-        console.log(`✅ March dikirim: ${marchType === 1 ? 'Gathering' : 'Support'} ke (${loc[0]}, ${loc[1]})`);
-    } catch (err) {
-        console.error("❌ Gagal kirim march:", err);
-    }
-}
-*/
 
 async function startGatheringRSSFromBookmarks(bookmarks) {
     // Fungsi untuk menghitung jarak antar lokasi
@@ -3356,8 +3309,9 @@ async function autoJoinRally() {
         });
 
         //console.log("📥 Rally list response:", rallyList);
-        const rallyListJson = await decodePayloadArray(rallyList.payload);
+        //const rallyListJson = await decodePayloadArray(rallyList.payload);
         //console.log("📥 Rally list response:", rallyListJson);
+        const rallyListJson = rallyList;
 
         if (!rallyListJson.result || !Array.isArray(rallyListJson.battles) || rallyListJson.battles.length === 0) {
             //console.log("⚠️ Rally list tidak valid atau kosong.");
@@ -3467,8 +3421,8 @@ async function autoJoinRally() {
             );
 
 
-            //const saveTroopsGroup = getTroopGroupByHP(monsterHP);
-            //const payload = payloadJoinRally(saveTroopsGroup, battleId);
+            //const troopsSelected = getTroopGroupByHP(monsterHP);
+            //const payload = payloadAutoJoinRally(troopsSelected, battleId);
             //const payload_encrypted = b64xorEnc(payload, xor_password);
 
 
@@ -3535,9 +3489,9 @@ async function autoJoinRally() {
             }
 
 
-            const saveTroopsGroup = getTroopGroupByHP(monsterHP, marchInfo);
+            const troopsSelected = getTroopGroupByHP(monsterHP, marchInfo);
 
-            const canJoinRally = saveTroopsGroup.every(saveTroop => {
+            const canJoinRally = troopsSelected.every(saveTroop => {
                 const troopInMarch = marchInfo.troops.find(troop => troop.code === saveTroop.code);
                 return troopInMarch && saveTroop.amount <= troopInMarch.amount;
             });
@@ -3549,8 +3503,8 @@ async function autoJoinRally() {
                 //console.log("Lanjut ikut rally.");
             }
 
-            //const payload_rally_encrypted = b64xorEnc(payloadJoinRally(saveTroopsGroup, battleId), xor_password);
-            const payload_rally_encrypted = payloadJoinRally(saveTroopsGroup, battleId);
+            //const payload_rally_encrypted = b64xorEnc(payloadAutoJoinRally(troopsSelected, battleId), xor_password);
+            const payload_rally_encrypted = payloadAutoJoinRally(troopsSelected, battleId);
 
             await sendRequest({
                 url: "https://api-lok-live.leagueofkingdoms.com/api/field/rally/join",
