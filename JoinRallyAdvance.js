@@ -3581,7 +3581,7 @@ async function monitorWebSocket() {
         ws.addEventListener('message', async (event) => {
             const data = event.data;
             if (typeof data !== 'string' || !data.startsWith('42')) return;
-            console.log('RAW SOCKET:', data);
+            //console.log('RAW SOCKET:', data);
 
             try {
                 const [path, message] = JSON.parse(data.slice(2));
@@ -3621,7 +3621,7 @@ async function monitorWebSocket() {
                     if (window.allowedBookmark && Object.keys(window.allowedBookmark).length > 0) {
                         try {
                             // payload sekarang plain JSON string
-                            const payloadStr = message.packs?.Payload;
+                            const payloadStr = message.Payload;
 
                             if (!payloadStr) return;
 
@@ -3630,7 +3630,7 @@ async function monitorWebSocket() {
                             bookmarkFromFieldData(allowedBookmark, fieldData);
 
                             // debug optional
-                            // console.log('Field objects:', fieldData.objects);
+                            console.log('Field objects:', fieldData.objects);
 
                         } catch (err) {
                             console.error('Failed parsing field objects:', err);
