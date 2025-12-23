@@ -968,7 +968,8 @@ async function claimVIP() {
         await sendRequest({
             url: "https://api-lok-live.leagueofkingdoms.com/api/kingdom/vip/claim",
             token,
-            body: b64xorEnc({}, xor_password),
+            //body: b64xorEnc({}, xor_password),
+            body: "{}",
             returnResponse: false
         });
 
@@ -1294,9 +1295,12 @@ async function resourceHarvest() {
                 await sendRequest({
                     url: "https://api-lok-live.leagueofkingdoms.com/api/kingdom/resource/harvest",
                     token,
-                    body: b64xorEnc({
+                    // body: b64xorEnc({
+                    //     position: building.position
+                    // }, xor_password),
+                    body: JSON.stringify({
                         position: building.position
-                    }, xor_password),
+                    }),
                     returnResponse: false
                 });
 
@@ -1364,11 +1368,13 @@ async function scheduleAutoOpenFreeChest() {
             const res = await sendRequest({
                 url: "https://api-lok-live.leagueofkingdoms.com/api/item/freechest",
                 token: token,
-                body: b64xorEnc({ type: 0 }, xor_password),
+                //body: b64xorEnc({ type: 0 }, xor_password),
+                body: JSON.stringify({ type: 0 }),
                 returnResponse: true
             });
 
-            const response = b64xorDec(res, xor_password);
+            // const response = b64xorDec(res, xor_password);
+            const response = res;
 
             if (!response?.result) {
                 console.warn("🛑 Batas harian sudah tercapai. Tidak akan membuka chest.");
