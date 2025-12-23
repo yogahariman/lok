@@ -393,7 +393,7 @@ function getTroopGroupByHP(monsterHP, marchInfo) {
 
 
 async function getMarchLimit() {
-    if (!token || !xor_password) {
+    if (!token) {
         console.warn("⏳ Token belum tersedia.");
         return null;
     }
@@ -417,7 +417,7 @@ async function getMarchLimit() {
 }
 
 async function getMarchQueueUsed() {
-    if (!token || !xor_password) {
+    if (!token) {
         console.warn("⏳ Token belum tersedia.");
         return 0;
     }
@@ -441,7 +441,7 @@ async function getMarchQueueUsed() {
 
 
 async function getItemList() {
-    if (!token || !xor_password) {
+    if (!token) {
         console.warn("⏳ Token belum tersedia.");
         return;
     }
@@ -461,7 +461,7 @@ function getAmountItemList(data, targetCode) {
 }
 
 async function useItem(code, amount) {
-    if (!token || !xor_password) {
+    if (!token) {
         console.warn("⏳ Token belum tersedia.");
         return;
     }
@@ -476,7 +476,8 @@ async function useItem(code, amount) {
     await sendRequest({
         url: "https://api-lok-live.leagueofkingdoms.com/api/item/use",
         token,
-        body: b64xorEnc(itemPayload, xor_password),
+        //body: b64xorEnc(itemPayload, xor_password),
+        body: JSON.stringify(itemPayload),
         returnResponse: false
     });
 
@@ -491,7 +492,7 @@ async function useItem(code, amount) {
 
 
 async function useActionPoint() {
-    if (!token || !xor_password) {
+    if (!token) {
         console.warn("⏳ Token belum tersedia.");
         return;
     }
@@ -499,11 +500,13 @@ async function useActionPoint() {
     let inputRaw = {
         url: "https://api-lok-live.leagueofkingdoms.com/api/kingdom/profile/my",
         token: token,
-        body: b64xorEnc({}, xor_password),
+        //body: b64xorEnc({}, xor_password),
+        body: "{}",
         returnResponse: true
     };
-    const infoProfileEnc = await sendRequest(inputRaw);
-    const infoProfile = b64xorDec(infoProfileEnc, xor_password);
+    //const infoProfileEnc = await sendRequest(inputRaw);
+    //const infoProfile = b64xorDec(infoProfileEnc, xor_password);
+    const infoProfile = await sendRequest(inputRaw);
     const actionPoint = infoProfile?.profile?.actionPoint?.value;
 
     if (actionPoint < 50) {
@@ -658,7 +661,7 @@ async function useActionPoint() {
 // }
 
 async function heal(targetDuration = null, speedHeal = null) {
-    if (!token || !xor_password) {
+    if (!token) {
         console.warn("⏳ Token belum tersedia.");
         return;
     }
@@ -813,7 +816,8 @@ async function heal(targetDuration = null, speedHeal = null) {
         await sendRequest({
             url: "https://api-lok-live.leagueofkingdoms.com/api/kingdom/heal/speedup",
             token,
-            body: b64xorEnc(itemPayload, xor_password),
+            // body: b64xorEnc(itemPayload, xor_password),
+            body: JSON.stringify(itemPayload),
             returnResponse: false
         });
 
@@ -831,7 +835,7 @@ async function heal(targetDuration = null, speedHeal = null) {
 // 10729001 (skin reduce AP consumption)
 // 10730001 (skin drop rate)
 async function changeSkin(skinCode = 10730001) {
-    if (!token || !xor_password) {
+    if (!token) {
         console.warn("⏳ Token belum tersedia.");
         return null;
     }
@@ -885,8 +889,8 @@ async function changeSkin(skinCode = 10730001) {
 
 // page = 0 1 2 3
 async function changeTreasure(page = 3) {
-    if (!token || !xor_password) {
-        console.warn("⏳ Token atau xor_password belum tersedia.");
+    if (!token) {
+        console.warn("⏳ Token belum tersedia.");
         return null;
     }
 
@@ -894,7 +898,8 @@ async function changeTreasure(page = 3) {
         await sendRequest({
             url: "https://api-lok-live.leagueofkingdoms.com/api/kingdom/profile/my",
             token: token,
-            body: b64xorEnc({}, xor_password),
+            //body: b64xorEnc({}, xor_password),
+            body: "{}",
             returnResponse: false
         });
 
@@ -940,8 +945,8 @@ async function changeTreasure(page = 3) {
 }
 
 async function claimVIP() {
-    if (!token || !xor_password) {
-        console.warn("⏳ Token atau xor_password belum tersedia.");
+    if (!token) {
+        console.warn("⏳ Token belum tersedia.");
         return;
     }
 
@@ -980,8 +985,8 @@ async function claimVIP() {
 }
 
 async function claimDSAVIP() {
-    if (!token || !xor_password) {
-        console.warn("⏳ Token atau xor_password belum tersedia.");
+    if (!token) {
+        console.warn("⏳ Token belum tersedia.");
         return;
     }
 
@@ -1019,8 +1024,8 @@ async function claimDSAVIP() {
 }
 
 async function claimDailyQuest() {
-    if (!token || !xor_password) {
-        console.warn("⏳ Token atau xor_password belum tersedia.");
+    if (!token) {
+        console.warn("⏳ Token belum tersedia.");
         return;
     }
 
@@ -1273,8 +1278,8 @@ async function resourceHarvest() {
 
 async function resourceHarvest() {
     try {
-        if (!token || !xor_password) {
-            console.warn("⏳ Token atau xor_password belum tersedia.");
+        if (!token) {
+            console.warn("⏳ Token belum tersedia.");
             return;
         }
 
@@ -1331,7 +1336,7 @@ async function scheduleResourceHarvest() {
 }
 
 async function scheduleAutoOpenFreeChest() {
-    if (!token || !xor_password) {
+    if (!token) {
         console.warn("⏳ Token belum tersedia.");
         return;
     }
@@ -1481,8 +1486,8 @@ async function scheduleAutoOpenFreeChest() {
 // }
 
 async function buyCaravan() {
-    if (!token || !xor_password) {
-        console.warn("⏳ Token atau xor_password belum tersedia.");
+    if (!token) {
+        console.warn("⏳ Token belum tersedia.");
         return null;
     }
 
@@ -1610,7 +1615,7 @@ async function scheduleBuyCaravan() {
 //1 is 10 minutes
 //2 is 30 minutes
 async function startTower(level) {
-    if (!token || !xor_password) {
+    if (!token) {
         console.warn("⏳ Token belum tersedia.");
         return;
     }
@@ -1682,8 +1687,8 @@ function scheduleStartTower(targetMinutes = [3, 10, 32], levels = [0, 1, 2]) {
 
 async function instantHarvest() {
     try {
-        if (!token || !xor_password) {
-            console.warn("⏳ Token atau xor_password belum tersedia.");
+        if (!token) {
+            console.warn("⏳ Token belum tersedia.");
             return;
         }
 
@@ -1832,8 +1837,8 @@ async function scheduleInstantHarvest() {
 
 async function summonMonster() {
     try {
-        if (!token || !xor_password) {
-            console.warn("⏳ Token atau xor_password belum tersedia.");
+        if (!token) {
+            console.warn("⏳ Token belum tersedia.");
             return;
         }
 
@@ -2579,7 +2584,8 @@ async function sendMarch(loc, marchType, troopIndex, dragoId) {
         await sendRequest({
             url: "https://api-lok-live.leagueofkingdoms.com/api/field/march/start",
             token: token,
-            body: b64xorEnc(payload, xor_password),
+            //body: b64xorEnc(payload, xor_password),
+            body: JSON.stringify(payload),
             returnResponse: false
         });
 
@@ -2869,10 +2875,12 @@ async function rallyMonster(loc, rallyTime = 5, troopIndex = 0, message = "") {
         const marchInfoResponse = await sendRequest({
             url: "https://api-lok-live.leagueofkingdoms.com/api/field/march/info",
             token,
-            body: b64xorEnc(payload_marchInfo, xor_password),
+            //body: b64xorEnc(payload_marchInfo, xor_password),
+            body: JSON.stringify(payload_marchInfo),
             returnResponse: true
         });
-        marchInfo = b64xorDec(marchInfoResponse, xor_password);
+        //marchInfo = b64xorDec(marchInfoResponse, xor_password);
+        marchInfo = marchInfoResponse;
     } catch (err) {
         console.error("❌ Gagal ambil march info:", err);
         return false;
@@ -2913,7 +2921,8 @@ async function rallyMonster(loc, rallyTime = 5, troopIndex = 0, message = "") {
         await sendRequest({
             url: "https://api-lok-live.leagueofkingdoms.com/api/field/rally/start",
             token,
-            body: b64xorEnc(payload, xor_password),
+            //body: b64xorEnc(payload, xor_password),
+            body: JSON.stringify(payload),
             returnResponse: false
         });
         return true;
@@ -2936,10 +2945,12 @@ async function attackMonster(x, y) {
         marchInfoResponse = await sendRequest({
             url: "https://api-lok-live.leagueofkingdoms.com/api/field/march/info",
             token: token,
-            body: b64xorEnc(payload_marchInfo, xor_password),
+            //body: b64xorEnc(payload_marchInfo, xor_password),
+            body: JSON.stringify(payload_marchInfo),
             returnResponse: true
         });
-        marchInfo = b64xorDec(marchInfoResponse, xor_password);
+        //marchInfo = b64xorDec(marchInfoResponse, xor_password);
+        marchInfo = marchInfoResponse;
     } catch (err) {
         console.error("❌ Gagal ambil march info:", err);
         return false;
@@ -3132,7 +3143,7 @@ async function dk_atas() {
 */
 
 async function exportCvCRankToCSV(eventId, filename = `CvC_Rank_${getTodayKey()}.csv`) {
-    if (!token || !xor_password) {
+    if (!token) {
         console.warn("⏳ Token belum tersedia.");
         return;
     }
@@ -3194,7 +3205,7 @@ async function exportCvCRankToCSV(eventId, filename = `CvC_Rank_${getTodayKey()}
 }
 
 async function exportCvCWeek1ToCSV(eventId, filename = `CvC_Week1_Rank_${getTodayKey()}.csv`) {
-    if (!token || !xor_password) {
+    if (!token) {
         console.warn("⏳ Token belum tersedia.");
         return;
     }
@@ -3330,7 +3341,7 @@ async function sendTelegramMessage(token, message) {
 
 // Step 3: Function to fetch and join rally
 async function autoJoinRally() {
-    if (!token || !xor_password) {
+    if (!token) {
         console.warn("⏳ Token belum tersedia.");
         return;
     }
@@ -3499,11 +3510,14 @@ async function autoJoinRally() {
             const marchInfoResponse = await sendRequest({
                 url: "https://api-lok-live.leagueofkingdoms.com/api/field/march/info",
                 token: token,
-                body: b64xorEnc(payload_marchInfo, xor_password),
+                //body: b64xorEnc(payload_marchInfo, xor_password),
+                body: JSON.stringify(payload_marchInfo),
                 returnResponse: true
             });
             await delayRandom();
-            const marchInfo = b64xorDec(marchInfoResponse, xor_password);
+            //const marchInfo = b64xorDec(marchInfoResponse, xor_password);
+            const marchInfo = marchInfoResponse;
+
             //console.log("📥 Save Troops Response : ", marchInfo);
 
             //Untuk menentukan apakah masih ada cukup waktu untuk ikut rally
@@ -3535,7 +3549,8 @@ async function autoJoinRally() {
                 //console.log("Lanjut ikut rally.");
             }
 
-            const payload_rally_encrypted = b64xorEnc(payloadJoinRally(saveTroopsGroup, battleId), xor_password);
+            //const payload_rally_encrypted = b64xorEnc(payloadJoinRally(saveTroopsGroup, battleId), xor_password);
+            const payload_rally_encrypted = payloadJoinRally(saveTroopsGroup, battleId);
 
             await sendRequest({
                 url: "https://api-lok-live.leagueofkingdoms.com/api/field/rally/join",
