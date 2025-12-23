@@ -3614,8 +3614,9 @@ async function monitorWebSocket() {
                 //     }
                 // }
                 else if (path === '/field/objects/v4') {
-                    const payloadStr = message.packs;
-                    console.log('Field objects:', payloadStr);
+                    
+                    console.log('Raw packs:', message.packs);
+                    
                     if (window.allowedBookmark && Object.keys(window.allowedBookmark).length > 0) {
                         try {
                             // payload sekarang plain JSON string
