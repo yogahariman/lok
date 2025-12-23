@@ -3619,15 +3619,14 @@ async function monitorWebSocket() {
                             // payload sekarang plain JSON string
                             const payloadStr = message.packs?.Payload;
 
-                            // debug optional
-                            console.log('Field objects:', fieldData.objects);
-
                             if (!payloadStr) return;
 
                             const fieldData = JSON.parse(payloadStr);
 
                             bookmarkFromFieldData(allowedBookmark, fieldData);
 
+                            // debug optional
+                            console.log('Field objects:', fieldData.objects);
 
                         } catch (err) {
                             console.error('Failed parsing field objects:', err);
