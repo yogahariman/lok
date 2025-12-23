@@ -3587,13 +3587,32 @@ async function monitorWebSocket() {
                 const [path, message] = JSON.parse(data.slice(2));
 
                 // Chat Handler
+                // socc-lok-live
                 if (path === '/chat/new' && window.tokenTelegram) {
-                    const from = message.from;
-                    const text = message.text;
-                    const tag = message.alliance?.tag || '';
-                    const formatted = `[${tag}] ${from}: ${text}`;
-                    sendTelegramMessage(window.tokenTelegram, formatted);
+                    try {
+                        // Payload masih string → parse
+                        const payload = JSON.parse(message.Payload);
+
+                        const from = payload.from;
+                        const text = payload.text;
+                        const tag = payload.alliance?.tag || '';
+
+                        const formatted = `[${tag}] ${from}: ${text}`;
+
+                        sendTelegramMessage(window.tokenTelegram, formatted);
+
+                    } catch (e) {
+                        console.error('Chat parse error:', e, message);
+                    }
                 }
+                // if (path === '/chat/new' && window.tokenTelegram) {
+                //     const from = message.from;
+                //     const text = message.text;
+                //     const tag = message.alliance?.tag || '';
+                //     const formatted = `[${tag}] ${from}: ${text}`;
+                //     sendTelegramMessage(window.tokenTelegram, formatted);
+                // }
+
 
                 // Rally Handler
                 else if (path === '/alliance/rally/new') {
@@ -3605,15 +3624,8 @@ async function monitorWebSocket() {
                         console.info('[🚫 AUTOJOIN DISABLED] Rally terdeteksi tapi tidak diproses:', message);
                     }
                 }
-                // else if (path === '/field/objects/v4') {
-                //     if (window.allowedBookmark && Object.keys(window.allowedBookmark).length > 0) {
 
-                //         const decoded = await decodePayloadArray(message.packs);
-                //         const decrypted = b64xorDec(decoded, xor_password);
-                //         bookmarkFromFieldData(allowedBookmark, decrypted);
-
-                //     }
-                // }
+                // socf-lok-live
                 else if (path === '/field/objects/v4') {
                     
                     // console.log('Raw packs:', message.packs);
@@ -3630,13 +3642,22 @@ async function monitorWebSocket() {
                             bookmarkFromFieldData(allowedBookmark, fieldData);
 
                             // debug optional
-                            console.log('Field objects:', fieldData.objects);
+                            // console.log('Field objects:', fieldData.objects);
 
                         } catch (err) {
                             console.error('Failed parsing field objects:', err);
                         }
                     }
                 }
+                // else if (path === '/field/objects/v4') {
+                //     if (window.allowedBookmark && Object.keys(window.allowedBookmark).length > 0) {
+
+                //         const decoded = await decodePayloadArray(message.packs);
+                //         const decrypted = b64xorDec(decoded, xor_password);
+                //         bookmarkFromFieldData(allowedBookmark, decrypted);
+
+                //     }
+                // }
 
 
             } catch (err) {
