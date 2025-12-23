@@ -3702,18 +3702,19 @@ async function handleAuthResponse(xhr) {
             console.log("✅ Parsed JSON (non-binary):", json);
         }
 
-        if (json.result && json.token && json.regionHash) {
+        //if (json.result && json.token && json.regionHash) {
+        if (json.result && json.token) {
             token = json.token;
-            regionHash = json.regionHash;
-            xor_password = atob(regionHash).split("-")[1];
+            // regionHash = json.regionHash;
+            // xor_password = atob(regionHash).split("-")[1];
 
             //localStorage.setItem("lok_token", token);
             //localStorage.setItem("lok_regionHash", regionHash);
             //localStorage.setItem("lok_xor_password", xor_password);
 
             console.log("🟢 Token:", token);
-            console.log("🟢 RegionHash:", regionHash);
-            console.log("🟢 XOR Password:", xor_password);
+            // console.log("🟢 RegionHash:", regionHash);
+            // console.log("🟢 XOR Password:", xor_password);
 
             // set tombol on
             localStorage.setItem('autojoin_enabled', 'true');

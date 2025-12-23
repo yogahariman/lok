@@ -21,5 +21,14 @@ Res : VRIWVERHHQNEXUJBQUsCEgNQXlw4AwMKRREOdVUSB15TV1NNV1cHAwceHgJIE1ZfHgIIExQJBV
 
 */
 
+let fromId = "6949fbf6bd09949b2bd00bce";
+let toLoc = [105,105,3023];
+marchInfoResponse = await sendRequest({
+    url: "https://api-lok-live.leagueofkingdoms.com/api/field/march/info",
+    token: token,
+    body: JSON.stringify({fromId, toLoc}),
+    returnResponse: true
+});
+
 
 
