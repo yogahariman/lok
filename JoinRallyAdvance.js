@@ -2569,7 +2569,7 @@ async function sendMarch(loc, marchType, troopIndex, dragoId) {
 
         const payload = {
             fromId: kingdomData.fieldObjectId,
-            marchType,
+            marchType: marchInfoResponse.marchType,
             toLoc,
             //marchTroops: troops,
             marchTroops,
