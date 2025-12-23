@@ -3604,18 +3604,35 @@ async function monitorWebSocket() {
                         console.info('[🚫 AUTOJOIN DISABLED] Rally terdeteksi tapi tidak diproses:', message);
                     }
                 }
+                // else if (path === '/field/objects/v4') {
+                //     if (window.allowedBookmark && Object.keys(window.allowedBookmark).length > 0) {
+
+                //         const decoded = await decodePayloadArray(message.packs);
+                //         const decrypted = b64xorDec(decoded, xor_password);
+                //         bookmarkFromFieldData(allowedBookmark, decrypted);
+
+                //     }
+                // }
                 else if (path === '/field/objects/v4') {
                     if (window.allowedBookmark && Object.keys(window.allowedBookmark).length > 0) {
+                        try {
+                            // payload sekarang plain JSON string
+                            const payloadStr = message.packs?.Payload;
+                            if (!payloadStr) return;
 
-                        const decoded = await decodePayloadArray(message.packs);
-                        const decrypted = b64xorDec(decoded, xor_password);
-                        bookmarkFromFieldData(allowedBookmark, decrypted);
+                            const fieldData = JSON.parse(payloadStr);
 
-                        //const fieldData = b64xorDec(decodePayloadArray(message.packs), xor_password);
-                        //bookmarkFromFieldData(allowedBookmark, b64xorDec(decodePayloadArray(message.packs), xor_password)); // ✅ pakai await
-                        //console.log('Field Data:', fieldData);
+                            bookmarkFromFieldData(allowedBookmark, fieldData);
+
+                            // debug optional
+                            // console.log('Field objects:', fieldData.objects);
+
+                        } catch (err) {
+                            console.error('Failed parsing field objects:', err);
+                        }
                     }
                 }
+
 
             } catch (err) {
                 console.error('❌ Gagal parsing payload socket:', err);
