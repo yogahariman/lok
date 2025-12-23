@@ -3625,7 +3625,7 @@ async function monitorWebSocket() {
                             bookmarkFromFieldData(allowedBookmark, fieldData);
 
                             // debug optional
-                            // console.log('Field objects:', fieldData.objects);
+                            console.log('Field objects:', fieldData.objects);
 
                         } catch (err) {
                             console.error('Failed parsing field objects:', err);
