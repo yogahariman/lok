@@ -2528,10 +2528,15 @@ async function sendMarch(loc, marchType, troopIndex, dragoId) {
         const marchInfoResponse = await sendRequest({
             url: "https://api-lok-live.leagueofkingdoms.com/api/field/march/info",
             token: token,
-            body: b64xorEnc(payload_marchInfo, xor_password),
+            //body: b64xorEnc(payload_marchInfo, xor_password),
+            body: JSON.stringify(payload_marchInfo),
             returnResponse: true
         });
-        const marchInfo = b64xorDec(marchInfoResponse, xor_password);
+
+        if (marchInfoResponse.fo.occupied) return false;
+
+        //const marchInfo = b64xorDec(marchInfoResponse, xor_password);
+        const marchInfo = marchInfoResponse;
 
         const troops = marchInfo?.saveTroops?.[troopIndex];
         if (!troops) {
@@ -2549,12 +2554,25 @@ async function sendMarch(loc, marchType, troopIndex, dragoId) {
             return false;
         }
 
+        const marchTroops = troops.map(t => ({
+            code: t.code,
+            level: 0,
+            select: t.select ?? 0,
+            amount: t.amount ?? 0,
+            dead: 0,
+            wounded: 0,
+            hp: 0,
+            attack: 0,
+            defense: 0,
+            seq: 0
+        }));
 
         const payload = {
             fromId: kingdomData.fieldObjectId,
             marchType,
             toLoc,
-            marchTroops: troops,
+            //marchTroops: troops,
+            marchTroops,
             ...(dragoId !== undefined ? { dragoId } : {})
         };
 
