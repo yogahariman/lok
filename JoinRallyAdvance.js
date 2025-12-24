@@ -10,6 +10,14 @@ let bookmarkResults = [];
 //let bookmarkMonsterNormal = [];
 //let bookmarkMonsterRally = [];
 
+
+const API_BASE_URL = 'https://api-lok-live.leagueofkingdoms.com/api/'
+
+//Quest Status
+const STATUS_PENDING = 1;  // Quest incomplete
+const STATUS_FINISHED = 2; // Completed, reward pending
+const STATUS_CLAIMED = 3;  // Reward claimed
+
 // Simpan ke localStorage sebagai string JSON
 //
 // bookmarkCM = bookmarkResults.filter(item => ["crystal", "cavern"].some(kw => item.name.toLowerCase().includes(kw)));
@@ -235,7 +243,15 @@ async function decodeGzipPayload(payload) {
     }
 }
 
-function delay(ms) {
+function hasToken() {
+    if (!token) {
+        console.warn("⏳ Token belum tersedia.");
+        return false;
+    }
+    return true;
+}
+
+async function delay(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
 
@@ -417,13 +433,10 @@ function getTroopGroupByHP(monsterHP, marchInfo) {
 
 
 async function getMarchLimit() {
-    if (!token) {
-        console.warn("⏳ Token belum tersedia.");
-        return null;
-    }
+    if (!hasToken()) return null;
 
     const response = await sendRequest({
-        url: "https://api-lok-live.leagueofkingdoms.com/api/kingdom/profile/troops",
+        url: API_BASE_URL + "kingdom/profile/troops",
         token: token,
         body: "{}",
         returnResponse: true
@@ -441,13 +454,10 @@ async function getMarchLimit() {
 }
 
 async function getMarchQueueUsed() {
-    if (!token) {
-        console.warn("⏳ Token belum tersedia.");
-        return 0;
-    }
+    if (!hasToken()) return 0;
 
     const response = await sendRequest({
-        url: "https://api-lok-live.leagueofkingdoms.com/api/kingdom/profile/troops",
+        url: API_BASE_URL + "kingdom/profile/troops",
         token: token,
         body: "{}",
         returnResponse: true
@@ -465,12 +475,9 @@ async function getMarchQueueUsed() {
 
 
 async function getItemList() {
-    if (!token) {
-        console.warn("⏳ Token belum tersedia.");
-        return;
-    }
+    if (!hasToken()) return;
     const inputRaw = {
-        url: "https://api-lok-live.leagueofkingdoms.com/api/item/list",
+        url: API_BASE_URL + "item/list",
         token: token,
         body: "{}",
         returnResponse: true
@@ -485,10 +492,7 @@ function getAmountItemList(data, targetCode) {
 }
 
 async function useItem(code, amount) {
-    if (!token) {
-        console.warn("⏳ Token belum tersedia.");
-        return;
-    }
+    if (!hasToken()) return;
 
     const itemPayload = { code, amount };
     const analyticsPayload = {
@@ -498,7 +502,7 @@ async function useItem(code, amount) {
 
     // Kirim request penggunaan item
     await sendRequest({
-        url: "https://api-lok-live.leagueofkingdoms.com/api/item/use",
+        url: API_BASE_URL + "item/use",
         token,
         //body: b64xorEnc(itemPayload, xor_password),
         body: JSON.stringify(itemPayload),
@@ -507,7 +511,7 @@ async function useItem(code, amount) {
 
     // Kirim data analitik
     await sendRequest({
-        url: "https://api-lok-live.leagueofkingdoms.com/api/auth/analytics",
+        url: API_BASE_URL + "auth/analytics",
         token,
         body: JSON.stringify(analyticsPayload),
         returnResponse: false
@@ -516,13 +520,10 @@ async function useItem(code, amount) {
 
 
 async function useActionPoint() {
-    if (!token) {
-        console.warn("⏳ Token belum tersedia.");
-        return;
-    }
+    if (!hasToken()) return;
 
     let inputRaw = {
-        url: "https://api-lok-live.leagueofkingdoms.com/api/kingdom/profile/my",
+        url: API_BASE_URL + "kingdom/profile/my",
         token: token,
         //body: b64xorEnc({}, xor_password),
         body: "{}",
@@ -572,123 +573,8 @@ async function useActionPoint() {
     }
 }
 
-// async function heal(speedHeal, targetDuration = null) {
-//     if (!token || !xor_password) {
-//         console.warn("⏳ Token belum tersedia.");
-//         return;
-//     }
-
-//     // Mapping speed item
-//     const HEAL_SPEED = {
-//         "1m": { code: 10103042, seconds: 60 },
-//         "5m": { code: 10103043, seconds: 5 * 60 },
-//         "10m": { code: 10103044, seconds: 10 * 60 },
-//         "30m": { code: 10103045, seconds: 30 * 60 },
-//         "1h": { code: 10103046, seconds: 60 * 60 },
-//         "3h": { code: 10103047, seconds: 3 * 60 * 60 },
-//         "8h": { code: 10103048, seconds: 8 * 60 * 60 },
-//         "1d": { code: 10103049, seconds: 24 * 60 * 60 },
-//         "3d": { code: 10103050, seconds: 3 * 24 * 60 * 60 },
-//         "7d": { code: 10103051, seconds: 7 * 24 * 60 * 60 },
-//     };
-
-//     const selected = HEAL_SPEED[speedHeal];
-//     if (!selected) {
-//         console.warn(`⚠️ Speed up '${speedHeal}' tidak dikenal.`);
-//         return;
-//     }
-
-//     const { code, seconds: speedInSeconds } = selected;
-
-//     // Ambil data wounded
-//     const hospitalWounded = await sendRequest({
-//         url: "https://api-lok-live.leagueofkingdoms.com/api/kingdom/hospital/wounded",
-//         token,
-//         body: "{}",
-//         returnResponse: true
-//     });
-
-//     // Hitung total wounded time
-//     let totalTime = 0;
-//     if (Array.isArray(hospitalWounded?.wounded)) {
-//         for (const g of hospitalWounded.wounded) {
-//             if (!Array.isArray(g)) continue;
-//             for (const w of g) {
-//                 if (w?.time) totalTime += w.time;
-//             }
-//         }
-//     }
-
-//     if (totalTime <= 0) {
-//         console.log("📭 Tidak ada wounded.");
-//         return;
-//     }
-
-//     // Parser target duration ("1h", "1d", dst) → detik
-//     function parseDuration(str) {
-//         const unit = str.slice(-1); // h/d
-//         const value = parseInt(str.slice(0, -1), 10);
-//         if (isNaN(value)) return null;
-
-//         if (unit === "h") return value * 60 * 60;
-//         if (unit === "d") return value * 24 * 60 * 60;
-
-//         return null;
-//     }
-
-//     // Tentukan berapa durasi yang ingin di-heal
-//     let parsedTarget = null;
-
-//     if (typeof targetDuration === "string") {
-//         parsedTarget = parseDuration(targetDuration);
-//     } else if (typeof targetDuration === "number") {
-//         parsedTarget = targetDuration;
-//     }
-
-//     // Jika tidak ada target → heal semua
-//     const timeToHeal = parsedTarget ?? totalTime;
-//     const finalHealTime = Math.min(timeToHeal, totalTime);
-
-//     // Hitung jumlah item
-//     const amount = Math.ceil(finalHealTime / speedInSeconds);
-
-//     console.log(`⏱ Total wounded time: ${totalTime.toFixed(2)}s`);
-//     console.log(`🎯 Heal duration: ${finalHealTime.toFixed(2)}s`);
-//     console.log(`⚡ Speed: ${speedHeal} (${speedInSeconds}s)`);
-//     console.log(`📦 Item needed: ${amount}`);
-
-//     const itemPayload = { code, amount, isBuy: 0 };
-//     const analyticsPayload = {
-//         url: "item/use",
-//         param: `${code}|${amount}`
-//     };
-
-//     await changeTreasure(1);
-
-//     await sendRequest({
-//         url: "https://api-lok-live.leagueofkingdoms.com/api/kingdom/heal/speedup",
-//         token,
-//         body: b64xorEnc(itemPayload, xor_password),
-//         returnResponse: false
-//     });
-
-//     await sendRequest({
-//         url: "https://api-lok-live.leagueofkingdoms.com/api/auth/analytics",
-//         token,
-//         body: JSON.stringify(analyticsPayload),
-//         returnResponse: false
-//     });
-
-//     await changeTreasure(3);
-
-//     console.log(`✔ Heal applied for ${finalHealTime}s using ${speedHeal} ×${amount}`);
-// }
-
 async function heal(targetDuration = null, speedHeal = null) {
-    if (!token) {
-        console.warn("⏳ Token belum tersedia.");
-        return;
-    }
+    if (!hasToken()) return;
 
     const HEAL_SPEED = {
         "1m": { code: 10103042, seconds: 60 },
@@ -705,7 +591,7 @@ async function heal(targetDuration = null, speedHeal = null) {
 
     // Ambil stok item
     const itemList = await sendRequest({
-        url: "https://api-lok-live.leagueofkingdoms.com/api/item/list",
+        url: API_BASE_URL + "item/list",
         token,
         body: "{}",
         returnResponse: true
@@ -718,7 +604,7 @@ async function heal(targetDuration = null, speedHeal = null) {
 
     // Ambil data wounded
     const wounded = await sendRequest({
-        url: "https://api-lok-live.leagueofkingdoms.com/api/kingdom/hospital/wounded",
+        url: API_BASE_URL + "kingdom/hospital/wounded",
         token,
         body: "{}",
         returnResponse: true
@@ -838,7 +724,7 @@ async function heal(targetDuration = null, speedHeal = null) {
         };
 
         await sendRequest({
-            url: "https://api-lok-live.leagueofkingdoms.com/api/kingdom/heal/speedup",
+            url: API_BASE_URL + "kingdom/heal/speedup",
             token,
             // body: b64xorEnc(itemPayload, xor_password),
             body: JSON.stringify(itemPayload),
@@ -846,7 +732,7 @@ async function heal(targetDuration = null, speedHeal = null) {
         });
 
         await sendRequest({
-            url: "https://api-lok-live.leagueofkingdoms.com/api/auth/analytics",
+            url: API_BASE_URL + "auth/analytics",
             token,
             body: JSON.stringify(analyticsPayload),
             returnResponse: false
@@ -859,14 +745,11 @@ async function heal(targetDuration = null, speedHeal = null) {
 // 10729001 (skin reduce AP consumption)
 // 10730001 (skin drop rate)
 async function changeSkin(skinCode = 10730001) {
-    if (!token) {
-        console.warn("⏳ Token belum tersedia.");
-        return null;
-    }
+    if (!hasToken()) return null;
 
     // Step 1: Ambil daftar skin
     const response = await sendRequest({
-        url: "https://api-lok-live.leagueofkingdoms.com/api/kingdom/skin/list",
+        url: API_BASE_URL + "kingdom/skin/list",
         token: token,
         body: JSON.stringify({ type: 0 }),
         returnResponse: true
@@ -902,7 +785,7 @@ async function changeSkin(skinCode = 10730001) {
     // Step 2: Equip skin
     const equipPayload = JSON.stringify({ itemId: skin._id });
     await sendRequest({
-        url: "https://api-lok-live.leagueofkingdoms.com/api/kingdom/skin/equip",
+        url: API_BASE_URL + "kingdom/skin/equip",
         token: token,
         body: equipPayload,
         returnResponse: false
@@ -913,14 +796,11 @@ async function changeSkin(skinCode = 10730001) {
 
 // page = 0 1 2 3
 async function changeTreasure(page = 3) {
-    if (!token) {
-        console.warn("⏳ Token belum tersedia.");
-        return null;
-    }
+    if (!hasToken()) return null;
 
     try {
         await sendRequest({
-            url: "https://api-lok-live.leagueofkingdoms.com/api/kingdom/profile/my",
+            url: API_BASE_URL + "kingdom/profile/my",
             token: token,
             //body: b64xorEnc({}, xor_password),
             body: "{}",
@@ -930,7 +810,7 @@ async function changeTreasure(page = 3) {
         await delay(1000);
 
         const treasureList = await sendRequest({
-            url: "https://api-lok-live.leagueofkingdoms.com/api/kingdom/treasure/list",
+            url: API_BASE_URL + "kingdom/treasure/list",
             token: token,
             body: "{}",
             returnResponse: true
@@ -947,7 +827,7 @@ async function changeTreasure(page = 3) {
         await delay(1000);
 
         await sendRequest({
-            url: "https://api-lok-live.leagueofkingdoms.com/api/kingdom/treasure/page",
+            url: API_BASE_URL + "kingdom/treasure/page",
             token: token,
             body: JSON.stringify({ page: currentPage }),
             returnResponse: false
@@ -956,7 +836,7 @@ async function changeTreasure(page = 3) {
         await delay(2000);
 
         await sendRequest({
-            url: "https://api-lok-live.leagueofkingdoms.com/api/kingdom/treasure/page",
+            url: API_BASE_URL + "kingdom/treasure/page",
             token: token,
             body: JSON.stringify({ page }),
             returnResponse: false
@@ -969,14 +849,11 @@ async function changeTreasure(page = 3) {
 }
 
 async function claimVIP() {
-    if (!token) {
-        console.warn("⏳ Token belum tersedia.");
-        return;
-    }
+    if (!hasToken()) return;
 
     try {
         const response = await sendRequest({
-            url: "https://api-lok-live.leagueofkingdoms.com/api/kingdom/vip/info",
+            url: API_BASE_URL + "kingdom/vip/info",
             token,
             body: "{}",
             returnResponse: true
@@ -995,7 +872,7 @@ async function claimVIP() {
         console.log("🎁 Mengklaim VIP reward...");
 
         await sendRequest({
-            url: "https://api-lok-live.leagueofkingdoms.com/api/kingdom/vip/claim",
+            url: API_BASE_URL + "kingdom/vip/claim",
             token,
             //body: b64xorEnc({}, xor_password),
             body: "{}",
@@ -1009,14 +886,11 @@ async function claimVIP() {
 }
 
 async function claimDSAVIP() {
-    if (!token) {
-        console.warn("⏳ Token belum tersedia.");
-        return;
-    }
+    if (!hasToken()) return;
 
     try {
         const response = await sendRequest({
-            url: "https://api-lok-live.leagueofkingdoms.com/api/kingdom/dsavip/info",
+            url: API_BASE_URL + "kingdom/dsavip/info",
             token,
             body: "{}",
             returnResponse: true
@@ -1035,7 +909,7 @@ async function claimDSAVIP() {
         console.log("🎁 Mengklaim DSA VIP reward...");
 
         await sendRequest({
-            url: "https://api-lok-live.leagueofkingdoms.com/api/kingdom/dsavip/claim",
+            url: API_BASE_URL + "kingdom/dsavip/claim",
             token,
             body: "{}",
             returnResponse: false
@@ -1048,15 +922,12 @@ async function claimDSAVIP() {
 }
 
 async function claimDailyQuest() {
-    if (!token) {
-        console.warn("⏳ Token belum tersedia.");
-        return;
-    }
+    if (!hasToken()) return;
 
     // Fungsi ambil list quest harian
     async function getDailyQuest() {
         return await sendRequest({
-            url: "https://api-lok-live.leagueofkingdoms.com/api/quest/list/daily",
+            url: API_BASE_URL + "quest/list/daily",
             token,
             body: "{}",
             returnResponse: true
@@ -1073,9 +944,9 @@ async function claimDailyQuest() {
         // Step 2: Klaim semua quest dengan status ==2
         for (const quest of quests) {
             const { _id: questId, code, status } = quest;
-            if (status === 2) {
+            if (status === STATUS_FINISHED) {
                 await sendRequest({
-                    url: "https://api-lok-live.leagueofkingdoms.com/api/quest/claim/daily",
+                    url: API_BASE_URL + "quest/claim/daily",
                     token,
                     body: JSON.stringify({ questId, code }),
                     returnResponse: false
@@ -1094,9 +965,9 @@ async function claimDailyQuest() {
         // Step 4: Klaim reward level dengan status == 2, 3->claimed
         for (const reward of rewards) {
             const { level, status } = reward;
-            if (status === 2) {
+            if (status === STATUS_FINISHED) {
                 await sendRequest({
-                    url: "https://api-lok-live.leagueofkingdoms.com/api/quest/claim/daily/level",
+                    url: API_BASE_URL + "quest/claim/daily/level",
                     token,
                     body: JSON.stringify({ level }),
                     returnResponse: false
@@ -1110,41 +981,84 @@ async function claimDailyQuest() {
         console.error("❌ Gagal klaim daily quest atau reward:", error);
     }
 }
-async function scheduleClaimDailyQuest() {
-    try {
-        // Jalankan sekarang
-        await claimDailyQuest();
+async function claimMainQuest() {
+    if (!hasToken()) return;
 
-        // Jalankan setiap 1 jam
-        setInterval(async () => {
-            try {
-                await claimDailyQuest();
-            } catch (err) {
-                console.error("❌ Gagal saat klaim ulang:", err);
+    async function getQuestList() {
+        return await sendRequest({
+            url: API_BASE_URL + "quest/list",
+            token,
+            body: "{}",
+            returnResponse: true
+        });
+    }
+
+    try {
+        // Step 1: Ambil list quest
+        const response = await getQuestList();
+        if (!response?.result) return;
+
+        // Gabungkan main + side quest
+        const quests = [
+            ...(response.mainQuests || []),
+            ...(response.sideQuests || [])
+        ];
+
+        // Step 2: Klaim quest dengan status == 2
+        for (const quest of quests) {
+            const { code, status } = quest;
+
+            if (status === STATUS_FINISHED) {
+                await sendRequest({
+                    url: API_BASE_URL + "quest/claim",
+                    token,
+                    body: JSON.stringify({ code }),
+                    returnResponse: false
+                });
+
+                console.log(`✅ Claimed quest ${code}`);
+                await delay(5000);
             }
-        }, 1 * 60 * 60 * 1000); // 1 jam = 3600000 ms
+        }
 
     } catch (error) {
-        console.error("❌ Gagal saat klaim pertama:", error);
+        console.error("❌ Gagal klaim quest:", error);
+    }
+}
+async function scheduleClaimDailyQuest() {
+    const runAll = async () => {
+        await claimMainQuest();
+        await claimDailyQuest();
+    };
+
+    try {
+        await runAll();
+
+        setInterval(() => {
+            runAll().catch(err =>
+                console.error("❌ Gagal saat klaim ulang:", err)
+            );
+        }, 60 * 60 * 1000);
+
+    } catch (err) {
+        console.error("❌ Gagal saat klaim pertama:", err);
     }
 }
 
+
 async function helpAll() {
     try {
-        if (!token) {
-            console.warn("⏳ Token belum tersedia.");
-            return;
-        }
+        if (!hasToken()) return;
 
         await sendRequest({
-            url: "https://api-lok-live.leagueofkingdoms.com/api/alliance/info/my",
+            url: API_BASE_URL + "alliance/info/my",
             token,
             body: "{}",
             returnResponse: false
         });
 
         const helpList = await sendRequest({
-            url: "https://api-lok-live.leagueofkingdoms.com/api/alliance/help/list",
+            url: API_BASE_URL + "alliance/help/list",
             token,
             body: "{}",
             returnResponse: true
@@ -1158,7 +1072,7 @@ async function helpAll() {
         console.log(`🛠️ Menjalankan helpAll untuk ${helpList.otherTasks.length} task...`);
 
         await sendRequest({
-            url: "https://api-lok-live.leagueofkingdoms.com/api/alliance/help/all",
+            url: API_BASE_URL + "alliance/help/all",
             token,
             body: "{}",
             returnResponse: false
@@ -1191,10 +1105,7 @@ async function scheduleHelpAll() {
 }
 
 async function scheduleAutoDonate() {
-    if (!token) {
-        console.warn("⏳ Token belum tersedia.");
-        return;
-    }
+    if (!hasToken()) return;
 
     while (true) {
         try {
@@ -1202,7 +1113,7 @@ async function scheduleAutoDonate() {
 
             // Trigger agar sistem memperbarui data alliance (kadang perlu)
             await sendRequest({
-                url: "https://api-lok-live.leagueofkingdoms.com/api/alliance/info/my",
+                url: API_BASE_URL + "alliance/info/my",
                 token: token,
                 body: "{}",
                 returnResponse: false
@@ -1210,7 +1121,7 @@ async function scheduleAutoDonate() {
 
             // Ambil status riset alliance
             const response = await sendRequest({
-                url: "https://api-lok-live.leagueofkingdoms.com/api/alliance/research/list",
+                url: API_BASE_URL + "alliance/research/list",
                 token: token,
                 body: "{}",
                 returnResponse: true
@@ -1232,7 +1143,7 @@ async function scheduleAutoDonate() {
 
             // Info riset (kadang perlu sebelum donate)
             await sendRequest({
-                url: "https://api-lok-live.leagueofkingdoms.com/api/alliance/research/info",
+                url: API_BASE_URL + "alliance/research/info",
                 token: token,
                 body: JSON.stringify({ researchCode }),
                 returnResponse: false
@@ -1240,7 +1151,7 @@ async function scheduleAutoDonate() {
 
             // Donasi ke riset
             const response_donate_all = await sendRequest({
-                url: "https://api-lok-live.leagueofkingdoms.com/api/alliance/research/donateAll",
+                url: API_BASE_URL + "alliance/research/donateAll",
                 token: token,
                 body: JSON.stringify({ code: researchCode }),
                 returnResponse: true
@@ -1264,48 +1175,9 @@ async function scheduleAutoDonate() {
     }
 }
 
-/*
 async function resourceHarvest() {
     try {
-        if (!token || !xor_password) {
-            console.warn("⏳ Token atau xor_password belum tersedia.");
-            return;
-        }
-
-        const desiredCodes = [
-            40100202,
-            40100203,
-            40100204,
-            40100205
-        ];
-
-        const buildingsToHarvest = kingdomData.buildings.filter(b => desiredCodes.includes(b.code));
-
-        for (const building of buildingsToHarvest) {
-            await delay(2000);
-            await sendRequest({
-                url: "https://api-lok-live.leagueofkingdoms.com/api/kingdom/resource/harvest",
-                token,
-                body: b64xorEnc({
-                    position: building.position
-                }, xor_password),
-                returnResponse: false
-            });
-
-            console.log(`✅ Memanen bangunan di posisi ${building.position} dengan code ${building.code}`);
-        }
-    } catch (err) {
-        console.error("❌ Gagal menjalankan resourceHarvest:", err);
-    }
-}
-*/
-
-async function resourceHarvest() {
-    try {
-        if (!token) {
-            console.warn("⏳ Token belum tersedia.");
-            return;
-        }
+        if (!hasToken()) return;
 
         const desiredCodes = [
             40100202,
@@ -1322,7 +1194,7 @@ async function resourceHarvest() {
 
                 await delay(2000);
                 await sendRequest({
-                    url: "https://api-lok-live.leagueofkingdoms.com/api/kingdom/resource/harvest",
+                    url: API_BASE_URL + "kingdom/resource/harvest",
                     token,
                     // body: b64xorEnc({
                     //     position: building.position
@@ -1360,10 +1232,7 @@ async function scheduleResourceHarvest() {
 }
 
 async function scheduleAutoOpenFreeChest() {
-    if (!token) {
-        console.warn("⏳ Token belum tersedia.");
-        return;
-    }
+    if (!hasToken()) return;
 
     // 1. Ambil level Treasure House dari position 4
     const treasureHouse = kingdomData.buildings.find(b => b.position === 4);
@@ -1395,7 +1264,7 @@ async function scheduleAutoOpenFreeChest() {
             await delay(7 * 60 * 1000);
 
             const res = await sendRequest({
-                url: "https://api-lok-live.leagueofkingdoms.com/api/item/freechest",
+                url: API_BASE_URL + "item/freechest",
                 token: token,
                 //body: b64xorEnc({ type: 0 }, xor_password),
                 body: JSON.stringify({ type: 0 }),
@@ -1425,99 +1294,12 @@ async function scheduleAutoOpenFreeChest() {
     }
 }
 
-// async function buyCaravan() {
-//     if (!token || !xor_password) {
-//         console.warn("⏳ Token atau xor_password belum tersedia.");
-//         return null;
-//     }
-
-//     try {
-//         const caravanList = await sendRequest({
-//             url: "https://api-lok-live.leagueofkingdoms.com/api/kingdom/caravan/list",
-//             token,
-//             body: "{}",
-//             returnResponse: true
-//         });
-
-//         // const desiredCodes = [
-//         //     10101007, 10101008, 10101009, 10101010, // VIP
-//         //     10101049, 10101050, 10101051, 10101052, // AP
-//         //     10103001, 10103002, 10103003, 10103004, // Speed minutes
-//         //     10103005, 10103006, 10103007, 10103008, // Speed hours/days
-//         //     10103009, 10103010
-//         // ];
-
-//         const desiredCodes = [
-//             // VIP
-//             10101007, 10101008, 10101009, 10101010, 10101011, 10101012,
-
-//             // Food
-//             10101013, 10101014, 10101015, 10101016, 10101017, 10101018,
-//             10101019, 10101020, 10101021,
-
-//             // Lumber
-//             10101022, 10101023, 10101024, 10101025, 10101026, 10101027,
-//             10101028, 10101029, 10101030,
-
-//             // Stone
-//             10101031, 10101032, 10101033, 10101034, 10101035, 10101036,
-//             10101037, 10101038, 10101039,
-
-//             // Gold
-//             10101040, 10101041, 10101042, 10101043, 10101044, 10101045,
-//             10101046, 10101047, 10101048,
-
-//             // AP
-//             10101049, 10101050, 10101051, 10101052,
-
-//             // Boosts (Food, Lumber, Stone, Gold, Gathering)
-//             10102001, 10102002,
-//             10102003, 10102004,
-//             10102005, 10102006,
-//             10102007, 10102008,
-//             10102009, 10102010,
-
-//             // Speedups
-//             10103001, 10103002, 10103003, 10103004,
-//             10103005, 10103006, 10103007, 10103008,
-//             10103009, 10103010
-//         ];
-
-
-//         const availableItems = (caravanList?.caravan?.items || []).filter(item => {
-//             return desiredCodes.includes(item.code) && item.amount > 0;
-//         });
-
-//         for (const item of availableItems) {
-//             console.log(`🛒 Membeli item: code=${item.code}, id=${item._id}`);
-//             await delay(1000);
-//             await sendRequest({
-//                 url: "https://api-lok-live.leagueofkingdoms.com/api/kingdom/caravan/buy",
-//                 token,
-//                 body: JSON.stringify({ caravanItemId: item._id }),
-//                 returnResponse: false
-//             });
-//         }
-
-//         console.log(`✅ Selesai membeli ${availableItems.length} item.`);
-
-//         return caravanList.caravan?.expired ?? null;
-
-//     } catch (err) {
-//         console.error("❌ Gagal membeli caravan:", err);
-//         return null;
-//     }
-// }
-
 async function buyCaravan() {
-    if (!token) {
-        console.warn("⏳ Token belum tersedia.");
-        return null;
-    }
+     if (!hasToken()) return null;
 
     try {
         const caravanList = await sendRequest({
-            url: "https://api-lok-live.leagueofkingdoms.com/api/kingdom/caravan/list",
+            url: API_BASE_URL + "kingdom/caravan/list",
             token,
             body: "{}",
             returnResponse: true
@@ -1591,7 +1373,7 @@ async function buyCaravan() {
             console.log(`🛒 Membeli item: code=${item.code}, costItemCode=${item.costItemCode}, id=${item._id}`);
             await delay(1000);
             await sendRequest({
-                url: "https://api-lok-live.leagueofkingdoms.com/api/kingdom/caravan/buy",
+                url: API_BASE_URL + "kingdom/caravan/buy",
                 token,
                 body: JSON.stringify({ caravanItemId: item._id }),
                 returnResponse: false
@@ -1639,16 +1421,13 @@ async function scheduleBuyCaravan() {
 //1 is 10 minutes
 //2 is 30 minutes
 async function startTower(level) {
-    if (!token) {
-        console.warn("⏳ Token belum tersedia.");
-        return;
-    }
+    if (!hasToken()) return;
 
     try {
         const payload = JSON.stringify({ searchType: 0, level });
 
         await sendRequest({
-            url: "https://api-lok-live.leagueofkingdoms.com/api/kingdom/watchtower/search",
+            url: API_BASE_URL + "kingdom/watchtower/search",
             token,
             body: payload,
             returnResponse: false
@@ -1711,10 +1490,7 @@ function scheduleStartTower(targetMinutes = [3, 10, 32], levels = [0, 1, 2]) {
 
 async function instantHarvest() {
     try {
-        if (!token) {
-            console.warn("⏳ Token belum tersedia.");
-            return;
-        }
+        if (!hasToken()) return;
 
         await useItem(10102001, 1); await delay(1000);
         await useItem(10102003, 1); await delay(1000);
@@ -1730,7 +1506,7 @@ async function instantHarvest() {
 
         // Gunakan skill 10018 (increase production)
         await sendRequest({
-            url: "https://api-lok-live.leagueofkingdoms.com/api/skill/use",
+            url: API_BASE_URL + "skill/use",
             token,
             body: JSON.stringify({ code: 10018 }),
             returnResponse: false
@@ -1739,7 +1515,7 @@ async function instantHarvest() {
 
         // Gunakan skill 10001 (instant harvest)
         await sendRequest({
-            url: "https://api-lok-live.leagueofkingdoms.com/api/skill/use",
+            url: API_BASE_URL + "skill/use",
             token,
             body: JSON.stringify({ code: 10001 }),
             returnResponse: false
@@ -1761,7 +1537,7 @@ async function instantHarvest() {
 // async function scheduleInstantHarvest() {
 //     try {
 //         const { skills } = await sendRequest({
-//             url: "https://api-lok-live.leagueofkingdoms.com/api/skill/list",
+//             url: API_BASE_URL + "skill/list",
 //             token,
 //             body: "{}",
 //             returnResponse: true
@@ -1798,7 +1574,7 @@ async function instantHarvest() {
 async function scheduleInstantHarvest() {
     try {
         const { skills } = await sendRequest({
-            url: "https://api-lok-live.leagueofkingdoms.com/api/skill/list",
+            url: API_BASE_URL + "skill/list",
             token,
             body: "{}",
             returnResponse: true
@@ -1861,10 +1637,7 @@ async function scheduleInstantHarvest() {
 
 async function summonMonster() {
     try {
-        if (!token) {
-            console.warn("⏳ Token belum tersedia.");
-            return;
-        }
+        if (!hasToken()) return;
 
         console.log("🧙‍♂️ Memulai proses Summon Monster...");
 
@@ -1872,7 +1645,7 @@ async function summonMonster() {
         await delay(1000);
 
         await sendRequest({
-            url: "https://api-lok-live.leagueofkingdoms.com/api/skill/use",
+            url: API_BASE_URL + "skill/use",
             token,
             body: JSON.stringify({ code: 10023 }),
             returnResponse: false
@@ -1891,7 +1664,7 @@ async function summonMonster() {
 async function scheduleSummonMonster() {
     try {
         const { skills } = await sendRequest({
-            url: "https://api-lok-live.leagueofkingdoms.com/api/skill/list",
+            url: API_BASE_URL + "skill/list",
             token,
             body: "{}",
             returnResponse: true
@@ -1933,7 +1706,7 @@ async function scheduleSummonMonster() {
 async function scheduleSkillActivate(codes = [10001]) {
     try {
         const { skills } = await sendRequest({
-            url: "https://api-lok-live.leagueofkingdoms.com/api/skill/list",
+            url: API_BASE_URL + "skill/list",
             token,
             body: "{}",
             returnResponse: true
@@ -2318,7 +2091,7 @@ async function BookmarkSaveInGame(limit = undefined) {
 
         await delay(2000);
         await sendRequest({
-            url: "https://api-lok-live.leagueofkingdoms.com/api/kingdom/bookmark/add",
+            url: API_BASE_URL + "kingdom/bookmark/add",
             token: token,
             body: body,
             returnResponse: false
@@ -2383,7 +2156,7 @@ async function bookmarkDeleteInGame(indexOrRange) {
         }
 
         await sendRequest({
-            url: "https://api-lok-live.leagueofkingdoms.com/api/kingdom/bookmark/remove",
+            url: API_BASE_URL + "kingdom/bookmark/remove",
             token,
             body: JSON.stringify({ loc: bookmark.loc }),
             returnResponse: false
@@ -2432,7 +2205,7 @@ async function sendMarch(loc, marchType, troopIndex, dragoId) {
         };
 
         const marchInfoResponse = await sendRequest({
-            url: "https://api-lok-live.leagueofkingdoms.com/api/field/march/info",
+            url: API_BASE_URL + "field/march/info",
             token: token,
             //body: b64xorEnc(payload_marchInfo, xor_password),
             body: JSON.stringify(payload_marchInfo),
@@ -2483,7 +2256,7 @@ async function sendMarch(loc, marchType, troopIndex, dragoId) {
         // };
 
         await sendRequest({
-            url: "https://api-lok-live.leagueofkingdoms.com/api/field/march/start",
+            url: API_BASE_URL + "field/march/start",
             token: token,
             //body: b64xorEnc(payload, xor_password),
             body: JSON.stringify(payloadSendmarch(troops, toLoc, marchInfoResponse.marchType, dragoId)),
@@ -2560,7 +2333,7 @@ async function support(x, y) {
 
     try {
         const dragoList = await sendRequest({
-            url: "https://api-lok-live.leagueofkingdoms.com/api/drago/lair/list",
+            url: API_BASE_URL + "drago/lair/list",
             token: token,
             body: "{}",
             returnResponse: true
@@ -2591,7 +2364,7 @@ async function dsc(x, y) {
 
     try {
         const dragoList = await sendRequest({
-            url: "https://api-lok-live.leagueofkingdoms.com/api/drago/lair/list",
+            url: API_BASE_URL + "drago/lair/list",
             token: token,
             body: "{}",
             returnResponse: true
@@ -2826,7 +2599,7 @@ async function rallyMonster(loc, rallyTime = 5, troopIndex = 0, message = "") {
     let marchInfo;
     try {
         const marchInfoResponse = await sendRequest({
-            url: "https://api-lok-live.leagueofkingdoms.com/api/field/march/info",
+            url: API_BASE_URL + "field/march/info",
             token,
             //body: b64xorEnc(payload_marchInfo, xor_password),
             body: JSON.stringify(payload_marchInfo),
@@ -2872,7 +2645,7 @@ async function rallyMonster(loc, rallyTime = 5, troopIndex = 0, message = "") {
         await useActionPoint();
         await delay(1000);
         await sendRequest({
-            url: "https://api-lok-live.leagueofkingdoms.com/api/field/rally/start",
+            url: API_BASE_URL + "field/rally/start",
             token,
             //body: b64xorEnc(payload, xor_password),
             body: JSON.stringify(payload),
@@ -2896,7 +2669,7 @@ async function attackMonster(x, y) {
     let marchInfoResponse, marchInfo;
     try {
         marchInfoResponse = await sendRequest({
-            url: "https://api-lok-live.leagueofkingdoms.com/api/field/march/info",
+            url: API_BASE_URL + "field/march/info",
             token: token,
             //body: b64xorEnc(payload_marchInfo, xor_password),
             body: JSON.stringify(payload_marchInfo),
@@ -2957,7 +2730,7 @@ async function attackMonster(x, y) {
     let marchInfoResponse, marchInfo;
     try {
         marchInfoResponse = await sendRequest({
-            url: "https://api-lok-live.leagueofkingdoms.com/api/field/march/info",
+            url: API_BASE_URL + "field/march/info",
             token: token,
             body: b64xorEnc(payload_marchInfo, xor_password),
             returnResponse: true
@@ -3096,16 +2869,13 @@ async function dk_atas() {
 */
 
 async function exportCvCRankToCSV(eventId, filename = `CvC_Rank_${getTodayKey()}.csv`) {
-    if (!token) {
-        console.warn("⏳ Token belum tersedia.");
-        return;
-    }
+    if (!hasToken()) return;
 
     const worldId = kingdomData.worldId;
 
     // Fetch list of CvC events
     const eventListCvC = await sendRequest({
-        url: "https://api-lok-live.leagueofkingdoms.com/api/event/list/cvc",
+        url: API_BASE_URL + "event/list/cvc",
         token: token,
         body: "{}",
         returnResponse: true
@@ -3127,7 +2897,7 @@ async function exportCvCRankToCSV(eventId, filename = `CvC_Rank_${getTodayKey()}
 
     // Fetch ranking data
     const data = await sendRequest({
-        url: "https://api-lok-live.leagueofkingdoms.com/api/event/cvc/ranking/continent",
+        url: API_BASE_URL + "event/cvc/ranking/continent",
         token: token,
         body: JSON.stringify({ eventId, worldId }),
         returnResponse: true
@@ -3158,16 +2928,13 @@ async function exportCvCRankToCSV(eventId, filename = `CvC_Rank_${getTodayKey()}
 }
 
 async function exportCvCWeek1ToCSV(eventId, filename = `CvC_Week1_Rank_${getTodayKey()}.csv`) {
-    if (!token) {
-        console.warn("⏳ Token belum tersedia.");
-        return;
-    }
+    if (!hasToken()) return;
 
     const worldId = kingdomData.worldId;
 
     // Ambil daftar event CvC
     const eventListCvC = await sendRequest({
-        url: "https://api-lok-live.leagueofkingdoms.com/api/event/list/cvc",
+        url: API_BASE_URL + "event/list/cvc",
         token: token,
         body: "{}",
         returnResponse: true
@@ -3189,7 +2956,7 @@ async function exportCvCWeek1ToCSV(eventId, filename = `CvC_Week1_Rank_${getToda
 
     // Ambil data ranking
     const data = await sendRequest({
-        url: "https://api-lok-live.leagueofkingdoms.com/api/event/cvc/ranking/continent",
+        url: API_BASE_URL + "event/cvc/ranking/continent",
         token: token,
         body: JSON.stringify({ eventId, worldId }),
         returnResponse: true
@@ -3211,7 +2978,7 @@ async function exportCvCWeek1ToCSV(eventId, filename = `CvC_Week1_Rank_${getToda
 
         try {
             const historyRes = await sendRequest({
-                url: "https://api-lok-live.leagueofkingdoms.com/api/kingdom/profile/other/history",
+                url: API_BASE_URL + "kingdom/profile/other/history",
                 token: token,
                 body: JSON.stringify({ kingdomId }),
                 returnResponse: true
@@ -3294,15 +3061,12 @@ async function sendTelegramMessage(token, message) {
 
 // Step 3: Function to fetch and join rally
 async function autoJoinRally() {
-    if (!token) {
-        console.warn("⏳ Token belum tersedia.");
-        return;
-    }
+    if (!hasToken()) return;
 
     try {
         await delayRandom();
         const rallyList = await sendRequest({
-            url: "https://api-lok-live.leagueofkingdoms.com/api/alliance/battle/list/v2",
+            url: API_BASE_URL + "alliance/battle/list/v2",
             token: token,
             body: "{}",
             returnResponse: true
@@ -3431,7 +3195,7 @@ async function autoJoinRally() {
             await delayRandom();
 
             // await sendRequest({
-            //     url: "https://api-lok-live.leagueofkingdoms.com/api/alliance/info/my",
+            //     url: API_BASE_URL + "alliance/info/my",
             //     token: token,
             //     body: "{}",
             //     returnResponse: false
@@ -3439,7 +3203,7 @@ async function autoJoinRally() {
             // await delayRandom();
 
             // await sendRequest({
-            //     url: "https://api-lok-live.leagueofkingdoms.com/api/alliance/battle/list/v2",
+            //     url: API_BASE_URL + "alliance/battle/list/v2",
             //     token: token,
             //     body: "{}",
             //     returnResponse: false
@@ -3447,7 +3211,7 @@ async function autoJoinRally() {
             // await delayRandom();
 
             const battleInfo = await sendRequest({
-                url: "https://api-lok-live.leagueofkingdoms.com/api/alliance/battle/info",
+                url: API_BASE_URL + "alliance/battle/info",
                 token: token,
                 body: JSON.stringify({ rallyMoId: battleId }),
                 returnResponse: true
@@ -3462,7 +3226,7 @@ async function autoJoinRally() {
                 rallyMoId: battleId
             };
             const marchInfoResponse = await sendRequest({
-                url: "https://api-lok-live.leagueofkingdoms.com/api/field/march/info",
+                url: API_BASE_URL + "field/march/info",
                 token: token,
                 //body: b64xorEnc(payload_marchInfo, xor_password),
                 body: JSON.stringify(payload_marchInfo),
@@ -3507,7 +3271,7 @@ async function autoJoinRally() {
             const payload_rally_encrypted = payloadAutoJoinRally(troopsSelected, battleId);
 
             await sendRequest({
-                url: "https://api-lok-live.leagueofkingdoms.com/api/field/rally/join",
+                url: API_BASE_URL + "field/rally/join",
                 token: token,
                 body: payload_rally_encrypted,
                 returnResponse: false

@@ -37,4 +37,21 @@ marchInfo = marchInfoResponse;
 troops = marchInfo?.saveTroops?.[1];
 
 
+let questListResponse;
+questListResponse = await sendRequest({
+    url: "https://api-lok-live.leagueofkingdoms.com/api/quest/list",
+    token,
+    body: "{}",
+    returnResponse: true
+});
+
+let questListDailyResponse;
+questListDailyResponse = await sendRequest({
+    url: "https://api-lok-live.leagueofkingdoms.com/api/quest/list/daily",
+    token,
+    body: "{}",
+    returnResponse: true
+});
+
+
 
