@@ -54,4 +54,22 @@ questListDailyResponse = await sendRequest({
 });
 
 
+let questListEventResponse;
+questListEventResponse = await sendRequest({
+    url: "https://api-lok-live.leagueofkingdoms.com/api/event/list",
+    token,
+    body: "{}",
+    returnResponse: true
+});
+
+
+let questEventInfoResponse;
+questEventInfoResponse = await sendRequest({
+    url: "https://api-lok-live.leagueofkingdoms.com/api/event/info",
+    token,
+    body: JSON.stringify({rootEventId:"694556a94d21cbb1858a465d"}),
+    returnResponse: true
+});
+
+
 
