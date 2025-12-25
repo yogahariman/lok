@@ -1038,7 +1038,7 @@ async function scheduleClaimDailyQuest() {
             runAll().catch(err =>
                 console.error("❌ Gagal saat klaim ulang:", err)
             );
-        }, 3 * 60 * 1000); // setiap 1 jam
+        }, 1 * 60 * 1000); // setiap 1 jam
 
     } catch (err) {
         console.error("❌ Gagal saat klaim pertama:", err);
