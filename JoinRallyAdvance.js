@@ -981,11 +981,55 @@ async function claimDailyQuest() {
         console.error("❌ Gagal klaim daily quest atau reward:", error);
     }
 }
+// async function claimMainQuest() {
+//     if (!hasToken()) return;
+
+//     async function getQuestList() {
+//         return await sendRequest({
+//             url: API_BASE_URL + "quest/list",
+//             token,
+//             body: "{}",
+//             returnResponse: true
+//         });
+//     }
+
+//     try {
+//         // Step 1: Ambil list quest
+//         const response = await getQuestList();
+//         if (!response?.result) return;
+
+//         // Gabungkan main + side quest
+//         const quests = [
+//             ...(response.mainQuests || []),
+//             ...(response.sideQuests || [])
+//         ];
+
+//         // Step 2: Klaim quest dengan status == 2
+//         for (const quest of quests) {
+//             const { code, status } = quest;
+
+//             if (status === STATUS_FINISHED) {
+//                 await sendRequest({
+//                     url: API_BASE_URL + "quest/claim",
+//                     token,
+//                     body: JSON.stringify({ code }),
+//                     returnResponse: false
+//                 });
+
+//                 console.log(`✅ Claimed quest ${code}`);
+//                 await delay(5000);
+//             }
+//         }
+
+//     } catch (error) {
+//         console.error("❌ Gagal klaim quest:", error);
+//     }
+// }
 async function claimMainQuest() {
-    if (!hasToken()) return;
+    if (!hasToken()) return false;
 
     async function getQuestList() {
-        return await sendRequest({
+        return sendRequest({
             url: API_BASE_URL + "quest/list",
             token,
             body: "{}",
@@ -994,40 +1038,66 @@ async function claimMainQuest() {
     }
 
     try {
-        // Step 1: Ambil list quest
         const response = await getQuestList();
-        if (!response?.result) return;
+        if (!response?.result) return false;
 
-        // Gabungkan main + side quest
         const quests = [
             ...(response.mainQuests || []),
             ...(response.sideQuests || [])
         ];
 
-        // Step 2: Klaim quest dengan status == 2
-        for (const quest of quests) {
-            const { code, status } = quest;
+        // Ambil quest yang bisa diklaim
+        const finishedQuests = quests.filter(
+            q => q.status === STATUS_FINISHED
+        );
 
-            if (status === STATUS_FINISHED) {
-                await sendRequest({
-                    url: API_BASE_URL + "quest/claim",
-                    token,
-                    body: JSON.stringify({ code }),
-                    returnResponse: false
-                });
-
-                console.log(`✅ Claimed quest ${code}`);
-                await delay(5000);
-            }
+        // ❌ Tidak ada quest selesai → berhenti
+        if (finishedQuests.length === 0) {
+            console.log("ℹ️ Tidak ada quest yang bisa diklaim");
+            return false;
         }
+
+        // Klaim satu per satu
+        for (const { code } of finishedQuests) {
+            await sendRequest({
+                url: API_BASE_URL + "quest/claim",
+                token,
+                body: JSON.stringify({ code }),
+                returnResponse: false
+            });
+
+            console.log(`✅ Claimed quest ${code}`);
+            await delay(5000);
+        }
+
+        // ✅ Masih ada klaim → lanjutkan loop
+        return true;
 
     } catch (error) {
         console.error("❌ Gagal klaim quest:", error);
+        return false;
     }
 }
+
+async function runClaimMainQuest() {
+    console.log("🚀 Mulai klaim main quest");
+
+    while (true) {
+        const hasClaimed = await claimMainQuest();
+
+        if (!hasClaimed) {
+            console.log("🛑 Semua main quest sudah diklaim");
+            break;
+        }
+
+        // Delay antar refresh quest list
+        await delay(3000);
+    }
+}
+
 async function scheduleClaimDailyQuest() {
     const runAll = async () => {
-        await claimMainQuest();
+        //await claimMainQuest();
         await claimDailyQuest();
     };
 
@@ -1038,7 +1108,7 @@ async function scheduleClaimDailyQuest() {
             runAll().catch(err =>
                 console.error("❌ Gagal saat klaim ulang:", err)
             );
-        }, 1 * 60 * 1000); // setiap 1 jam
+        }, 60 * 60 * 1000); // setiap 1 jam
 
     } catch (err) {
         console.error("❌ Gagal saat klaim pertama:", err);
