@@ -1097,7 +1097,7 @@ async function runClaimMainQuest() {
 
 async function scheduleClaimDailyQuest() {
     const runAll = async () => {
-        //await claimMainQuest();
+        await claimMainQuest();
         await claimDailyQuest();
     };
 
@@ -3606,11 +3606,6 @@ async function handleAuthResponse(xhr) {
                 await delay(5000);
             }
 
-            if (setting.scheduleClaimDailyQuest) {
-                scheduleClaimDailyQuest();
-                await delay(5000);
-            }
-
             if (setting.scheduleSummonMonster) {
                 scheduleSkillActivate(10023);
                 await delay(0.5 * 60 * 1000);
@@ -3625,6 +3620,12 @@ async function handleAuthResponse(xhr) {
                 scheduleBuyCaravan();
                 await delay(5000);
             }
+
+            if (setting.scheduleClaimDailyQuest) {
+                //scheduleClaimDailyQuest();
+                runClaimMainQuest()
+                //await delay(5000);
+            }            
 
             /*
             //claim VIP reward
