@@ -2717,10 +2717,11 @@ async function rallyMonster(loc, rallyTime = 5, troopIndex = 0, message = "") {
         return false;
     }
 
-    if (marchInfo.marchType !== 5) {
-        console.log(`⛔ MarchType bukan untuk rally/attack monster (marchType = ${marchInfo.marchType}).`);
+    if (marchInfo.marchType !== MARCH_TYPE_MONSTER) {
+        const marchTypeName = getMarchTypeName(marchInfo.marchType);
+        console.log(`⛔ MarchType bukan untuk rally/attack monster (marchType = ${marchTypeName}).`);
         return false;
-    }
+    }    
 
     const troops = marchInfo?.saveTroops?.[troopIndex];
     if (!troops) {
@@ -2787,7 +2788,7 @@ async function attackMonster(x, y) {
         return false;
     }
 
-    if (marchInfo.marchType !== 5) {
+    if (marchInfo.marchType !== MARCH_TYPE_MONSTER) {
         const marchTypeName = getMarchTypeName(marchInfo.marchType);
         console.log(`⛔ MarchType bukan untuk rally/attack monster (marchType = ${marchTypeName}).`);
         return false;
