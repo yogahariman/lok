@@ -2513,8 +2513,9 @@ async function startGatheringRSSFromBookmarks(bookmarks) {
         return;
     }    
 
-    const limit = Math.min(marchLimit, res.length);
-    const finalResults = res.slice(0, limit);    
+    // const limit = Math.min(marchLimit, res.length);
+    // const finalResults = res.slice(0, limit);
+    const finalResults = res;
 
     // Pastikan treasure diaktifkan hanya sekali
     await changeTreasure(2);
@@ -3667,9 +3668,9 @@ async function handleAuthResponse(xhr) {
             }
 
             if (setting.scheduleClaimDailyQuest) {
-                //scheduleClaimDailyQuest();
-                runClaimMainQuest()
-                //await delay(5000);
+                // scheduleClaimDailyQuest();
+                runClaimMainQuest();
+                // await delay(5000);
             }            
 
             /*
