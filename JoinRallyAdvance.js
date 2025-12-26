@@ -2474,12 +2474,15 @@ async function startGatheringRSSFromBookmarks(bookmarks) {
     };
 
     // Pastikan hasil sudah unik dan tersortir
-    const finalResults = getSortedUniqueBookmarksRSS(bookmarks) || [];
+    const res = getSortedUniqueBookmarksRSS(bookmarks) || [];
 
     if (finalResults.length === 0) {
         console.warn("⚠️ Tidak ada RSS.");
         return;
     }
+
+    const limit = Math.min(marchLimit, res.length);
+    const finalResults = res.slice(0, limit);    
 
     // Pastikan treasure diaktifkan hanya sekali
     await changeTreasure(2);
