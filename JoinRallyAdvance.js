@@ -18,6 +18,47 @@ const STATUS_PENDING = 1;  // Quest incomplete
 const STATUS_FINISHED = 2; // Completed, reward pending
 const STATUS_CLAIMED = 3;  // Reward claimed
 
+// Dragon's Nest Status
+const DRAGO_LAIR_STATUS_STANDBY = 1; // On Standby
+const DRAGO_LAIR_STATUS_DEFENDING = 2; // Defending
+const DRAGO_LAIR_STATUS_ATTACKING = 3; // Attacking
+
+// Chat: Channel Type
+const CHAT_CHANNEL_WORLD = 1; // World Channel
+const CHAT_CHANNEL_ALLIANCE = 2; // Alliance Channel
+
+// Chat: Message Type
+const CHAT_TYPE_TEXT = 1; // Text message 
+const CHAT_TYPE_LOC = 2; // Location
+const CHAT_TYPE_STICKER = 7; // Stickers
+
+// March Types
+const MARCH_TYPE_GATHER = 1;  // marchType 1 = gathering
+const MARCH_TYPE_CASTLE = 2;  // marchType 2 = attack/rally castle
+const MARCH_TYPE_MONSTER = 5; // marchType 5 = attack/rally monster
+const MARCH_TYPE_SUPPORT = 7; // marchType 7 = support
+const MARCH_TYPE_RALLY = 8;   // marchType 8 = Join rally
+
+// Object Codes
+const OBJECT_CODE_FARM = 20100101
+const OBJECT_CODE_LUMBER_CAMP = 20100102
+const OBJECT_CODE_QUARRY = 20100103
+const OBJECT_CODE_GOLD_MINE = 20100104
+const OBJECT_CODE_CRYSTAL_MINE = 20100105
+const OBJECT_CODE_DRAGON_SOUL_CAVERN = 20100106
+const OBJECT_CODE_ORC = 20200101
+const OBJECT_CODE_SKELETON = 20200102
+const OBJECT_CODE_GOLEM = 20200103
+const OBJECT_CODE_GOBLIN = 20200104
+const OBJECT_CODE_DEATHKAR = 20200201
+const OBJECT_CODE_KINGDOM = 20300101
+const OBJECT_CODE_CHARM = 20500101
+const OBJECT_CODE_OGRE = 20700405
+const OBJECT_CODE_HUNGRY_WOLF = 20700406
+const OBJECT_CODE_CYCLOPS = 20700407
+const OBJECT_CODE_SPARTOI = 20700506
+
+
 // Simpan ke localStorage sebagai string JSON
 //
 // bookmarkCM = bookmarkResults.filter(item => ["crystal", "cavern"].some(kw => item.name.toLowerCase().includes(kw)));
@@ -2241,17 +2282,13 @@ async function bookmarkDeleteInGame(indexOrRange) {
 }
 */
 
-// marchType 1 = gathering
-// marchType 2 = attack/rally castle
-// marchType 5 = attack/rally monster
-// marchType 7 = support
-// marchType 8 = Join rally
 function getMarchTypeName(marchType) {
     switch (marchType) {
-        case 1: return 'Gathering';
-        case 2: return 'Attack/Rally Castle';
-        case 5: return 'Attack/Rally Monster';
-        case 7: return 'Support';
+        case MARCH_TYPE_GATHER: return 'Gathering';
+        case MARCH_TYPE_CASTLE: return 'Attack/Rally Castle';
+        case MARCH_TYPE_MONSTER: return 'Attack/Rally Monster';
+        case MARCH_TYPE_SUPPORT: return 'Support';
+        case MARCH_TYPE_RALLY: return 'Join Rally';
         default: return `Unknown Type (${marchType})`;
     }
 }
@@ -2263,7 +2300,7 @@ async function sendMarch(loc, marchType, troopIndex, dragoId) {
         // 🔁 Cek march queue sebelum lanjut
         const marchQueueUsed = await getMarchQueueUsed();
         if (marchQueueUsed >= marchLimit) {
-            console.log(`⛔ March queue penuh (${marchQueueUsed}/${marchLimit}), batal ${marchType === 1 ? 'Gathering' : 'Support'} ke (${loc[0]}, ${loc[1]})`);
+            console.log(`⛔ March queue penuh (${marchQueueUsed}/${marchLimit}), batal ${marchTypeName} ke (${loc[0]}, ${loc[1]})`);
             return false;
         }
 
@@ -2333,7 +2370,6 @@ async function sendMarch(loc, marchType, troopIndex, dragoId) {
             returnResponse: false
         });
 
-        //console.log(`✅ March dikirim: ${marchType === 1 ? 'Gathering' : 'Support'} ke (${loc[0]}, ${loc[1]})`);
         console.log(`✅ March dikirim: ${marchTypeName} ke (${loc[0]}, ${loc[1]})`);
 
         return true;
@@ -2343,22 +2379,14 @@ async function sendMarch(loc, marchType, troopIndex, dragoId) {
     }
 }
 
-// SendSupport(123, 456);
-// SendGatherCM(789, 101);
-//async function SendGatherCM(x, y) {
 async function cm(x, y) {
     await changeTreasure(3);
-    await sendMarch([x, y], 1, 3); // marchType 1 = gathering, troopIndex 3
+    await sendMarch([x, y], MARCH_TYPE_GATHER, 3);
 }
 
 async function ce(x, y) {
-    await sendMarch([x, y], 2, 3); // marchType 2 = Attack/Rally Castle, troopIndex 3
+    await sendMarch([x, y], MARCH_TYPE_CASTLE, 3);
 }
-
-// async function rss() {
-//     let bookmarkRSS = JSON.parse(localStorage.getItem('bookmarkRSS_bk')) || [];
-//     await startGatheringRSSFromBookmarks(bookmarkRSS);
-// }
 
 async function rss(minLevel, maxLevel) {
     const bookmarkRSSRaw = localStorage.getItem('bookmarkRSS_bk');
@@ -2410,7 +2438,7 @@ async function support(x, y) {
         });
 
         const drago = dragoList.dragos
-            .filter(drago => drago.lair?.status === 1)
+            .filter(drago => drago.lair?.status === DRAGO_LAIR_STATUS_STANDBY)
             .sort((a, b) => b.level - a.level)[0];  // Ambil yang level tertinggi
 
         dragoId = drago?._id || null;
@@ -2422,9 +2450,9 @@ async function support(x, y) {
     }
 
     if (dragoId) {
-        await sendMarch([x, y], 7, 3, dragoId);
+        await sendMarch([x, y], MARCH_TYPE_SUPPORT, 3, dragoId);
     } else {
-        await sendMarch([x, y], 7, 3);
+        await sendMarch([x, y], MARCH_TYPE_SUPPORT, 3);
     }
 }
 
@@ -2445,7 +2473,7 @@ async function dsc(x, y) {
         //     .sort((a, b) => b.level - a.level)[0];  // Ambil yang level tertinggi
 
         // Ambil drago pertama dengan status 1
-        const drago = dragoList.dragos.find(d => d.lair?.status === 1);
+        const drago = dragoList.dragos.find(d => d.lair?.status === DRAGO_LAIR_STATUS_STANDBY);
 
         dragoId = drago?._id || null;
 
@@ -2457,7 +2485,7 @@ async function dsc(x, y) {
 
     if (dragoId) {
         await changeTreasure(3);
-        await sendMarch([x, y], 1, 3, dragoId);
+        await sendMarch([x, y], MARCH_TYPE_GATHER, 3, dragoId);
     } else {
         console.warn("Tidak ada Drago yang tersedia untuk dikirim.");
     }
@@ -2512,7 +2540,7 @@ async function startGatheringRSSFromBookmarks(bookmarks) {
         console.log(`🏕️ Gathering ${b.name}${levelText} di (${x}, ${y}) — jarak ${dist}`);
 
         try {
-            await sendMarch([x, y], 1, 1); // marchType 1 = gathering, preset index 1
+            await sendMarch([x, y], MARCH_TYPE_GATHER, 1); // marchType 1 = gathering, preset index 1
         } catch (err) {
             console.error(`❌ Gagal kirim march ke (${x}, ${y}):`, err);
         }
@@ -2787,7 +2815,7 @@ async function attackMonster(x, y) {
     try {
         await useActionPoint();
         await delay(1000);
-        const result = await sendMarch([x, y], 5, selectedTroop); // marchType 5 = monster attack
+        const result = await sendMarch([x, y], MARCH_TYPE_MONSTER, selectedTroop); // marchType 5 = monster attack
         return result; // true atau false dari sendMarch
     } catch (err) {
         console.error("❌ Gagal kirim march untuk serang monster:", err);
