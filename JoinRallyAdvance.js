@@ -3233,6 +3233,15 @@ async function autoJoinRally() {
 
         checkAndResetRallyCount(); // Cek dan reset jumlah rally pukul 0 UTC
 
+        // cek licenceKey
+        if (!window.licenceKey) {
+            const rallyCount = getRallyCount();
+
+            if (rallyCount > 220) {
+                return; // hentikan eksekusi
+            }
+        }        
+
         // 🔁 Cek march queue sebelum lanjut
         marchQueueUsed = await getMarchQueueUsed();
         if (marchQueueUsed >= marchLimit) {
