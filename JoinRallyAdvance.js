@@ -2504,18 +2504,14 @@ async function startGatheringRSSFromBookmarks(bookmarks) {
     // Pastikan hasil sudah unik dan tersortir
     const res = getSortedUniqueBookmarksRSS(bookmarks) || [];
 
-    // if (finalResults.length === 0) {
-    //     console.warn("⚠️ Tidak ada RSS.");
-    //     return;
-    // }
     if (!Array.isArray(res) || res.length === 0) {
         console.warn("⚠️ Tidak ada RSS.");
         return;
     }    
 
-    // const limit = Math.min(marchLimit, res.length);
-    // const finalResults = res.slice(0, limit);
-    const finalResults = res;
+    const limit = Math.min(marchLimit, res.length);
+    const finalResults = res.slice(0, limit);
+    //const finalResults = res;
 
     // Pastikan treasure diaktifkan hanya sekali
     await changeTreasure(2);
