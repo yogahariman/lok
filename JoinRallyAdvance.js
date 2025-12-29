@@ -3668,8 +3668,8 @@ async function handleAuthResponse(xhr) {
             }
 
             if (setting.scheduleClaimDailyQuest) {
-                // scheduleClaimDailyQuest();
-                runClaimMainQuest();
+                scheduleClaimDailyQuest();
+                // runClaimMainQuest();
                 // await delay(5000);
             }            
 
