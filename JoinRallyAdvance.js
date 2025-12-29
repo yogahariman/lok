@@ -1993,12 +1993,18 @@ function getSortedUniqueBookmarksRSS(bookmarks = bookmarkResults) {
     };
 
     // 1️⃣ Urutkan berdasarkan level (desc), jarak (asc)
+    // const sorted = [...bookmarks].sort((a, b) => {
+    //     if (a.level !== b.level) return b.level - a.level;
+    //     const distA = distance(kingdomData.loc, a.loc);
+    //     const distB = distance(kingdomData.loc, b.loc);
+    //     return distA - distB;
+    // });
     const sorted = [...bookmarks].sort((a, b) => {
-        if (a.level !== b.level) return b.level - a.level;
         const distA = distance(kingdomData.loc, a.loc);
         const distB = distance(kingdomData.loc, b.loc);
-        return distA - distB;
+        return distA - distB; // paling dekat dulu
     });
+
 
     // 2️⃣ Hapus duplikat lokasi
     const seen = new Set();
