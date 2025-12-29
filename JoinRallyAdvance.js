@@ -2319,7 +2319,10 @@ async function sendMarch(loc, marchType, troopIndex, dragoId) {
             returnResponse: true
         });
 
-        if (marchInfoResponse.fo.occupied) return false;
+        if (marchInfoResponse?.fo?.occupied === true) {
+            return false;
+        }
+
 
         //const marchInfo = b64xorDec(marchInfoResponse, xor_password);
         const marchInfo = marchInfoResponse;
