@@ -2605,6 +2605,7 @@ async function startGatheringRSSFromBookmarks(bookmarks) {
         console.log(`🏕️ Gathering ${b.name}${levelText} di (${x}, ${y}) — jarak ${dist}`);
 
         const success = await sendMarch([x, y], MARCH_TYPE_GATHER, 1); // marchType 1 = gathering, preset index 1
+        await delay(2000);
 
         if (!success) {
             console.error(`❌ Gagal kirim march ke (${x}, ${y})`);
