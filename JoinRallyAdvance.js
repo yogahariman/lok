@@ -469,51 +469,103 @@ function payloadSendmarch(troops, loc, marchType, dragoId) {
     };
 }
 
-async function getMarchInfo(loc, battleId = null) {
-    if (!loc) {
-        console.warn("❌ loc wajib diisi");
+// async function getMarchInfo(loc, battleId = null) {
+//     if (!loc) {
+//         console.warn("❌ loc wajib diisi");
+//         return null;
+//     }
+
+//     // toLoc sesuai definisi kamu
+//     const toLoc = [kingdomData.loc[0], ...loc];
+
+//     // payload minimal
+//     const payload_marchInfo = {
+//         fromId: kingdomData.fieldObjectId,
+//         toLoc: toLoc
+//     };
+
+//     // jika battleId ada → tambahkan rallyMoId
+//     if (battleId) {
+//         payload_marchInfo.rallyMoId = battleId;
+//     }
+
+//     try {
+//         const marchInfoResponse = await sendRequest({
+//             url: API_BASE_URL + "field/march/info",
+//             token: token,
+//             body: JSON.stringify(payload_marchInfo),
+//             returnResponse: true
+//         });
+
+//         //const marchInfo = b64xorDec(marchInfoResponse, xor_password);
+
+//         // jika request gagal
+//         if (!marchInfoResponse?.result) {
+//             const errCode = marchInfoResponse?.err?.code;
+
+//             console.warn("❌ March info gagal:", errCode);
+//             return null;
+//         }
+
+//         return marchInfoResponse;
+
+//     } catch (err) {
+//         console.error("❌ Error getMarchInfo:", err);
+//         return null;
+//     }
+// }
+
+async function getMarchInfo(locOrToLoc, battleId = null) {
+    if (!Array.isArray(locOrToLoc)) {
+        console.warn("❌ loc / toLoc wajib array");
         return null;
     }
 
-    // toLoc sesuai definisi kamu
-    const toLoc = [kingdomData.loc[0], ...loc];
+    let toLoc;
 
-    // payload minimal
+    // jika panjang 3 → dianggap sudah toLoc
+    if (locOrToLoc.length === 3) {
+        toLoc = locOrToLoc;
+    }
+    // jika panjang 2 → dianggap loc
+    else if (locOrToLoc.length === 2) {
+        toLoc = [kingdomData.loc[0], ...locOrToLoc];
+    } else {
+        console.warn("❌ Format loc / toLoc tidak valid:", locOrToLoc);
+        return null;
+    }
+
     const payload_marchInfo = {
         fromId: kingdomData.fieldObjectId,
-        toLoc: toLoc
+        toLoc
     };
 
-    // jika battleId ada → tambahkan rallyMoId
     if (battleId) {
         payload_marchInfo.rallyMoId = battleId;
     }
 
     try {
-        const marchInfoResponse = await sendRequest({
+        const res = await sendRequest({
             url: API_BASE_URL + "field/march/info",
-            token: token,
+            token,
             body: JSON.stringify(payload_marchInfo),
             returnResponse: true
         });
 
-        //const marchInfo = b64xorDec(marchInfoResponse, xor_password);
+        //const marchInfo = b64xorDec(res, xor_password);
 
-        // jika request gagal
-        if (!marchInfoResponse?.result) {
-            const errCode = marchInfoResponse?.err?.code;
-
-            console.warn("❌ March info gagal:", errCode);
+        if (!res?.result) {
+            console.warn("❌ March info gagal:", res?.err?.code);
             return null;
         }
 
-        return marchInfoResponse;
-
+        return res;
     } catch (err) {
         console.error("❌ Error getMarchInfo:", err);
         return null;
     }
 }
+
 
 function getTroopGroupByHP(monsterHP, marchInfo) {
     const troops = marchInfo?.saveTroops || kingdomData.saveTroops;
