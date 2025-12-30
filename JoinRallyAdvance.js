@@ -440,7 +440,8 @@ function payloadAutoJoinRally(troops, rallyMoId) {
     return { marchTroops, rallyMoId };
 }
 
-function payloadSendmarch(troops, toLoc, marchType, dragoId) {
+function payloadSendmarch(troops, loc, marchType, dragoId) {
+    const toLoc = [kingdomData.loc[0], ...loc];
     const marchTroops = troops.map(({ code, amount }) => ({
         code,
         level: 0,
@@ -463,6 +464,49 @@ function payloadSendmarch(troops, toLoc, marchType, dragoId) {
     };
 }
 
+async function getMarchInfo(loc, battleId = null) {
+    if (!loc) {
+        console.warn("❌ loc wajib diisi");
+        return null;
+    }
+
+    // toLoc sesuai definisi kamu
+    const toLoc = [kingdomData.loc[0], ...loc];
+
+    // payload minimal
+    const payload_marchInfo = {
+        fromId: kingdomData.fieldObjectId,
+        toLoc: toLoc
+    };
+
+    // jika battleId ada → tambahkan rallyMoId
+    if (battleId) {
+        payload_marchInfo.rallyMoId = battleId;
+    }
+
+    try {
+        const marchInfoResponse = await sendRequest({
+            url: API_BASE_URL + "field/march/info",
+            token: token,
+            body: JSON.stringify(payload_marchInfo),
+            returnResponse: true
+        });
+
+        // jika request gagal
+        if (!marchInfoResponse?.result) {
+            const errCode = marchInfoResponse?.err?.code;
+
+            console.warn("❌ March info gagal:", errCode);
+            return null;
+        }
+
+        return marchInfoResponse;
+
+    } catch (err) {
+        console.error("❌ Error getMarchInfo:", err);
+        return null;
+    }
+}
 
 function getTroopGroupByHP(monsterHP, marchInfo) {
     const troops = marchInfo?.saveTroops || kingdomData.saveTroops;
@@ -2310,20 +2354,24 @@ async function sendMarch(loc, marchType, troopIndex, dragoId) {
             return false;
         }
 
-        const toLoc = [kingdomData.loc[0], ...loc];
+        // const toLoc = [kingdomData.loc[0], ...loc];
 
-        const payload_marchInfo = {
-            fromId: kingdomData.fieldObjectId,
-            toLoc: toLoc
-        };
+        // const payload_marchInfo = {
+        //     fromId: kingdomData.fieldObjectId,
+        //     toLoc: toLoc
+        // };
 
-        const marchInfoResponse = await sendRequest({
-            url: API_BASE_URL + "field/march/info",
-            token: token,
-            //body: b64xorEnc(payload_marchInfo, xor_password),
-            body: JSON.stringify(payload_marchInfo),
-            returnResponse: true
-        });
+        // const marchInfoResponse = await sendRequest({
+        //     url: API_BASE_URL + "field/march/info",
+        //     token: token,
+        //     //body: b64xorEnc(payload_marchInfo, xor_password),
+        //     body: JSON.stringify(payload_marchInfo),
+        //     returnResponse: true
+        // });
+
+        const marchInfoResponse = await getMarchInfo(loc);
+        if (!marchInfoResponse) return;
+        console.log("✅ March info:", marchInfoResponse);        
 
         //const marchInfo = b64xorDec(marchInfoResponse, xor_password);
         const marchInfo = marchInfoResponse;
@@ -2370,11 +2418,12 @@ async function sendMarch(loc, marchType, troopIndex, dragoId) {
         //     ...(dragoId !== undefined ? { dragoId } : {})
         // };
 
+        // const toLoc = [kingdomData.loc[0], ...loc];
         await sendRequest({
             url: API_BASE_URL + "field/march/start",
             token: token,
             //body: b64xorEnc(payload, xor_password),
-            body: JSON.stringify(payloadSendmarch(troops, toLoc, marchType, dragoId)),
+            body: JSON.stringify(payloadSendmarch(troops, loc, marchType, dragoId)),
             returnResponse: false
         });
 
@@ -2700,27 +2749,33 @@ async function rallyMonster(loc, rallyTime = 5, troopIndex = 0, message = "") {
         return false;
     }
 
-    const toLoc = [kingdomData.loc[0], ...loc];
-    const payload_marchInfo = {
-        fromId: kingdomData.fieldObjectId,
-        toLoc
-    };
+    // const toLoc = [kingdomData.loc[0], ...loc];
+    // const payload_marchInfo = {
+    //     fromId: kingdomData.fieldObjectId,
+    //     toLoc
+    // };
 
-    let marchInfo;
-    try {
-        const marchInfoResponse = await sendRequest({
-            url: API_BASE_URL + "field/march/info",
-            token,
-            //body: b64xorEnc(payload_marchInfo, xor_password),
-            body: JSON.stringify(payload_marchInfo),
-            returnResponse: true
-        });
-        //marchInfo = b64xorDec(marchInfoResponse, xor_password);
-        marchInfo = marchInfoResponse;
-    } catch (err) {
-        console.error("❌ Gagal ambil march info:", err);
-        return false;
-    }
+    // let marchInfo;
+    // try {
+    //     const marchInfoResponse = await sendRequest({
+    //         url: API_BASE_URL + "field/march/info",
+    //         token,
+    //         //body: b64xorEnc(payload_marchInfo, xor_password),
+    //         body: JSON.stringify(payload_marchInfo),
+    //         returnResponse: true
+    //     });
+    //     //marchInfo = b64xorDec(marchInfoResponse, xor_password);
+    //     marchInfo = marchInfoResponse;
+    // } catch (err) {
+    //     console.error("❌ Gagal ambil march info:", err);
+    //     return false;
+    // }
+
+    const marchInfoResponse = await getMarchInfo(loc);
+    if (!marchInfoResponse) return;
+    console.log("✅ March info:", marchInfoResponse);
+    //const marchInfo = b64xorDec(marchInfoResponse, xor_password);
+    const marchInfo = marchInfoResponse;         
 
     if (marchInfo.marchType !== MARCH_TYPE_MONSTER) {
         const marchTypeName = getMarchTypeName(marchInfo.marchType);
@@ -2744,6 +2799,7 @@ async function rallyMonster(loc, rallyTime = 5, troopIndex = 0, message = "") {
         return false;
     }
 
+    const toLoc = [kingdomData.loc[0], ...loc];
     const payload = {
         marchType: marchInfo.marchType,
         toLoc,
@@ -2770,28 +2826,34 @@ async function rallyMonster(loc, rallyTime = 5, troopIndex = 0, message = "") {
 }
 
 async function attackMonster(x, y) {
-    const toLoc = [kingdomData.loc[0], x, y];
+    // const toLoc = [kingdomData.loc[0], x, y];
 
-    const payload_marchInfo = {
-        fromId: kingdomData.fieldObjectId,
-        toLoc: toLoc
-    };
+    // const payload_marchInfo = {
+    //     fromId: kingdomData.fieldObjectId,
+    //     toLoc: toLoc
+    // };
 
-    let marchInfoResponse, marchInfo;
-    try {
-        marchInfoResponse = await sendRequest({
-            url: API_BASE_URL + "field/march/info",
-            token: token,
-            //body: b64xorEnc(payload_marchInfo, xor_password),
-            body: JSON.stringify(payload_marchInfo),
-            returnResponse: true
-        });
-        //marchInfo = b64xorDec(marchInfoResponse, xor_password);
-        marchInfo = marchInfoResponse;
-    } catch (err) {
-        console.error("❌ Gagal ambil march info:", err);
-        return false;
-    }
+    // let marchInfoResponse, marchInfo;
+    // try {
+    //     marchInfoResponse = await sendRequest({
+    //         url: API_BASE_URL + "field/march/info",
+    //         token: token,
+    //         //body: b64xorEnc(payload_marchInfo, xor_password),
+    //         body: JSON.stringify(payload_marchInfo),
+    //         returnResponse: true
+    //     });
+    //     //marchInfo = b64xorDec(marchInfoResponse, xor_password);
+    //     marchInfo = marchInfoResponse;
+    // } catch (err) {
+    //     console.error("❌ Gagal ambil march info:", err);
+    //     return false;
+    // }
+
+    const marchInfoResponse = await getMarchInfo(loc);
+    if (!marchInfoResponse) return;
+    console.log("✅ March info:", marchInfoResponse);
+    //const marchInfo = b64xorDec(marchInfoResponse, xor_password);
+    const marchInfo = marchInfoResponse;
 
     if (marchInfo.marchType !== MARCH_TYPE_MONSTER) {
         const marchTypeName = getMarchTypeName(marchInfo.marchType);
@@ -3340,18 +3402,25 @@ async function autoJoinRally() {
             //console.log("📥 /alliance/battle/info", battleInfo);
 
 
-            const payload_marchInfo = {
-                fromId: kingdomData.fieldObjectId,
-                toLoc: battleInfo.battle.fromLoc,
-                rallyMoId: battleId
-            };
-            const marchInfoResponse = await sendRequest({
-                url: API_BASE_URL + "field/march/info",
-                token: token,
-                //body: b64xorEnc(payload_marchInfo, xor_password),
-                body: JSON.stringify(payload_marchInfo),
-                returnResponse: true
-            });
+            // const payload_marchInfo = {
+            //     fromId: kingdomData.fieldObjectId,
+            //     toLoc: battleInfo.battle.fromLoc,
+            //     rallyMoId: battleId
+            // };
+            // const marchInfoResponse = await sendRequest({
+            //     url: API_BASE_URL + "field/march/info",
+            //     token: token,
+            //     //body: b64xorEnc(payload_marchInfo, xor_password),
+            //     body: JSON.stringify(payload_marchInfo),
+            //     returnResponse: true
+            // });
+            // await delayRandom();
+            // //const marchInfo = b64xorDec(marchInfoResponse, xor_password);
+            // const marchInfo = marchInfoResponse;
+
+            const marchInfoResponse = await getMarchInfo(loc, battleId);
+            if (!marchInfoResponse) return;
+            console.log("✅ March rally info:", marchInfoResponse);            
             await delayRandom();
             //const marchInfo = b64xorDec(marchInfoResponse, xor_password);
             const marchInfo = marchInfoResponse;
