@@ -58,6 +58,8 @@ const OBJECT_CODE_HUNGRY_WOLF = 20700406
 const OBJECT_CODE_CYCLOPS = 20700407
 const OBJECT_CODE_SPARTOI = 20700506
 
+const ERROR_CODE_FULL_TASK = "full_task";
+
 
 // Simpan ke localStorage sebagai string JSON
 //
@@ -2345,93 +2347,134 @@ function getMarchTypeName(marchType) {
     }
 }
 
+// async function sendMarch(loc, marchType, troopIndex, dragoId) {
+//     try {
+//         const marchTypeName = getMarchTypeName(marchType);
+
+//         // 🔁 Cek march queue sebelum lanjut
+//         const marchQueueUsed = await getMarchQueueUsed();
+//         if (marchQueueUsed >= marchLimit) {
+//             console.log(`⛔ March queue penuh (${marchQueueUsed}/${marchLimit}), batal ${marchTypeName} ke (${loc[0]}, ${loc[1]})`);
+//             return false;
+//         }
+
+//         const marchInfo = await getMarchInfo(loc);
+//         if (!marchInfo) return false;
+//         //console.log("✅ March info:", marchInfo);        
+
+//         if (marchInfo?.fo?.occupied === true) {
+//             return false;
+//         }
+
+//         const troops = marchInfo?.saveTroops?.[troopIndex];
+//         if (!troops) {
+//             console.warn(`⚠️ Troops preset ke-${troopIndex} tidak ditemukan.`);
+//             return false;
+//         }
+
+//         const canSendMarch = troops.every(saveTroop => {
+//             const troopInMarch = marchInfo.troops.find(troop => troop.code === saveTroop.code);
+//             return troopInMarch && saveTroop.amount <= troopInMarch.amount;
+//         });
+
+//         if (!canSendMarch) {
+//             console.log(`❌ Gagal ${marchTypeName} ke (${loc[0]}, ${loc[1]}) karena jumlah troops kurang`);
+//             return false;
+//         }
+
+//         const marchStartResponse = await sendRequest({
+//             url: API_BASE_URL + "field/march/start",
+//             token: token,
+//             //body: b64xorEnc(payload, xor_password),
+//             body: JSON.stringify(payloadSendmarch(troops, loc, marchType, dragoId)),
+//             returnResponse: true
+//         });
+
+//         console.log(`✅ March dikirim: ${marchTypeName} ke (${loc[0]}, ${loc[1]})`);
+
+//         return true;
+//     } catch (err) {
+//         console.error("❌ Error saat proses sendMarch:", err);
+//         return false;
+//     }
+// }
+
 async function sendMarch(loc, marchType, troopIndex, dragoId) {
     try {
         const marchTypeName = getMarchTypeName(marchType);
 
-        // 🔁 Cek march queue sebelum lanjut
+        // 🔁 Cek march queue
         const marchQueueUsed = await getMarchQueueUsed();
         if (marchQueueUsed >= marchLimit) {
-            console.log(`⛔ March queue penuh (${marchQueueUsed}/${marchLimit}), batal ${marchTypeName} ke (${loc[0]}, ${loc[1]})`);
-            return false;
+            return {
+                success: false,
+                errCode: ERROR_CODE_FULL_TASK
+            };
         }
 
-        // const toLoc = [kingdomData.loc[0], ...loc];
-
-        // const payload_marchInfo = {
-        //     fromId: kingdomData.fieldObjectId,
-        //     toLoc: toLoc
-        // };
-
-        // const marchInfoResponse = await sendRequest({
-        //     url: API_BASE_URL + "field/march/info",
-        //     token: token,
-        //     //body: b64xorEnc(payload_marchInfo, xor_password),
-        //     body: JSON.stringify(payload_marchInfo),
-        //     returnResponse: true
-        // });
-
         const marchInfo = await getMarchInfo(loc);
-        if (!marchInfo) return false;
-        //console.log("✅ March info:", marchInfo);        
+        if (!marchInfo) {
+            return {
+                success: false,
+                errCode: "no_march_info"
+            };
+        }
 
         if (marchInfo?.fo?.occupied === true) {
-            return false;
+            return {
+                success: false,
+                errCode: "occupied"
+            };
         }
 
         const troops = marchInfo?.saveTroops?.[troopIndex];
         if (!troops) {
-            console.warn(`⚠️ Troops preset ke-${troopIndex} tidak ditemukan.`);
-            return false;
+            return {
+                success: false,
+                errCode: "troop_not_found"
+            };
         }
 
         const canSendMarch = troops.every(saveTroop => {
-            const troopInMarch = marchInfo.troops.find(troop => troop.code === saveTroop.code);
+            const troopInMarch = marchInfo.troops.find(t => t.code === saveTroop.code);
             return troopInMarch && saveTroop.amount <= troopInMarch.amount;
         });
 
         if (!canSendMarch) {
-            console.log(`❌ Gagal ${marchTypeName} ke (${loc[0]}, ${loc[1]}) karena jumlah troops kurang`);
-            return false;
+            return {
+                success: false,
+                errCode: "troop_not_enough"
+            };
         }
 
-        // const marchTroops = troops.map(t => ({
-        //     code: t.code,
-        //     level: 0,
-        //     select: t.select ?? 0,
-        //     amount: t.amount ?? 0,
-        //     dead: 0,
-        //     wounded: 0,
-        //     hp: 0,
-        //     attack: 0,
-        //     defense: 0,
-        //     seq: 0
-        // }));
-
-        // const payload = {
-        //     fromId: kingdomData.fieldObjectId,
-        //     marchType: marchInfo.marchType,
-        //     toLoc,
-        //     //marchTroops: troops,
-        //     marchTroops,
-        //     ...(dragoId !== undefined ? { dragoId } : {})
-        // };
-
-        // const toLoc = [kingdomData.loc[0], ...loc];
-        await sendRequest({
+        const marchStartResponse = await sendRequest({
             url: API_BASE_URL + "field/march/start",
-            token: token,
-            //body: b64xorEnc(payload, xor_password),
+            token,
             body: JSON.stringify(payloadSendmarch(troops, loc, marchType, dragoId)),
-            returnResponse: false
+            returnResponse: true
         });
+
+        // ⛔ jika server menolak
+        if (!marchStartResponse?.result) {
+            return {
+                success: false,
+                errCode: marchStartResponse?.err?.code || "unknown_error"
+            };
+        }
 
         console.log(`✅ March dikirim: ${marchTypeName} ke (${loc[0]}, ${loc[1]})`);
 
-        return true;
+        return {
+            success: true,
+            errCode: null
+        };
+
     } catch (err) {
         console.error("❌ Error saat proses sendMarch:", err);
-        return false;
+        return {
+            success: false,
+            errCode: "exception"
+        };
     }
 }
 
@@ -2506,13 +2549,13 @@ async function support(x, y) {
     }
 
     if (dragoId) {        
-        const success = await sendMarch([x, y], MARCH_TYPE_SUPPORT, 3, dragoId);
-        if (!success) {
+        const result = await sendMarch([x, y], MARCH_TYPE_SUPPORT, 3, dragoId);
+        if (!result.success) {
             console.error(`❌ Gagal kirim march ke (${x}, ${y})`);
         }
     } else {        
-        const success = await sendMarch([x, y], MARCH_TYPE_SUPPORT, 3);
-        if (!success) {
+        const result = await sendMarch([x, y], MARCH_TYPE_SUPPORT, 3);
+        if (!result.success) {
             console.error(`❌ Gagal kirim march ke (${x}, ${y})`);
         }
     }
@@ -2547,10 +2590,10 @@ async function dsc(x, y) {
 
     if (dragoId) {
         await changeTreasure(3);
-        
-        const success = await sendMarch([x, y], MARCH_TYPE_GATHER, 3, dragoId);
 
-        if (!success) {
+        const result = await sendMarch([x, y], MARCH_TYPE_GATHER, 3, dragoId);
+
+        if (!result.success) {
             console.error(`❌ Gagal kirim march ke (${x}, ${y})`);
         }
 
@@ -2577,9 +2620,9 @@ async function startGatheringRSSFromBookmarks(bookmarks) {
         return;
     }    
 
-    const limit = Math.min(marchLimit, res.length);
-    const finalResults = res.slice(0, limit);
-    //const finalResults = res;
+    // const limit = Math.min(marchLimit, res.length);
+    // const finalResults = res.slice(0, limit);
+    const finalResults = res;
 
     // Pastikan treasure diaktifkan hanya sekali
     await changeTreasure(2);
@@ -2604,11 +2647,18 @@ async function startGatheringRSSFromBookmarks(bookmarks) {
 
         console.log(`🏕️ Gathering ${b.name}${levelText} di (${x}, ${y}) — jarak ${dist}`);
 
-        const success = await sendMarch([x, y], MARCH_TYPE_GATHER, 1); // marchType 1 = gathering, preset index 1
+        const result = await sendMarch([x, y], MARCH_TYPE_GATHER, 1); // marchType 1 = gathering, preset index 1
 
-        if (!success) {
+        if (!result.success) {
             console.error(`❌ Gagal kirim march ke (${x}, ${y})`);
-        }
+
+            if (result.errCode === ERROR_CODE_FULL_TASK) {
+                console.log("⛔ Task penuh, stop loop");
+                break; // atau return;
+            }
+
+            continue;
+        }        
 
         // Delay antar pengiriman untuk menghindari spam request
         await delay(3000);
@@ -2834,6 +2884,7 @@ async function rallyMonster(loc, rallyTime = 5, troopIndex = 0, message = "") {
     }
 }
 
+// ada kekurangan bila error fulltask dari sendMarch tidak ditangani
 async function attackMonster(x, y) {
     // const toLoc = [kingdomData.loc[0], x, y];
 
@@ -2891,9 +2942,9 @@ async function attackMonster(x, y) {
         await useActionPoint();
         await delay(1000);
 
-        const success = await sendMarch([x, y], MARCH_TYPE_MONSTER, selectedTroop);
+        const result = await sendMarch([x, y], MARCH_TYPE_MONSTER, selectedTroop);
 
-        if (!success) {
+        if (!result.success) {
             console.warn(`⚠️ March ditolak (bukan error) ke (${x}, ${y})`);
             return false;
         }
