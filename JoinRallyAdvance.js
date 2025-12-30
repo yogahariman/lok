@@ -3377,7 +3377,16 @@ async function autoJoinRally() {
         }
 
         // array rallies diurutkan berdasarkan code dan level
-        const rallies = rallyListJson.battles;
+        //const rallies = rallyListJson.battles;
+        const rallies = (rallyListJson.battles || [])
+            .filter(r => r?.targetMonster); // buang null / undefined
+
+        // ⛔ Jika SEMUA targetMonster null → stop di sini
+        if (rallies.length === 0) {
+            console.warn("⚠️ Semua rally targetMonster = null");
+            return; // atau return false / null sesuai fungsi kamu
+        }        
+
         rallies.sort((a, b) => {
             // Urutkan berdasarkan code ASCENDING
             if (a.targetMonster.code !== b.targetMonster.code) {
@@ -3539,7 +3548,7 @@ async function autoJoinRally() {
             // //const marchInfo = b64xorDec(marchInfoResponse, xor_password);
             // const marchInfo = marchInfoResponse;
 
-            const marchInfo = await getMarchInfo(loc, battleId);
+            const marchInfo = await getMarchInfo(battleInfo.battle.fromLoc, battleId);
             if (!marchInfo) continue;
             //console.log("✅ March rally info:", marchInfo);            
             await delayRandom();
