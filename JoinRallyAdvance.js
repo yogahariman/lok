@@ -2325,13 +2325,12 @@ async function sendMarch(loc, marchType, troopIndex, dragoId) {
             returnResponse: true
         });
 
-        if (marchInfoResponse?.fo?.occupied === true) {
-            return false;
-        }
-
-
         //const marchInfo = b64xorDec(marchInfoResponse, xor_password);
         const marchInfo = marchInfoResponse;
+
+        if (marchInfo?.fo?.occupied === true) {
+            return false;
+        }
 
         const troops = marchInfo?.saveTroops?.[troopIndex];
         if (!troops) {
@@ -2364,7 +2363,7 @@ async function sendMarch(loc, marchType, troopIndex, dragoId) {
 
         // const payload = {
         //     fromId: kingdomData.fieldObjectId,
-        //     marchType: marchInfoResponse.marchType,
+        //     marchType: marchInfo.marchType,
         //     toLoc,
         //     //marchTroops: troops,
         //     marchTroops,
