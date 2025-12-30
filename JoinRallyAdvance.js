@@ -3391,16 +3391,16 @@ async function autoJoinRally() {
             //const payload_rally_encrypted = b64xorEnc(payloadAutoJoinRally(troopsSelected, battleId), xor_password);
             const payload_rally_encrypted = payloadAutoJoinRally(troopsSelected, battleId);
 
-            console.log("troopsSelected : ", troopsSelected);
-            console.log("battleId : ", battleId);
-            console.log("payload_rally_encrypted : ", payload_rally_encrypted);
+            // console.log("troopsSelected : ", troopsSelected);
+            // console.log("battleId : ", battleId);
+            // console.log("payload_rally_encrypted : ", payload_rally_encrypted);
 
-            // await sendRequest({
-            //     url: API_BASE_URL + "field/rally/join",
-            //     token: token,
-            //     body: payload_rally_encrypted,
-            //     returnResponse: false
-            // });
+            await sendRequest({
+                url: API_BASE_URL + "field/rally/join",
+                token: token,
+                body: JSON.stringify(payload_rally_encrypted),
+                returnResponse: false
+            });
             await delayRandom();
         }
         await changeSkin();
