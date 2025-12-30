@@ -492,6 +492,8 @@ async function getMarchInfo(loc, battleId = null) {
             returnResponse: true
         });
 
+        //const marchInfo = b64xorDec(marchInfoResponse, xor_password);
+
         // jika request gagal
         if (!marchInfoResponse?.result) {
             const errCode = marchInfoResponse?.err?.code;
@@ -2369,12 +2371,9 @@ async function sendMarch(loc, marchType, troopIndex, dragoId) {
         //     returnResponse: true
         // });
 
-        const marchInfoResponse = await getMarchInfo(loc);
-        if (!marchInfoResponse) return;
-        console.log("✅ March info:", marchInfoResponse);        
-
-        //const marchInfo = b64xorDec(marchInfoResponse, xor_password);
-        const marchInfo = marchInfoResponse;
+        const marchInfo = await getMarchInfo(loc);
+        if (!marchInfo) return;
+        //console.log("✅ March info:", marchInfo);        
 
         if (marchInfo?.fo?.occupied === true) {
             return false;
@@ -2771,11 +2770,9 @@ async function rallyMonster(loc, rallyTime = 5, troopIndex = 0, message = "") {
     //     return false;
     // }
 
-    const marchInfoResponse = await getMarchInfo(loc);
-    if (!marchInfoResponse) return;
-    console.log("✅ March info:", marchInfoResponse);
-    //const marchInfo = b64xorDec(marchInfoResponse, xor_password);
-    const marchInfo = marchInfoResponse;         
+    const marchInfo = await getMarchInfo(loc);
+    if (!marchInfo) return;
+    //console.log("✅ March info:", marchInfo);
 
     if (marchInfo.marchType !== MARCH_TYPE_MONSTER) {
         const marchTypeName = getMarchTypeName(marchInfo.marchType);
@@ -2849,11 +2846,9 @@ async function attackMonster(x, y) {
     //     return false;
     // }
 
-    const marchInfoResponse = await getMarchInfo(loc);
-    if (!marchInfoResponse) return;
-    console.log("✅ March info:", marchInfoResponse);
-    //const marchInfo = b64xorDec(marchInfoResponse, xor_password);
-    const marchInfo = marchInfoResponse;
+    const marchInfo = await getMarchInfo(loc);
+    if (!marchInfo) return false;
+    // console.log("✅ March info:", marchInfo);
 
     if (marchInfo.marchType !== MARCH_TYPE_MONSTER) {
         const marchTypeName = getMarchTypeName(marchInfo.marchType);
@@ -3418,12 +3413,10 @@ async function autoJoinRally() {
             // //const marchInfo = b64xorDec(marchInfoResponse, xor_password);
             // const marchInfo = marchInfoResponse;
 
-            const marchInfoResponse = await getMarchInfo(loc, battleId);
-            if (!marchInfoResponse) return;
-            console.log("✅ March rally info:", marchInfoResponse);            
+            const marchInfo = await getMarchInfo(loc, battleId);
+            if (!marchInfo) continue;
+            //console.log("✅ March rally info:", marchInfo);            
             await delayRandom();
-            //const marchInfo = b64xorDec(marchInfoResponse, xor_password);
-            const marchInfo = marchInfoResponse;
 
             //console.log("📥 Save Troops Response : ", marchInfo);
 
