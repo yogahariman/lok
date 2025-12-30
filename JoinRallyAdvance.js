@@ -2372,7 +2372,7 @@ async function sendMarch(loc, marchType, troopIndex, dragoId) {
         // });
 
         const marchInfo = await getMarchInfo(loc);
-        if (!marchInfo) return;
+        if (!marchInfo) return false;
         //console.log("✅ March info:", marchInfo);        
 
         if (marchInfo?.fo?.occupied === true) {
@@ -2505,10 +2505,16 @@ async function support(x, y) {
         console.error("Gagal mengambil daftar drago:", err);
     }
 
-    if (dragoId) {
-        await sendMarch([x, y], MARCH_TYPE_SUPPORT, 3, dragoId);
-    } else {
-        await sendMarch([x, y], MARCH_TYPE_SUPPORT, 3);
+    if (dragoId) {        
+        const success = await sendMarch([x, y], MARCH_TYPE_SUPPORT, 3, dragoId);
+        if (!success) {
+            console.error(`❌ Gagal kirim march ke (${x}, ${y})`);
+        }
+    } else {        
+        const success = await sendMarch([x, y], MARCH_TYPE_SUPPORT, 3);
+        if (!success) {
+            console.error(`❌ Gagal kirim march ke (${x}, ${y})`);
+        }
     }
 }
 
@@ -2541,7 +2547,13 @@ async function dsc(x, y) {
 
     if (dragoId) {
         await changeTreasure(3);
-        await sendMarch([x, y], MARCH_TYPE_GATHER, 3, dragoId);
+        
+        const success = await sendMarch([x, y], MARCH_TYPE_GATHER, 3, dragoId);
+
+        if (!success) {
+            console.error(`❌ Gagal kirim march ke (${x}, ${y})`);
+        }
+
     } else {
         console.warn("Tidak ada Drago yang tersedia untuk dikirim.");
     }
@@ -2592,11 +2604,12 @@ async function startGatheringRSSFromBookmarks(bookmarks) {
 
         console.log(`🏕️ Gathering ${b.name}${levelText} di (${x}, ${y}) — jarak ${dist}`);
 
-        try {
-            await sendMarch([x, y], MARCH_TYPE_GATHER, 1); // marchType 1 = gathering, preset index 1
-        } catch (err) {
-            console.error(`❌ Gagal kirim march ke (${x}, ${y}):`, err);
+        const success = await sendMarch([x, y], MARCH_TYPE_GATHER, 1); // marchType 1 = gathering, preset index 1
+
+        if (!success) {
+            console.error(`❌ Gagal kirim march ke (${x}, ${y})`);
         }
+
 
         // Delay antar pengiriman untuk menghindari spam request
         await delay(1000);
@@ -2878,10 +2891,18 @@ async function attackMonster(x, y) {
     try {
         await useActionPoint();
         await delay(1000);
-        const result = await sendMarch([x, y], MARCH_TYPE_MONSTER, selectedTroop); // marchType 5 = monster attack
-        return result; // true atau false dari sendMarch
+
+        const success = await sendMarch([x, y], MARCH_TYPE_MONSTER, selectedTroop);
+
+        if (!success) {
+            console.warn(`⚠️ March ditolak (bukan error) ke (${x}, ${y})`);
+            return false;
+        }
+
+        return true;
+
     } catch (err) {
-        console.error("❌ Gagal kirim march untuk serang monster:", err);
+        console.error(`❌ Error saat proses march monster ke (${x}, ${y}):`, err);
         return false;
     }
 }
