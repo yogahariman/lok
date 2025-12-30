@@ -2375,7 +2375,7 @@ async function sendMarch(loc, marchType, troopIndex, dragoId) {
             url: API_BASE_URL + "field/march/start",
             token: token,
             //body: b64xorEnc(payload, xor_password),
-            body: JSON.stringify(payloadSendmarch(troops, toLoc, marchInfoResponse.marchType, dragoId)),
+            body: JSON.stringify(payloadSendmarch(troops, toLoc, marchType, dragoId)),
             returnResponse: false
         });
 
