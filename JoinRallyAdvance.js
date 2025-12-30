@@ -3395,7 +3395,7 @@ async function autoJoinRally() {
             // Jika code sama, urutkan berdasarkan level DESCENDING
             return b.targetMonster.level - a.targetMonster.level;
         });
-        //console.log("📥 Rally list:", rallies);
+        console.log("📥 Rally list:", rallies);
 
         rallies.forEach(b => {
             if (!b.isJoined) {
