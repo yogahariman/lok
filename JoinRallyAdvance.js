@@ -1,3 +1,6 @@
+// Note
+// 1. fungsi attack monster dan sendSupport sudah diupdate untuk menangani error full_task
+
 // Deklarasi awal variabel sebagai null
 let token = null;
 let regionHash = null;
