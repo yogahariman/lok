@@ -2830,12 +2830,10 @@ async function startGatheringRSSFromBookmarks(bookmarks) {
         const levelText = b.level ? `Lv.${b.level}` : "";
         const dist = Math.round(distance(kingdomData.loc, b.loc));
 
-        console.log(`🏕️ Gathering ${b.name}${levelText} di (${x}, ${y}) — jarak ${dist}`);
-
         const result = await sendMarch([x, y], MARCH_TYPE_GATHER, 1); // marchType 1 = gathering, preset index 1
 
         if (!result.success) {
-            console.error(`❌ Gagal kirim march ke (${x}, ${y})`);
+            console.log(`❌ Gagal kirim march ke (${x}, ${y})`);
 
             if (result.errCode === ERROR_CODE_FULL_TASK) {
                 console.log("⛔ Task penuh, stop loop");
@@ -2844,6 +2842,8 @@ async function startGatheringRSSFromBookmarks(bookmarks) {
 
             continue;
         }        
+
+        console.log(`🏕️ Gathering ${b.name}${levelText} di (${x}, ${y}) — jarak ${dist}`);
 
         // Delay antar pengiriman untuk menghindari spam request
         await delay(3000);
