@@ -1,5 +1,7 @@
 // Note
 // 1. instant harvest skin sementara tetep setelah selesai
+// 2. set rally dk
+// 3. claim event quest
 
 // Deklarasi awal variabel sebagai null
 let token = null;
@@ -17,9 +19,9 @@ let bookmarkResults = [];
 const API_BASE_URL = 'https://api-lok-live.leagueofkingdoms.com/api/'
 
 //Quest Status
-const STATUS_PENDING = 1;  // Quest incomplete
-const STATUS_FINISHED = 2; // Completed, reward pending
-const STATUS_CLAIMED = 3;  // Reward claimed
+const STATUS_PENDING  = 1; // belum selesai
+const STATUS_FINISHED = 2; // sudah selesai, BELUM di-claim
+const STATUS_CLAIMED  = 3; // sudah di-claim
 
 // Dragon's Nest Status
 const DRAGO_LAIR_STATUS_STANDBY = 1; // On Standby
@@ -1218,7 +1220,7 @@ async function claimDailyQuest() {
                     body: JSON.stringify({ questId, code }),
                     returnResponse: false
                 });
-                console.log(`✅ Claimed quest ${code}`);
+                console.log(`✅ Claimed daily quest ${code}`);
                 await delay(5000);
             }
         }
@@ -1333,7 +1335,7 @@ async function claimMainQuest() {
                 returnResponse: false
             });
 
-            console.log(`✅ Claimed quest ${code}`);
+            console.log(`✅ Claimed main quest ${code}`);
             await delay(5000);
         }
 
@@ -1341,7 +1343,7 @@ async function claimMainQuest() {
         return true;
 
     } catch (error) {
-        console.error("❌ Gagal klaim quest:", error);
+        console.error("❌ Gagal klaim main quest:", error);
         return false;
     }
 }
@@ -1362,10 +1364,86 @@ async function runClaimMainQuest() {
     }
 }
 
+async function claimEventQuest() {
+    if (!hasToken()) return false;
+    async function getEventList() {
+        return sendRequest({
+            url: API_BASE_URL + "event/list",
+            token,
+            body: "{}",
+            returnResponse: true
+        });
+    }
+    async function getEventInfo(rootEventId) {
+        return sendRequest({
+            url: API_BASE_URL + "event/info",
+            token,
+            body: JSON.stringify({rootEventId}),
+            returnResponse: true
+        });
+    }
+
+    async function claimEvent(eventId, eventTargetId, code) {
+        return sendRequest({
+            url: API_BASE_URL + "event/claim",
+            token,
+            body: JSON.stringify({eventId, eventTargetId, code}),
+            returnResponse: true
+        });
+    } 
+    try {
+        const eventList = await getEventList();
+        if (!eventList?.result) return false;
+
+        for (const event of eventList.events || []) {
+
+            const eventInfo = await getEventInfo(event._id);
+            if (!eventInfo?.result) continue;
+            if (!eventInfo.eventKingdoms?.length) continue;
+
+            for (const eventKingdom of eventInfo.eventKingdoms) {
+
+                const rootEventId = eventKingdom.eventId;
+                if (!rootEventId) continue;
+
+                // const finishedQuests = (eventKingdom.events || []).filter(
+                //     q => q.status === STATUS_FINISHED && q.todayClaimed === false
+                // );
+                const finishedQuests = (eventKingdom.events || []).filter(
+                    q => q.status === STATUS_FINISHED
+                );
+                for (const { code } of finishedQuests) {
+
+                    const res = await claimEvent(
+                        rootEventId,
+                        eventKingdom._id,
+                        code
+                    );
+
+                    if (res?.result) {
+                        console.log(`✅ Claimed event quest ${code}`);
+                    } else {
+                        console.warn(`⚠️ Gagal klaim event quest ${code}`, res);
+                    }
+
+                    await delay(3000);
+                }
+            }
+        }
+
+        return true;
+
+    } catch (err) {
+        console.error("❌ Gagal klaim quest event:", err);
+        return false;
+    }
+}
+
 async function scheduleClaimDailyQuest() {
     const runAll = async () => {
         await claimMainQuest();
         await claimDailyQuest();
+        await claimEventQuest();
     };
 
     try {
@@ -2918,151 +2996,320 @@ async function startAttackMonsterFromBookmarks(bookmarks = bookmarkMonsterNormal
     console.log("✅ Semua Monsters dari bookmark selesai.");
 }
 
+// async function startRallyMonsterFromBookmarks(bookmarks = bookmarkMonsterRally) {
+
+//     const rallyTime = 5;
+//     const troopIndex = 0;
+//     const message = "";
+
+//     const distance = (loc1, loc2) => {
+//         const dx = loc1[1] - loc2[1];
+//         const dy = loc1[2] - loc2[2];
+//         return Math.sqrt(dx * dx + dy * dy);
+//     };
+
+//     const finalResults = getSortedUniqueBookmarks(bookmarks);
+
+//     if (finalResults.length === 0) {
+//         console.warn("⚠️ Tidak ada monster yang bisa dirally.");
+//         return;
+//     }
+
+//     let rallyCount = 1;
+//     let i = 0;
+//     let isSkinMonsterApplied = false;
+
+//     checkAndResetRallyCount(); // Cek dan reset jumlah rally pukul 0 UTC
+
+//     while (i < finalResults.length) {
+//         let marchQueueUsed = await getMarchQueueUsed();
+
+//         if (marchQueueUsed >= marchLimit) {
+//             if (isSkinMonsterApplied) {
+//                 await changeSkin(); // Kembali ke skin default
+//                 isSkinMonsterApplied = false;
+//             }
+
+//             console.log(`⏳ Queue penuh (${marchQueueUsed}/${marchLimit}), tunggu 1 menit...`);
+//             await delay(60000);
+//             continue;
+//         }
+
+//         if (!isSkinMonsterApplied) {
+//             await changeSkin(SKIN_CODE_REDUCE_AP); // Skin rally monster
+//             isSkinMonsterApplied = true;
+//             await delay(2000);
+//         }
+
+//         const b = finalResults[i];
+//         const [, x, y] = b.loc;
+//         const levelText = b.level ? ` Lv.${b.level}` : "";
+//         const dist = Math.round(distance(kingdomData.loc, b.loc));
+
+//         const success = await rallyMonster([x, y], rallyTime, troopIndex, message);
+//         if (success) {
+//             rallyCount++;
+//             incrementRallyCount();
+//             i++;
+//             console.log(`🎯[Rally#${getRallyCount()} 📍 Sisa#${finalResults.length - i - 1}] ${b.name}${levelText} @ (${x}, ${y}) | 📏 Jarak: ${dist}`);
+//         }
+
+//         await delay(5000);
+//     }
+
+//     if (isSkinMonsterApplied) {
+//         await changeSkin(); // Kembali ke skin default di akhir
+//     }
+
+//     console.log("✅ Semua rally dari bookmark selesai.");
+// }
+
 async function startRallyMonsterFromBookmarks(bookmarks = bookmarkMonsterRally) {
+    // =====================
+    // Konstanta
+    // =====================
+    const RALLY_TIME = 5;
+    const TROOP_INDEX = 0;
+    const MESSAGE = "";
+    const QUEUE_WAIT_MS = 60_000;
+    const LOOP_DELAY_MS = 5_000;
+    const SKIN_DELAY_MS = 2_000;
 
-    const rallyTime = 5;
-    const troopIndex = 0;
-    const message = "";
-
-    const distance = (loc1, loc2) => {
+    // =====================
+    // Helper
+    // =====================
+    const calcDistance = (loc1, loc2) => {
         const dx = loc1[1] - loc2[1];
         const dy = loc1[2] - loc2[2];
         return Math.sqrt(dx * dx + dy * dy);
     };
 
+    // =====================
+    // Ambil bookmark valid
+    // =====================
     const finalResults = getSortedUniqueBookmarks(bookmarks);
-
-    if (finalResults.length === 0) {
+    if (!finalResults.length) {
         console.warn("⚠️ Tidak ada monster yang bisa dirally.");
         return;
     }
 
-    let rallyCount = 1;
-    let i = 0;
+    // =====================
+    // Init state
+    // =====================
+    let index = 0;
     let isSkinMonsterApplied = false;
 
-    checkAndResetRallyCount(); // Cek dan reset jumlah rally pukul 0 UTC
+    checkAndResetRallyCount(); // reset rally count jam 00:00 UTC
 
-    while (i < finalResults.length) {
-        let marchQueueUsed = await getMarchQueueUsed();
+    // =====================
+    // Loop rally
+    // =====================
+    while (index < finalResults.length) {
+        const marchQueueUsed = await getMarchQueueUsed();
 
+        // Queue penuh → tunggu
         if (marchQueueUsed >= marchLimit) {
             if (isSkinMonsterApplied) {
-                await changeSkin(); // Kembali ke skin default
+                await changeSkin(); // kembali ke skin default
                 isSkinMonsterApplied = false;
             }
 
             console.log(`⏳ Queue penuh (${marchQueueUsed}/${marchLimit}), tunggu 1 menit...`);
-            await delay(60000);
+            await delay(QUEUE_WAIT_MS);
             continue;
         }
 
+        // Pastikan skin rally aktif
         if (!isSkinMonsterApplied) {
-            await changeSkin(SKIN_CODE_REDUCE_AP); // Skin rally monster
+            await changeSkin(SKIN_CODE_REDUCE_AP);
             isSkinMonsterApplied = true;
-            await delay(2000);
+            await delay(SKIN_DELAY_MS);
         }
 
-        const b = finalResults[i];
-        const [, x, y] = b.loc;
-        const levelText = b.level ? ` Lv.${b.level}` : "";
-        const dist = Math.round(distance(kingdomData.loc, b.loc));
+        const bookmark = finalResults[index];
+        const [, x, y] = bookmark.loc;
+        const levelText = bookmark.level ? ` Lv.${bookmark.level}` : "";
+        const dist = Math.round(calcDistance(kingdomData.loc, bookmark.loc));
 
-        //console.log(`🎯[Rally#${rallyCount} 📍 Sisa#${finalResults.length - i - 1}] ${b.name}${levelText} @ (${x}, ${y}) | 📏 Jarak: ${dist}`);
-        console.log(`🎯[Rally#${getRallyCount()} 📍 Sisa#${finalResults.length - i - 1}] ${b.name}${levelText} @ (${x}, ${y}) | 📏 Jarak: ${dist}`);
+        const success = await rallyMonster(
+            [x, y],
+            RALLY_TIME,
+            TROOP_INDEX,
+            MESSAGE
+        );
 
-        const success = await rallyMonster([x, y], rallyTime, troopIndex, message);
         if (success) {
-            rallyCount++;
             incrementRallyCount();
+            index++;
+
+            console.log(
+                `🎯 [Rally#${getRallyCount()} | Sisa ${finalResults.length - index}] ` +
+                `${bookmark.name}${levelText} @ (${x}, ${y}) | 📏 ${dist}`
+            );
         }
 
-        i++;
-        await delay(5000);
+        await delay(LOOP_DELAY_MS);
     }
 
+    // =====================
+    // Cleanup
+    // =====================
     if (isSkinMonsterApplied) {
-        await changeSkin(); // Kembali ke skin default di akhir
+        await changeSkin();
     }
 
     console.log("✅ Semua rally dari bookmark selesai.");
 }
 
+
+// async function rallyMonster(loc, rallyTime = 5, troopIndex = 0, message = "") {
+//     const marchQueueUsed = await getMarchQueueUsed();
+//     if (marchQueueUsed >= marchLimit) {
+//         console.log(`⛔ March queue penuh (${marchQueueUsed}/${marchLimit}), batal set rally.`);
+//         return false;
+//     }
+
+//     const marchInfo = await getMarchInfo(loc);
+//     if (!marchInfo) return false;
+//     //console.log("✅ March info:", marchInfo);
+
+//     if (marchInfo.marchType !== MARCH_TYPE_MONSTER) {
+//         const marchTypeName = getMarchTypeName(marchInfo.marchType);
+//         console.log(`⛔ MarchType bukan untuk rally/attack monster (marchType = ${marchTypeName}).`);
+//         return false;
+//     }    
+
+//     const troops = marchInfo?.saveTroops?.[troopIndex];
+//     if (!troops) {
+//         console.warn(`⚠️ Troops preset ke-${troopIndex} tidak ditemukan.`);
+//         return false;
+//     }
+
+//     const canSendMarch = troops.every(saveTroop => {
+//         const troopInMarch = marchInfo.troops.find(troop => troop.code === saveTroop.code);
+//         return troopInMarch && saveTroop.amount <= troopInMarch.amount;
+//     });
+
+//     if (!canSendMarch) {
+//         console.warn("⛔ Gagal karena jumlah troops kurang dari preset.");
+//         return false;
+//     }
+
+//     const toLoc = [kingdomData.loc[0], ...loc];
+//     const payload = {
+//         marchType: marchInfo.marchType,
+//         toLoc,
+//         marchTroops: troops,
+//         rallyTime,
+//         message
+//     };
+
+//     try {
+//         await useActionPoint();
+//         await delay(1000);
+//         const rallyStartResponse = await sendRequest({
+//             url: API_BASE_URL + "field/rally/start",
+//             token,
+//             //body: b64xorEnc(payload, xor_password),
+//             body: JSON.stringify(payload),
+//             returnResponse: false
+//         });
+
+//         // ⛔ jika server menolak
+//         if (!rallyStartResponse?.result) {
+//             return false;
+//         }        
+
+//         return true;
+//     } catch (err) {
+//         console.error("❌ Gagal set rally:", err);
+//         return false;
+//     }
+// }
+
 async function rallyMonster(loc, rallyTime = 5, troopIndex = 0, message = "") {
-    const marchQueueUsed = await getMarchQueueUsed();
-    if (marchQueueUsed >= marchLimit) {
-        console.log(`⛔ March queue penuh (${marchQueueUsed}/${marchLimit}), batal set rally.`);
-        return false;
-    }
-
-    // const toLoc = [kingdomData.loc[0], ...loc];
-    // const payload_marchInfo = {
-    //     fromId: kingdomData.fieldObjectId,
-    //     toLoc
-    // };
-
-    // let marchInfo;
-    // try {
-    //     const marchInfoResponse = await sendRequest({
-    //         url: API_BASE_URL + "field/march/info",
-    //         token,
-    //         //body: b64xorEnc(payload_marchInfo, xor_password),
-    //         body: JSON.stringify(payload_marchInfo),
-    //         returnResponse: true
-    //     });
-    //     //marchInfo = b64xorDec(marchInfoResponse, xor_password);
-    //     marchInfo = marchInfoResponse;
-    // } catch (err) {
-    //     console.error("❌ Gagal ambil march info:", err);
-    //     return false;
-    // }
-
-    const marchInfo = await getMarchInfo(loc);
-    if (!marchInfo) return;
-    //console.log("✅ March info:", marchInfo);
-
-    if (marchInfo.marchType !== MARCH_TYPE_MONSTER) {
-        const marchTypeName = getMarchTypeName(marchInfo.marchType);
-        console.log(`⛔ MarchType bukan untuk rally/attack monster (marchType = ${marchTypeName}).`);
-        return false;
-    }    
-
-    const troops = marchInfo?.saveTroops?.[troopIndex];
-    if (!troops) {
-        console.warn(`⚠️ Troops preset ke-${troopIndex} tidak ditemukan.`);
-        return false;
-    }
-
-    const canSendMarch = troops.every(saveTroop => {
-        const troopInMarch = marchInfo.troops.find(troop => troop.code === saveTroop.code);
-        return troopInMarch && saveTroop.amount <= troopInMarch.amount;
-    });
-
-    if (!canSendMarch) {
-        console.warn("⛔ Gagal karena jumlah troops kurang dari preset.");
-        return false;
-    }
-
-    const toLoc = [kingdomData.loc[0], ...loc];
-    const payload = {
-        marchType: marchInfo.marchType,
-        toLoc,
-        marchTroops: troops,
-        rallyTime,
-        message
-    };
-
     try {
+        // =====================
+        // 1. Cek march queue
+        // =====================
+        const marchQueueUsed = await getMarchQueueUsed();
+        if (marchQueueUsed >= marchLimit) {
+            console.log(`⛔ March queue penuh (${marchQueueUsed}/${marchLimit}), batal set rally.`);
+            return false;
+        }
+
+        // =====================
+        // 2. Ambil march info
+        // =====================
+        const marchInfo = await getMarchInfo(loc);
+        if (!marchInfo) return false;
+
+        // =====================
+        // 3. Validasi march type
+        // =====================
+        if (marchInfo.marchType !== MARCH_TYPE_MONSTER) {
+            const marchTypeName = getMarchTypeName(marchInfo.marchType);
+            console.log(`⛔ MarchType bukan untuk rally/attack monster (${marchTypeName}).`);
+            return false;
+        }
+
+        // =====================
+        // 4. Ambil troops pada tab ke-{troopIndex}
+        // =====================
+        const troopsSelected = marchInfo?.saveTroops?.[troopIndex];
+        if (!troopsSelected) {
+            console.warn(`⚠️ Troops index ke-${troopIndex} tidak ditemukan.`);
+            return false;
+        }
+
+        // =====================
+        // 5. Cek ketersediaan troops
+        // =====================
+        const marchTroops = marchInfo?.troops || [];
+        const canSendMarch = troopsSelected.every(preset => {
+            const available = marchTroops.find(t => t.code === preset.code);
+            return available && preset.amount <= available.amount;
+        });
+
+        if (!canSendMarch) {
+            console.warn("⛔ Gagal karena jumlah troops kurang.");
+            return false;
+        }
+
+        // =====================
+        // 6. Payload rally
+        // =====================
+        const toLoc = [kingdomData.loc[0], ...loc];
+        const payload = {
+            marchType: marchInfo.marchType,
+            toLoc,
+            marchTroops: troopsPreset,
+            rallyTime,
+            message
+        };
+
+        // =====================
+        // 7. Kirim request
+        // =====================
         await useActionPoint();
         await delay(1000);
-        await sendRequest({
+
+        const response = await sendRequest({
             url: API_BASE_URL + "field/rally/start",
             token,
             //body: b64xorEnc(payload, xor_password),
             body: JSON.stringify(payload),
             returnResponse: false
         });
+
+        // server reject
+        if (!response?.result) {
+            console.warn("⛔ Server menolak start rally.");
+            return false;
+        }
+
         return true;
+
     } catch (err) {
         console.error("❌ Gagal set rally:", err);
         return false;
@@ -4004,8 +4251,8 @@ async function handleAuthResponse(xhr) {
             }
 
             if (setting.scheduleClaimDailyQuest) {
-                // scheduleClaimDailyQuest();
-                runClaimMainQuest();
+                scheduleClaimDailyQuest();
+                // runClaimMainQuest();
                 // await delay(5000);
             }            
 

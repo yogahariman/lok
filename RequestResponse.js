@@ -54,24 +54,24 @@ questListDailyResponse = await sendRequest({
 });
 
 
-let questListEventResponse;
-let questEventInfoResponse;
+let eventList;
+let eventInfo;
 
-questListEventResponse = await sendRequest({
+eventList = await sendRequest({
     url: "https://api-lok-live.leagueofkingdoms.com/api/event/list",
     token,
     body: "{}",
     returnResponse: true
 });
 
-questEventInfoResponse = await sendRequest({
+eventInfo = await sendRequest({
     url: "https://api-lok-live.leagueofkingdoms.com/api/event/info",
     token,
-    body: JSON.stringify({rootEventId: questListEventResponse.events[5]._id}),
+    body: JSON.stringify({rootEventId: eventList.events[5]._id}),
     returnResponse: true
 });
 
-questListDailyResponse=
+eventList = 
 {
   "result": true,
   "events": [
@@ -82,7 +82,7 @@ questListDailyResponse=
       "time": 172800,
       "startDate": "2025-12-30T00:00:00.000Z",
       "endDate": "2026-01-01T00:00:00.000Z",
-      "reddot": 8,
+      "reddot": 9,
       "order": 100
     },
     {
@@ -132,7 +132,7 @@ questListDailyResponse=
       "time": 950400,
       "startDate": "2025-12-25T00:00:00.000Z",
       "endDate": "2026-01-05T00:00:00.000Z",
-      "reddot": 2,
+      "reddot": 0,
       "order": 10
     },
     {
@@ -156,8 +156,7 @@ questListDailyResponse=
     }
   ]
 }
-
-questEventInfoResponse = {
+eventInfo = {
   "result": true,
   "eventKingdoms": [
     {
@@ -217,3 +216,139 @@ questEventInfoResponse = {
 https://api-lok-live.leagueofkingdoms.com/api/event/claim
 '{"eventId":"694c7f5a8f4595224c2f3cee","eventTargetId":"694c95342d00ffafed89d85c","code":60410108}'
 
+async function claimEventQuest() {
+    if (!hasToken()) return false;
+
+    async function getEventList() {
+        return sendRequest({
+            url: API_BASE_URL + "event/list",
+            token,
+            body: "{}",
+            returnResponse: true
+        });
+    }
+    async function getEventInfo(rootEventId) {
+        return sendRequest({
+            url: API_BASE_URL + "event/info",
+            token,
+            body: JSON.stringify({rootEventId}),
+            returnResponse: true
+        });
+    }
+
+    async function claimEvent(eventId, eventTargetId, code) {
+        return sendRequest({
+            url: API_BASE_URL + "event/claim",
+            token,
+            body: JSON.stringify({eventId, eventTargetId, code}),
+            returnResponse: true
+        });
+    }     
+
+    try {
+        const eventList = await getEventList();
+        if (!eventList?.result) return false;
+
+        for (const event of eventList.events) {
+            const eventInfo = await getEventInfo(event._id);
+            if (!eventInfo?.result) continue;
+
+            for (const eventKingdom of eventInfo.eventKingdoms) {
+                const finishedQuests = (eventKingdom.events || []).filter(
+                    q => q.status === STATUS_FINISHED
+                );
+                for (const { code } of finishedQuests) {
+                    await claimEvent(
+                        event._id,
+                        eventKingdom._id,
+                        code
+                    );
+                    console.log(`✅ Claimed event quest ${code}`);
+                    await delay(5000);
+                }
+              }
+
+        }
+
+        return true;
+
+    } catch (error) {
+        console.error("❌ Gagal klaim quest event:", error);
+        return false;
+    }
+}
+
+async function claimEventQuest() {
+    if (!hasToken()) return false;
+    async function getEventList() {
+        return sendRequest({
+            url: API_BASE_URL + "event/list",
+            token,
+            body: "{}",
+            returnResponse: true
+        });
+    }
+    async function getEventInfo(rootEventId) {
+        return sendRequest({
+            url: API_BASE_URL + "event/info",
+            token,
+            body: JSON.stringify({rootEventId}),
+            returnResponse: true
+        });
+    }
+
+    async function claimEvent(eventId, eventTargetId, code) {
+        return sendRequest({
+            url: API_BASE_URL + "event/claim",
+            token,
+            body: JSON.stringify({eventId, eventTargetId, code}),
+            returnResponse: true
+        });
+    } 
+    try {
+        const eventList = await getEventList();
+        if (!eventList?.result) return false;
+
+        for (const event of eventList.events || []) {
+
+            const eventInfo = await getEventInfo(event._id);
+            if (!eventInfo?.result) continue;
+            if (!eventInfo.eventKingdoms?.length) continue;
+
+            for (const eventKingdom of eventInfo.eventKingdoms) {
+
+                const rootEventId = eventKingdom.eventId;
+                if (!rootEventId) continue;
+
+                // const finishedQuests = (eventKingdom.events || []).filter(
+                //     q => q.status === STATUS_FINISHED && q.todayClaimed === false
+                // );
+                const finishedQuests = (eventKingdom.events || []).filter(
+                    q => q.status === STATUS_FINISHED
+                );
+                for (const { code } of finishedQuests) {
+
+                    const res = await claimEvent(
+                        rootEventId,
+                        eventKingdom._id,
+                        code
+                    );
+
+                    if (res?.result) {
+                        console.log(`✅ Claimed quest ${code}`);
+                    } else {
+                        console.warn(`⚠️ Gagal klaim quest ${code}`, res);
+                    }
+
+                    await delay(3000);
+                }
+            }
+        }
+
+        return true;
+
+    } catch (err) {
+        console.error("❌ Gagal klaim quest event:", err);
+        return false;
+    }
+}
