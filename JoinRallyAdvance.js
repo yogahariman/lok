@@ -1,5 +1,5 @@
 // Note
-// 1. fungsi attack monster dan sendSupport sudah diupdate untuk menangani error full_task
+// 1. instant harvest skin sementara tetep setelah selesai
 
 // Deklarasi awal variabel sebagai null
 let token = null;
