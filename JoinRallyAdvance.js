@@ -61,7 +61,14 @@ const OBJECT_CODE_HUNGRY_WOLF = 20700406
 const OBJECT_CODE_CYCLOPS = 20700407
 const OBJECT_CODE_SPARTOI = 20700506
 
+// Error Codes
 const ERROR_CODE_FULL_TASK = "full_task";
+
+// Skin Codes
+const SKIN_CODE_COOLDOWN_REDUCTION = 10726001;      // skin skill cooldown reduction
+const SKIN_CODE_REDUCE_AP_DROP_RATE = 10728001;     // skin reduce AP consumption & Drop rate
+const SKIN_CODE_REDUCE_AP = 10729001;               // skin reduce AP consumption
+const SKIN_CODE_INCREASE_DROP_RATE = 10730001;      // skin drop rate
 
 
 // Simpan ke localStorage sebagai string JSON
@@ -884,11 +891,7 @@ async function heal(targetDuration = null, speedHeal = null) {
     }
 }
 
-// 10726001 (skin skill cooldown reduction)
-// 10728001 (skin reduce AP consumption & Drop rate)
-// 10729001 (skin reduce AP consumption)
-// 10730001 (skin drop rate)
-async function changeSkin(skinCode = 10730001) {
+async function changeSkin(skinCode = SKIN_CODE_INCREASE_DROP_RATE) {
     if (!hasToken()) return null;
 
     // Step 1: Ambil daftar skin
@@ -906,12 +909,12 @@ async function changeSkin(skinCode = 10730001) {
     //     return null;
     // }
     if (!skin) {
-        // Jika skinCode = 10729001 dan tidak ditemukan, cek ulang pakai 10728001
-        if (skinCode === 10729001) {
-            const altSkin = response?.skins?.find(s => s.code === 10728001);
+        // Jika skinCode = SKIN_CODE_REDUCE_AP dan tidak ditemukan, cek ulang pakai SKIN_CODE_REDUCE_AP_DROP_RATE
+        if (skinCode === SKIN_CODE_REDUCE_AP) {
+            const altSkin = response?.skins?.find(s => s.code === SKIN_CODE_REDUCE_AP_DROP_RATE);
             if (altSkin) {
-                console.log(`🔁 Skin code ${skinCode} tidak ditemukan, pakai pengganti 10728001.`);
-                skinCode = 10728001; // replace nilai skinCode
+                console.log(`🔁 Skin code ${skinCode} tidak ditemukan, pakai pengganti ${SKIN_CODE_REDUCE_AP_DROP_RATE}.`);
+                skinCode = SKIN_CODE_REDUCE_AP_DROP_RATE; // replace nilai skinCode
                 skin = altSkin;
             }
         }
@@ -1715,7 +1718,7 @@ async function instantHarvest() {
         await changeTreasure(2); // Aktifkan treasure produksi
         //await delay(1000);
 
-        await changeSkin(10726001); // Aktifkan skin produksi
+        await changeSkin(SKIN_CODE_COOLDOWN_REDUCTION); // Aktifkan skin produksi
         await delay(1000);
 
         // Gunakan skill 10018 (increase production)
@@ -1855,7 +1858,7 @@ async function summonMonster() {
 
         console.log("🧙‍♂️ Memulai proses Summon Monster...");
 
-        await changeSkin(10726001); // Aktifkan skin produksi       
+        await changeSkin(SKIN_CODE_COOLDOWN_REDUCTION); // Aktifkan skin produksi       
         await delay(1000);
 
         await sendRequest({
@@ -2758,7 +2761,7 @@ async function startAttackMonsterFromBookmarks(bookmarks = bookmarkMonsterNormal
         }
 
         if (!isSkinMonsterApplied) {
-            await changeSkin(10729001);
+            await changeSkin(SKIN_CODE_REDUCE_AP);
             isSkinMonsterApplied = true;
             await delay(1000);
         }
@@ -2828,7 +2831,7 @@ async function startRallyMonsterFromBookmarks(bookmarks = bookmarkMonsterRally) 
         }
 
         if (!isSkinMonsterApplied) {
-            await changeSkin(10729001); // Skin rally monster
+            await changeSkin(SKIN_CODE_REDUCE_AP); // Skin rally monster
             isSkinMonsterApplied = true;
             await delay(2000);
         }
@@ -3457,7 +3460,7 @@ async function autoJoinRally() {
         }
 
         await delayRandom();
-        await changeSkin(10729001);
+        await changeSkin(SKIN_CODE_REDUCE_AP);
         for (const battle of unjoinedRallies) {
             //const battleId = battle._id;
             //const isJoined = battle.isJoined;
@@ -3483,19 +3486,6 @@ async function autoJoinRally() {
                 console.log(`⛔ March queue penuh (${marchQueueUsed}/${marchLimit}), batal join rally.`);
                 break;
             }
-
-
-            incrementRallyCount();
-            //console.log(`[🔁] Memproses antrean rally ke-${getRallyCount()}`);    
-            //console.log("✅ Join rally:", monsterInfo.name, "(Level:", monsterLevel, ")");
-            console.log(
-                `%c[🎯 RALLY] %c#${getRallyCount()} %c🪖 ${marchQueueUsed + 1}/${marchLimit} %c🦖 ${monsterInfo.name.toUpperCase()} [Lv.${monsterLevel}]`,
-                'color: green; font-weight: bold;',
-                'color: cyan;',
-                'color: yellow;',
-                'color: orange; font-weight: bold;',
-            );
-
 
             //const troopsSelected = getTroopGroupByHP(monsterHP);
             //const payload = payloadAutoJoinRally(troopsSelected, battleId);
@@ -3591,13 +3581,27 @@ async function autoJoinRally() {
             // console.log("battleId : ", battleId);
             // console.log("payload_rally_encrypted : ", payload_rally_encrypted);
 
-            await sendRequest({
+            const joinRallyResponse = await sendRequest({
                 url: API_BASE_URL + "field/rally/join",
                 token: token,
                 body: JSON.stringify(payload_rally_encrypted),
-                returnResponse: false
+                returnResponse: true
             });
-            await delayRandom();
+            console.log("📥 Join rally response:", joinRallyResponse);
+
+            if (!joinRallyResponse?.result) {
+                incrementRallyCount();
+                console.log(
+                    `%c[🎯 RALLY] %c#${getRallyCount()} %c🪖 ${marchQueueUsed + 1}/${marchLimit} %c🦖 ${monsterInfo.name.toUpperCase()} [Lv.${monsterLevel}]`,
+                    'color: green; font-weight: bold;',
+                    'color: cyan;',
+                    'color: yellow;',
+                    'color: orange; font-weight: bold;',
+                );
+            } else {
+                console.log("❌ Gagal join rally:", joinRallyResponse?.err?.code);
+            }
+            await delayRandom();            
         }
         await changeSkin();
     } catch (err) {
