@@ -71,6 +71,139 @@ const SKIN_CODE_REDUCE_AP = 10729001;               // skin reduce AP consumptio
 const SKIN_CODE_INCREASE_DROP_RATE = 10730001;      // skin drop rate
 
 
+const ITEM_CODE_FOOD = 10100001
+const ITEM_CODE_LUMBER = 10100002
+const ITEM_CODE_STONE = 10100003
+const ITEM_CODE_GOLD = 10100004
+const ITEM_CODE_CRYSTAL = 10100005
+
+const ITEM_CODE_VIP_10 = 10101007
+const ITEM_CODE_VIP_100 = 10101008
+const ITEM_CODE_VIP_500 = 10101009
+const ITEM_CODE_VIP_1000 = 10101010
+const ITEM_CODE_VIP_5000 = 10101011
+const ITEM_CODE_VIP_10000 = 10101012
+
+const ITEM_CODE_FOOD_1K = 10101013
+const ITEM_CODE_FOOD_5K = 10101014
+const ITEM_CODE_FOOD_10K = 10101015
+const ITEM_CODE_FOOD_50K = 10101016
+const ITEM_CODE_FOOD_100K = 10101017
+const ITEM_CODE_FOOD_500K = 10101018
+const ITEM_CODE_FOOD_1M = 10101019
+const ITEM_CODE_FOOD_5M = 10101020
+const ITEM_CODE_FOOD_10M = 10101021
+
+const ITEM_CODE_LUMBER_1K = 10101022
+const ITEM_CODE_LUMBER_5K = 10101023
+const ITEM_CODE_LUMBER_10K = 10101024
+const ITEM_CODE_LUMBER_50K = 10101025
+const ITEM_CODE_LUMBER_100K = 10101026
+const ITEM_CODE_LUMBER_500K = 10101027
+const ITEM_CODE_LUMBER_1M = 10101028
+const ITEM_CODE_LUMBER_5M = 10101029
+const ITEM_CODE_LUMBER_10M = 10101030
+
+const ITEM_CODE_STONE_1K = 10101031
+const ITEM_CODE_STONE_5K = 10101032
+const ITEM_CODE_STONE_10K = 10101033
+const ITEM_CODE_STONE_50K = 10101034
+const ITEM_CODE_STONE_100K = 10101035
+const ITEM_CODE_STONE_500K = 10101036
+const ITEM_CODE_STONE_1M = 10101037
+const ITEM_CODE_STONE_5M = 10101038
+const ITEM_CODE_STONE_10M = 10101039
+
+const ITEM_CODE_GOLD_1K = 10101040
+const ITEM_CODE_GOLD_5K = 10101041
+const ITEM_CODE_GOLD_10K = 10101042
+const ITEM_CODE_GOLD_50K = 10101043
+const ITEM_CODE_GOLD_100K = 10101044
+const ITEM_CODE_GOLD_500K = 10101045
+const ITEM_CODE_GOLD_1M = 10101046
+const ITEM_CODE_GOLD_5M = 10101047
+const ITEM_CODE_GOLD_10M = 10101048
+
+const ITEM_CODE_ACTION_POINTS_10 = 10101049
+const ITEM_CODE_ACTION_POINTS_20 = 10101050
+const ITEM_CODE_ACTION_POINTS_50 = 10101051
+const ITEM_CODE_ACTION_POINTS_100 = 10101052
+
+const ITEM_CODE_SPEEDUP_1M = 10103001
+const ITEM_CODE_SPEEDUP_5M = 10103002
+const ITEM_CODE_SPEEDUP_10M = 10103003
+const ITEM_CODE_SPEEDUP_30M = 10103004
+const ITEM_CODE_SPEEDUP_1H = 10103005
+const ITEM_CODE_SPEEDUP_3H = 10103006
+const ITEM_CODE_SPEEDUP_8H = 10103007
+const ITEM_CODE_SPEEDUP_1D = 10103008
+const ITEM_CODE_SPEEDUP_3D = 10103009
+const ITEM_CODE_SPEEDUP_7D = 10103010
+const ITEM_CODE_SPEEDUP_30D = 10103011
+
+const ITEM_CODE_SPEEDUP_BUILDING_1M = 10103012
+const ITEM_CODE_SPEEDUP_BUILDING_5M = 10103013
+const ITEM_CODE_SPEEDUP_BUILDING_10M = 10103014
+const ITEM_CODE_SPEEDUP_BUILDING_30M = 10103015
+const ITEM_CODE_SPEEDUP_BUILDING_1H = 10103016
+const ITEM_CODE_SPEEDUP_BUILDING_3H = 10103017
+const ITEM_CODE_SPEEDUP_BUILDING_8H = 10103018
+const ITEM_CODE_SPEEDUP_BUILDING_1D = 10103019
+
+const ITEM_CODE_SPEEDUP_RESEARCH_1M = 10103022
+const ITEM_CODE_SPEEDUP_RESEARCH_5M = 10103023
+const ITEM_CODE_SPEEDUP_RESEARCH_10M = 10103024
+const ITEM_CODE_SPEEDUP_RESEARCH_30M = 10103025
+const ITEM_CODE_SPEEDUP_RESEARCH_1H = 10103026
+const ITEM_CODE_SPEEDUP_RESEARCH_3H = 10103027
+const ITEM_CODE_SPEEDUP_RESEARCH_8H = 10103028
+const ITEM_CODE_SPEEDUP_RESEARCH_1D = 10103029
+
+const ITEM_CODE_SPEEDUP_TRAIN_1M = 10103032
+const ITEM_CODE_SPEEDUP_TRAIN_5M = 10103033
+const ITEM_CODE_SPEEDUP_TRAIN_10M = 10103034
+const ITEM_CODE_SPEEDUP_TRAIN_30M = 10103035
+const ITEM_CODE_SPEEDUP_TRAIN_1H = 10103036
+const ITEM_CODE_SPEEDUP_TRAIN_3H = 10103037
+const ITEM_CODE_SPEEDUP_TRAIN_8H = 10103038
+const ITEM_CODE_SPEEDUP_TRAIN_1D = 10103039
+
+const ITEM_CODE_RECOVER_1M = 10103042
+const ITEM_CODE_RECOVER_5M = 10103043
+const ITEM_CODE_RECOVER_10M = 10103044
+const ITEM_CODE_RECOVER_30M = 10103045
+const ITEM_CODE_RECOVER_1H = 10103046
+const ITEM_CODE_RECOVER_3H = 10103047
+const ITEM_CODE_RECOVER_8H = 10103048
+const ITEM_CODE_RECOVER_1D = 10103049
+
+// Item Codes
+const ITEM_CODE_FOOD_BOOST_8H = 10102001
+const ITEM_CODE_FOOD_BOOST_1D = 10102002
+const ITEM_CODE_LUMBER_BOOST_8H = 10102003
+const ITEM_CODE_LUMBER_BOOST_1D = 10102004
+const ITEM_CODE_STONE_BOOST_8H = 10102005
+const ITEM_CODE_STONE_BOOST_1D = 10102006
+const ITEM_CODE_GOLD_BOOST_8H = 10102007
+const ITEM_CODE_GOLD_BOOST_1D = 10102008
+
+const ITEM_CODE_GATHERING_BOOST_8H = 10102009
+const ITEM_CODE_GATHERING_BOOST_1D = 10102010
+
+const HEAL_SPEED = {
+    "1m": { code: 10103042, seconds: 60 },
+    "5m": { code: 10103043, seconds: 5 * 60 },
+    "10m": { code: 10103044, seconds: 10 * 60 },
+    "30m": { code: 10103045, seconds: 30 * 60 },
+    "1h": { code: 10103046, seconds: 60 * 60 },
+    "3h": { code: 10103047, seconds: 3 * 60 * 60 },
+    "8h": { code: 10103048, seconds: 8 * 60 * 60 },
+    "1d": { code: 10103049, seconds: 24 * 60 * 60 },
+    "3d": { code: 10103050, seconds: 3 * 24 * 60 * 60 },
+    "7d": { code: 10103051, seconds: 7 * 24 * 60 * 60 },
+};
+
+
 // Simpan ke localStorage sebagai string JSON
 //
 // bookmarkCM = bookmarkResults.filter(item => ["crystal", "cavern"].some(kw => item.name.toLowerCase().includes(kw)));
@@ -690,17 +823,17 @@ async function useActionPoint() {
 
         let codeAP = null;
         let nAp = null;
-        if (getAmountItemList(itemList, 10101049) > 10) {
-            codeAP = 10101049;
+        if (getAmountItemList(itemList, ITEM_CODE_ACTION_POINTS_10) > 10) {
+            codeAP = ITEM_CODE_ACTION_POINTS_10;
             nAp = 10;
-        } else if (getAmountItemList(itemList, 10101050) > 5) {
-            codeAP = 10101050;
+        } else if (getAmountItemList(itemList, ITEM_CODE_ACTION_POINTS_20) > 5) {
+            codeAP = ITEM_CODE_ACTION_POINTS_20;
             nAp = 5;
-        } else if (getAmountItemList(itemList, 10101051) > 2) {
-            codeAP = 10101051;
+        } else if (getAmountItemList(itemList, ITEM_CODE_ACTION_POINTS_50) > 2) {
+            codeAP = ITEM_CODE_ACTION_POINTS_50;
             nAp = 2;
-        } else if (getAmountItemList(itemList, 10101052) > 1) {
-            codeAP = 10101052;
+        } else if (getAmountItemList(itemList, ITEM_CODE_ACTION_POINTS_100) > 1) {
+            codeAP = ITEM_CODE_ACTION_POINTS_100;
             nAp = 1;
         }
 
@@ -726,19 +859,6 @@ async function useActionPoint() {
 
 async function heal(targetDuration = null, speedHeal = null) {
     if (!hasToken()) return;
-
-    const HEAL_SPEED = {
-        "1m": { code: 10103042, seconds: 60 },
-        "5m": { code: 10103043, seconds: 5 * 60 },
-        "10m": { code: 10103044, seconds: 10 * 60 },
-        "30m": { code: 10103045, seconds: 30 * 60 },
-        "1h": { code: 10103046, seconds: 60 * 60 },
-        "3h": { code: 10103047, seconds: 3 * 60 * 60 },
-        "8h": { code: 10103048, seconds: 8 * 60 * 60 },
-        "1d": { code: 10103049, seconds: 24 * 60 * 60 },
-        "3d": { code: 10103050, seconds: 3 * 24 * 60 * 60 },
-        "7d": { code: 10103051, seconds: 7 * 24 * 60 * 60 },
-    };
 
     // Ambil stok item
     const itemList = await sendRequest({
@@ -1525,52 +1645,59 @@ async function buyCaravan() {
         // Semua item yang ingin dibeli
         const desiredCodes = [
             // VIP
-            10101007, 10101008, 10101009, 10101010, 10101011, 10101012,
+            ITEM_CODE_VIP_10, ITEM_CODE_VIP_100, ITEM_CODE_VIP_500,
+            ITEM_CODE_VIP_1000, ITEM_CODE_VIP_5000, ITEM_CODE_VIP_10000,
 
             // Food
-            10101013, 10101014, 10101015, 10101016, 10101017, 10101018,
-            10101019, 10101020, 10101021,
+            ITEM_CODE_FOOD_1K, ITEM_CODE_FOOD_5K, ITEM_CODE_FOOD_10K,
+            ITEM_CODE_FOOD_1M, ITEM_CODE_FOOD_5M, ITEM_CODE_FOOD_10M,
 
             // Lumber
-            10101022, 10101023, 10101024, 10101025, 10101026, 10101027,
-            10101028, 10101029, 10101030,
+            ITEM_CODE_LUMBER_1K, ITEM_CODE_LUMBER_5K, ITEM_CODE_LUMBER_10K,
+            ITEM_CODE_LUMBER_50K, ITEM_CODE_LUMBER_100K, ITEM_CODE_LUMBER_500K,
+            ITEM_CODE_LUMBER_1M, ITEM_CODE_LUMBER_5M, ITEM_CODE_LUMBER_10M,
 
             // Stone
-            10101031, 10101032, 10101033, 10101034, 10101035, 10101036,
-            10101037, 10101038, 10101039,
-
+            ITEM_CODE_STONE_1K, ITEM_CODE_STONE_5K, ITEM_CODE_STONE_10K,
+            ITEM_CODE_STONE_50K, ITEM_CODE_STONE_100K, ITEM_CODE_STONE_500K,
+            ITEM_CODE_STONE_1M, ITEM_CODE_STONE_5M, ITEM_CODE_STONE_10M,
+            
             // Gold
-            10101040, 10101041, 10101042, 10101043, 10101044, 10101045,
-            10101046, 10101047, 10101048,
+            ITEM_CODE_GOLD_1K, ITEM_CODE_GOLD_5K, ITEM_CODE_GOLD_10K,
+            ITEM_CODE_GOLD_50K, ITEM_CODE_GOLD_100K, ITEM_CODE_GOLD_500K,
+            ITEM_CODE_GOLD_1M, ITEM_CODE_GOLD_5M, ITEM_CODE_GOLD_10M,
 
             // AP
-            10101049, 10101050, 10101051, 10101052,
+            ITEM_CODE_ACTION_POINTS_10, ITEM_CODE_ACTION_POINTS_20,
+            ITEM_CODE_ACTION_POINTS_50, ITEM_CODE_ACTION_POINTS_100,
 
             // Boosts
-            10102001, 10102002,
-            10102003, 10102004,
-            10102005, 10102006,
-            10102007, 10102008,
-            10102009, 10102010,
+            ITEM_CODE_FOOD_BOOST_8H, ITEM_CODE_FOOD_BOOST_1D,
+            ITEM_CODE_LUMBER_BOOST_8H, ITEM_CODE_LUMBER_BOOST_1D,
+            ITEM_CODE_STONE_BOOST_8H, ITEM_CODE_STONE_BOOST_1D,
+            ITEM_CODE_GOLD_BOOST_8H, ITEM_CODE_GOLD_BOOST_1D,
+            ITEM_CODE_GATHERING_BOOST_8H, ITEM_CODE_GATHERING_BOOST_1D,
 
             // Speedups
-            10103001, 10103002, 10103003, 10103004,
-            10103005, 10103006, 10103007, 10103008,
-            10103009, 10103010
+            ITEM_CODE_SPEEDUP_1M, ITEM_CODE_SPEEDUP_5M, ITEM_CODE_SPEEDUP_10M, ITEM_CODE_SPEEDUP_30M,
+            ITEM_CODE_SPEEDUP_1H, ITEM_CODE_SPEEDUP_8H,
+            ITEM_CODE_SPEEDUP_1D, ITEM_CODE_SPEEDUP_3D, ITEM_CODE_SPEEDUP_7D
         ];
 
-        // Kategori khusus jika costItemCode = 10100005
+        // Kategori khusus jika pembelian menggunakan crystals
         const limitedCodes = [
             // VIP
-            10101007, 10101008, 10101009, 10101010, 10101011, 10101012,
+            ITEM_CODE_VIP_10, ITEM_CODE_VIP_100, ITEM_CODE_VIP_500,
+            ITEM_CODE_VIP_1000, ITEM_CODE_VIP_5000, ITEM_CODE_VIP_10000,
 
             // AP
-            10101049, 10101050, 10101051, 10101052,
+            ITEM_CODE_ACTION_POINTS_10, ITEM_CODE_ACTION_POINTS_20,
+            ITEM_CODE_ACTION_POINTS_50, ITEM_CODE_ACTION_POINTS_100,
 
             // Speedups
-            10103001, 10103002, 10103003, 10103004,
-            10103005, 10103006, 10103007, 10103008,
-            10103009, 10103010
+            ITEM_CODE_SPEEDUP_1M, ITEM_CODE_SPEEDUP_5M, ITEM_CODE_SPEEDUP_10M, ITEM_CODE_SPEEDUP_30M,
+            ITEM_CODE_SPEEDUP_1H, ITEM_CODE_SPEEDUP_8H,
+            ITEM_CODE_SPEEDUP_1D, ITEM_CODE_SPEEDUP_3D, ITEM_CODE_SPEEDUP_7D
         ];
 
 
@@ -1578,7 +1705,7 @@ async function buyCaravan() {
             if (item.amount <= 0) return false;
 
             // Jika memakai item currency 10100005 → hanya beli item VIP, AP, Speedups
-            if (item.costItemCode === 10100005) {
+            if (item.costItemCode === ITEM_CODE_CRYSTAL) {
                 return limitedCodes.includes(item.code);
             }
 
@@ -1709,11 +1836,11 @@ async function instantHarvest() {
     try {
         if (!hasToken()) return;
 
-        await useItem(10102001, 1); await delay(1000);
-        await useItem(10102003, 1); await delay(1000);
-        await useItem(10102005, 1); await delay(1000);
-        await useItem(10102007, 1); await delay(1000);
-        await useItem(10102009, 1); await delay(1000);
+        await useItem(ITEM_CODE_FOOD_BOOST_8H, 1); await delay(1000);
+        await useItem(ITEM_CODE_LUMBER_BOOST_8H, 1); await delay(1000);
+        await useItem(ITEM_CODE_STONE_BOOST_8H, 1); await delay(1000);
+        await useItem(ITEM_CODE_GOLD_BOOST_8H, 1); await delay(1000);
+        await useItem(ITEM_CODE_GATHERING_BOOST_8H, 1); await delay(1000);
 
         await changeTreasure(2); // Aktifkan treasure produksi
         //await delay(1000);
@@ -3589,7 +3716,7 @@ async function autoJoinRally() {
             });
             console.log("📥 Join rally response:", joinRallyResponse);
 
-            if (!joinRallyResponse?.result) {
+            if (joinRallyResponse?.result) {
                 incrementRallyCount();
                 console.log(
                     `%c[🎯 RALLY] %c#${getRallyCount()} %c🪖 ${marchQueueUsed + 1}/${marchLimit} %c🦖 ${monsterInfo.name.toUpperCase()} [Lv.${monsterLevel}]`,
