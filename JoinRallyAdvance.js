@@ -3646,7 +3646,7 @@ async function autoJoinRally() {
                 returnResponse: true
             });
             await delayRandom();
-            //console.log("📥 /alliance/battle/info", battleInfo);
+            console.log("📥 /alliance/battle/info", battleInfo);
 
 
             // const payload_marchInfo = {
