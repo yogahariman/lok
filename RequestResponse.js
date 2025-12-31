@@ -55,6 +55,8 @@ questListDailyResponse = await sendRequest({
 
 
 let questListEventResponse;
+let questEventInfoResponse;
+
 questListEventResponse = await sendRequest({
     url: "https://api-lok-live.leagueofkingdoms.com/api/event/list",
     token,
@@ -62,14 +64,156 @@ questListEventResponse = await sendRequest({
     returnResponse: true
 });
 
-
-let questEventInfoResponse;
 questEventInfoResponse = await sendRequest({
     url: "https://api-lok-live.leagueofkingdoms.com/api/event/info",
     token,
-    body: JSON.stringify({rootEventId:"694556a94d21cbb1858a465d"}),
+    body: JSON.stringify({rootEventId: questListEventResponse.events[5]._id}),
     returnResponse: true
 });
 
+questListDailyResponse=
+{
+  "result": true,
+  "events": [
+    {
+      "_id": "694556a94d21cbb1858a4867",
+      "status": 1,
+      "mastCode": 601047,
+      "time": 172800,
+      "startDate": "2025-12-30T00:00:00.000Z",
+      "endDate": "2026-01-01T00:00:00.000Z",
+      "reddot": 8,
+      "order": 100
+    },
+    {
+      "_id": "694556a94d21cbb1858a48a8",
+      "status": 1,
+      "mastCode": 601023,
+      "time": 172800,
+      "startDate": "2025-12-30T00:00:00.000Z",
+      "endDate": "2026-01-01T00:00:00.000Z",
+      "reddot": 6,
+      "order": 100
+    },
+    {
+      "_id": "694556a94d21cbb1858a48ca",
+      "status": 1,
+      "mastCode": 601055,
+      "time": 172800,
+      "startDate": "2025-12-30T00:00:00.000Z",
+      "endDate": "2026-01-01T00:00:00.000Z",
+      "reddot": 1,
+      "order": 100
+    },
+    {
+      "_id": "694556a94d21cbb1858a48ec",
+      "status": 1,
+      "mastCode": 601048,
+      "time": 172800,
+      "startDate": "2025-12-31T00:00:00.000Z",
+      "endDate": "2026-01-02T00:00:00.000Z",
+      "reddot": 0,
+      "order": 100
+    },
+    {
+      "_id": "694556a94d21cbb1858a492d",
+      "status": 1,
+      "mastCode": 601019,
+      "time": 172800,
+      "startDate": "2025-12-31T00:00:00.000Z",
+      "endDate": "2026-01-02T00:00:00.000Z",
+      "reddot": 0,
+      "order": 100
+    },
+    {
+      "_id": "694c7f5a8f4595224c2f3de9",
+      "status": 1,
+      "mastCode": 604,
+      "time": 950400,
+      "startDate": "2025-12-25T00:00:00.000Z",
+      "endDate": "2026-01-05T00:00:00.000Z",
+      "reddot": 2,
+      "order": 10
+    },
+    {
+      "_id": "694c7f5a8f4595224c2f4340",
+      "status": 1,
+      "mastCode": 601035,
+      "time": 950400,
+      "startDate": "2025-12-25T00:00:00.000Z",
+      "endDate": "2026-01-05T00:00:00.000Z",
+      "reddot": 0,
+      "order": 10
+    },
+    {
+      "_id": "6949fb8da62b0bb454210f5e",
+      "mastCode": 601008,
+      "startDate": "2025-12-23T02:16:45.366Z",
+      "endDate": "2026-12-23T02:16:45.366Z",
+      "status": 1,
+      "reddot": 0,
+      "order": 1
+    }
+  ]
+}
 
+questEventInfoResponse = {
+  "result": true,
+  "eventKingdoms": [
+    {
+      "_id": "694c95342d00ffafed89d854",
+      "eventId": "694c7f5a8f4595224c2f3cee",
+      "status": 1,
+      "point": 0,
+      "events": [
+        {
+          "_id": "694c95342d00ffafed89d856",
+          "code": 60410102,
+          "questType": 179,
+          "value": 2,
+          "status": 3,
+          "targetCode": 0,
+          "targetCode2": 0,
+          "targetValue": 2,
+          "prob": 100,
+          "limit": 1,
+          "count": 0,
+          "rewards": [
+            {
+              "code": 10104132,
+              "amount": 10,
+              "_id": "694c7f5a8f4595224c2f3cf6"
+            },
+            {
+              "code": 10101017,
+              "amount": 1,
+              "_id": "694c7f5a8f4595224c2f3cf7"
+            },
+            {
+              "code": 10101026,
+              "amount": 1,
+              "_id": "694c7f5a8f4595224c2f3cf8"
+            },
+            {
+              "code": 10101035,
+              "amount": 1,
+              "_id": "694c7f5a8f4595224c2f3cf9"
+            },
+            {
+              "code": 10101044,
+              "amount": 1,
+              "_id": "694c7f5a8f4595224c2f3cfa"
+            }
+          ],
+          "todayClaimed": false
+        }
+      ],
+      "eventType": 8
+    }
+  ],
+  "idx": 4
+}
+
+https://api-lok-live.leagueofkingdoms.com/api/event/claim
+'{"eventId":"694c7f5a8f4595224c2f3cee","eventTargetId":"694c95342d00ffafed89d85c","code":60410108}'
 
