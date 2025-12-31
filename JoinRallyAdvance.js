@@ -1866,7 +1866,7 @@ async function instantHarvest() {
         });
         await delay(1000);
 
-        await changeSkin(); // Kembali ke skin normal
+        //await changeSkin(); // Kembali ke skin normal
         //await delay(1000);
 
         await changeTreasure(); // Kembali ke treasure rally/monster
