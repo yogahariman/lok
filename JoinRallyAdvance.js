@@ -1412,11 +1412,11 @@ async function claimEventQuest() {
                 const finishedQuests = (eventKingdom.events || []).filter(
                     q => q.status === STATUS_FINISHED
                 );
-                for (const { code } of finishedQuests) {
+                for (const { code, _id } of finishedQuests) {
 
                     const res = await claimEvent(
                         rootEventId,
-                        eventKingdom._id,
+                        _id,
                         code
                     );
 
