@@ -3071,9 +3071,6 @@ async function startRallyMonsterFromBookmarks(bookmarks = bookmarkMonsterRally) 
     const RALLY_TIME = 5;
     const TROOP_INDEX = 0;
     const MESSAGE = "";
-    const QUEUE_WAIT_MS = 60_000;
-    const LOOP_DELAY_MS = 5_000;
-    const SKIN_DELAY_MS = 2_000;
 
     // =====================
     // Helper
@@ -3115,7 +3112,7 @@ async function startRallyMonsterFromBookmarks(bookmarks = bookmarkMonsterRally) 
             }
 
             console.log(`⏳ Queue penuh (${marchQueueUsed}/${marchLimit}), tunggu 1 menit...`);
-            await delay(QUEUE_WAIT_MS);
+            await delay(60_000);
             continue;
         }
 
@@ -3123,7 +3120,7 @@ async function startRallyMonsterFromBookmarks(bookmarks = bookmarkMonsterRally) 
         if (!isSkinMonsterApplied) {
             await changeSkin(SKIN_CODE_REDUCE_AP);
             isSkinMonsterApplied = true;
-            await delay(SKIN_DELAY_MS);
+            await delay(2_000);
         }
 
         const bookmark = finalResults[index];
@@ -3148,7 +3145,7 @@ async function startRallyMonsterFromBookmarks(bookmarks = bookmarkMonsterRally) 
             );
         }
 
-        await delay(LOOP_DELAY_MS);
+        await delay(5_000);
     }
 
     // =====================
