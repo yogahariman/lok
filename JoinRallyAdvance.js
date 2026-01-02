@@ -3,6 +3,17 @@
 // 2. set rally dk
 // 3. claim event quest
 
+// (async () => {
+//     for (let i = 0; i < 10; i++) {
+//       await sendSupport(400, 1800);
+//       await delay(5000);
+//     }
+//   })();
+
+// use item
+// Egg 10104105(green), 10104106(Red), 10104107(Yellow)
+// (async () => { for (let i = 0; i < 16; i++) await useItem(10104106, 1), await delay(500); })();
+
 // Deklarasi awal variabel sebagai null
 let token = null;
 let regionHash = null;
@@ -205,47 +216,6 @@ const HEAL_SPEED = {
     "7d": { code: 10103051, seconds: 7 * 24 * 60 * 60 },
 };
 
-
-// Simpan ke localStorage sebagai string JSON
-//
-// bookmarkCM = bookmarkResults.filter(item => ["crystal", "cavern"].some(kw => item.name.toLowerCase().includes(kw)));
-// bookmarkMonsterNormal = bookmarkResults.filter(item => ["goblin"].some(kw => item.name.toLowerCase().includes(kw)));
-// bookmarkMonsterRally = bookmarkResults.filter(item => !["crystal", "cavern", "goblin"].some(kw => item.name.toLowerCase().includes(kw)));
-
-// bookmarkResults=[];
-
-// localStorage.setItem('bookmarkCM_bk', JSON.stringify(bookmarkCM));
-// localStorage.setItem('bookmarkMonsterNormal_bk', JSON.stringify(bookmarkMonsterNormal));
-// localStorage.setItem('bookmarkMonsterRally_bk', JSON.stringify(bookmarkMonsterRally));
-
-// bookmarkMonsterNormal = JSON.parse(localStorage.getItem('bookmarkMonsterNormal_bk')) || [];
-// await startAttackMonsterFromBookmarks(bookmarkMonsterNormal);
-
-// bookmarkMonsterRally = JSON.parse(localStorage.getItem('bookmarkMonsterRally_bk')) || [];
-// bookmarkMonsterRally = bookmarkMonsterRally.filter(item => {
-//   const [, x, y] = item.loc;
-
-//   // Forbidden Area 1: x antara 950–1090 dan y antara 950–1090
-//   const inFirstForbiddenArea = x > 950 && x < 1090 && y > 950 && y < 1090;
-
-//   // Forbidden Area 2: x <= 1024
-//   const inSecondForbiddenArea = x <= 1024;
-
-//   // Simpan hanya jika TIDAK berada di salah satu area terlarang
-//   return !(inFirstForbiddenArea || inSecondForbiddenArea);
-// });
-// await startRallyMonsterFromBookmarks(bookmarkMonsterRally);
-
-// (async () => {
-//     for (let i = 0; i < 10; i++) {
-//       await sendSupport(400, 1800);
-//       await delay(5000);
-//     }
-//   })();
-
-// use item
-// Egg 10104105(green), 10104106(Red), 10104107(Yellow)
-// (async () => { for (let i = 0; i < 16; i++) await useItem(10104106, 1), await delay(500); })();
 
 // Decode base64 to bytes
 function base64ToBytes(b64) {
@@ -498,12 +468,7 @@ function getZoneIds(minX, maxX, minY, maxY) {
 //const result = getZoneIds(1, 2000, 1, 2000);
 //console.log(result);
 
-async function sendRequest({
-    url,
-    token,
-    body,
-    returnResponse = false
-}) {
+async function sendRequest({ url, token, body }) {
     try {
         const response = await fetch(url, {
             method: "POST",
@@ -520,29 +485,77 @@ async function sendRequest({
                 "Sec-Fetch-Mode": "cors",
                 "Sec-Fetch-Site": "same-site"
             },
-            body: `json=${encodeURIComponent(body)}`
-            //body: `json=${encodeURIComponent(JSON.stringify(body))}`
+            body: `json=${encodeURIComponent(JSON.stringify(body))}`
         });
 
-        if (returnResponse) {
-            const text = await response.text();
-
-            try {
-                const json = JSON.parse(text);
-                return json;
-            } catch (parseErr) {
-                //console.warn("⚠️ Response bukan JSON, mengembalikan sebagai teks.");
-                return text;
-            }
-        } else {
-            // Jika tidak perlu response, cukup kirim request
-            //console.log("✅ Request sent (no response returned)");
+        // ❌ Server merespon tapi status error (4xx / 5xx)
+        if (!response.ok) {
+            console.log(`⛔ HTTP Error ${response.status}`);
+            return null;
         }
+
+        const text = await response.text();
+
+        // ✅ Coba parse JSON
+        try {
+            return JSON.parse(text);
+        } catch {
+            // ✅ Bukan JSON → kembalikan text
+            return text;
+        }
+
     } catch (err) {
-        console.log("❌ Gagal mengirim request:", err);
+        // ❌ Network error / fetch gagal
+        console.log("❌ Gagal fetch:", err);
         return null;
     }
 }
+
+// async function sendRequest({
+//     url,
+//     token,
+//     body,
+//     returnResponse = false
+// }) {
+//     try {
+//         const response = await fetch(url, {
+//             method: "POST",
+//             mode: "cors",
+//             credentials: "omit",
+//             referrer: "https://play.leagueofkingdoms.com/",
+//             headers: {
+//                 "User-Agent": navigator.userAgent,
+//                 "Accept": "*/*",
+//                 "Accept-Language": "en-US,en;q=0.5",
+//                 "x-access-token": token,
+//                 "Content-Type": "application/x-www-form-urlencoded",
+//                 "Sec-Fetch-Dest": "empty",
+//                 "Sec-Fetch-Mode": "cors",
+//                 "Sec-Fetch-Site": "same-site"
+//             },
+//             // body: `json=${encodeURIComponent(body)}`
+//             body: `json=${encodeURIComponent(JSON.stringify(body))}`
+//         });
+
+//         if (returnResponse) {
+//             const text = await response.text();
+
+//             try {
+//                 const json = JSON.parse(text);
+//                 return json;
+//             } catch (parseErr) {
+//                 //console.warn("⚠️ Response bukan JSON, mengembalikan sebagai teks.");
+//                 return text;
+//             }
+//         } else {
+//             // Jika tidak perlu response, cukup kirim request
+//             //console.log("✅ Request sent (no response returned)");
+//         }
+//     } catch (err) {
+//         console.log("❌ Gagal mengirim request:", err);
+//         return null;
+//     }
+// }
 
 
 function createJoinRallyPayload(codes, amounts, rallyMoId) {
@@ -611,52 +624,6 @@ function payloadSendmarch(troops, loc, marchType, dragoId) {
     };
 }
 
-// async function getMarchInfo(loc, battleId = null) {
-//     if (!loc) {
-//         console.warn("❌ loc wajib diisi");
-//         return null;
-//     }
-
-//     // toLoc sesuai definisi kamu
-//     const toLoc = [kingdomData.loc[0], ...loc];
-
-//     // payload minimal
-//     const payload_marchInfo = {
-//         fromId: kingdomData.fieldObjectId,
-//         toLoc: toLoc
-//     };
-
-//     // jika battleId ada → tambahkan rallyMoId
-//     if (battleId) {
-//         payload_marchInfo.rallyMoId = battleId;
-//     }
-
-//     try {
-//         const marchInfoResponse = await sendRequest({
-//             url: API_BASE_URL + "field/march/info",
-//             token: token,
-//             body: JSON.stringify(payload_marchInfo),
-//             returnResponse: true
-//         });
-
-//         //const marchInfo = b64xorDec(marchInfoResponse, xor_password);
-
-//         // jika request gagal
-//         if (!marchInfoResponse?.result) {
-//             const errCode = marchInfoResponse?.err?.code;
-
-//             console.warn("❌ March info gagal:", errCode);
-//             return null;
-//         }
-
-//         return marchInfoResponse;
-
-//     } catch (err) {
-//         console.error("❌ Error getMarchInfo:", err);
-//         return null;
-//     }
-// }
-
 async function getMarchInfo(locOrToLoc, battleId = null) {
     if (!Array.isArray(locOrToLoc)) {
         console.warn("❌ loc / toLoc wajib array");
@@ -690,9 +657,13 @@ async function getMarchInfo(locOrToLoc, battleId = null) {
         const res = await sendRequest({
             url: API_BASE_URL + "field/march/info",
             token,
-            body: JSON.stringify(payload_marchInfo),
-            returnResponse: true
+            body: payload_marchInfo
         });
+
+        if (res === null) {
+            console.log("⛔ Request gagal / server error");
+            return null;
+        }
 
         //const marchInfo = b64xorDec(res, xor_password);
 
@@ -721,20 +692,24 @@ function getTroopGroupByHP(monsterHP, marchInfo) {
 async function getMarchLimit() {
     if (!hasToken()) return null;
 
-    const response = await sendRequest({
+    const res = await sendRequest({
         url: API_BASE_URL + "kingdom/profile/troops",
         token: token,
-        body: "{}",
-        returnResponse: true
+        body: {}
     });
 
+    if (res === null) {
+        console.log("⛔ Request gagal / server error");
+        return null;
+    }
+
     // Pastikan response valid dan berisi properti yang diharapkan
-    if (response && response.result && response.troops && response.troops.info) {
-        const marchLimit = response.troops.info.marchLimit;
+    if (res && res.result && res.troops && res.troops.info) {
+        const marchLimit = res.troops.info.marchLimit;
         console.log("✅ marchLimit:", marchLimit);
         return marchLimit;
     } else {
-        console.warn("⚠️ Gagal mendapatkan marchLimit dari response:", response);
+        console.warn("⚠️ Gagal mendapatkan marchLimit dari response:", res);
         return null;
     }
 }
@@ -742,19 +717,24 @@ async function getMarchLimit() {
 async function getMarchQueueUsed() {
     if (!hasToken()) return 0;
 
-    const response = await sendRequest({
+    const res = await sendRequest({
         url: API_BASE_URL + "kingdom/profile/troops",
         token: token,
-        body: "{}",
-        returnResponse: true
+        body: {}
     });
 
-    if (response?.result && Array.isArray(response.troops?.field)) {
-        const marchQueueUsed = response.troops.field.length;
+    if (res === null) {
+        console.log("⛔ Request gagal / server error");
+        return 0;
+    }
+
+
+    if (res?.result && Array.isArray(res.troops?.field)) {
+        const marchQueueUsed = res.troops.field.length;
         //console.log("Jumlah march queue yang digunakan:", marchQueueUsed);
         return marchQueueUsed;
     } else {
-        console.warn("⚠️ Field troops tidak ditemukan atau bukan array:", response);
+        console.warn("⚠️ Field troops tidak ditemukan atau bukan array:", res);
         return 0;
     }
 }
@@ -762,14 +742,14 @@ async function getMarchQueueUsed() {
 
 async function getItemList() {
     if (!hasToken()) return;
-    const inputRaw = {
+
+    const res = await sendRequest({
         url: API_BASE_URL + "item/list",
         token: token,
-        body: "{}",
-        returnResponse: true
-    };
-    const itemList = await sendRequest(inputRaw);
-    return itemList;
+        body: {}
+    });
+
+    return res;
 }
 
 function getAmountItemList(data, targetCode) {
@@ -791,16 +771,14 @@ async function useItem(code, amount) {
         url: API_BASE_URL + "item/use",
         token,
         //body: b64xorEnc(itemPayload, xor_password),
-        body: JSON.stringify(itemPayload),
-        returnResponse: false
+        body: itemPayload
     });
 
     // Kirim data analitik
     await sendRequest({
         url: API_BASE_URL + "auth/analytics",
         token,
-        body: JSON.stringify(analyticsPayload),
-        returnResponse: false
+        body: analyticsPayload
     });
 }
 
@@ -812,8 +790,7 @@ async function useActionPoint() {
         url: API_BASE_URL + "kingdom/profile/my",
         token: token,
         //body: b64xorEnc({}, xor_password),
-        body: "{}",
-        returnResponse: true
+        body: {}
     };
     //const infoProfileEnc = await sendRequest(inputRaw);
     //const infoProfile = b64xorDec(infoProfileEnc, xor_password);
@@ -866,8 +843,7 @@ async function heal(targetDuration = null, speedHeal = null) {
     const itemList = await sendRequest({
         url: API_BASE_URL + "item/list",
         token,
-        body: "{}",
-        returnResponse: true
+        body: {}
     });
 
     function getItemStock(code) {
@@ -879,8 +855,7 @@ async function heal(targetDuration = null, speedHeal = null) {
     const wounded = await sendRequest({
         url: API_BASE_URL + "kingdom/hospital/wounded",
         token,
-        body: "{}",
-        returnResponse: true
+        body: {}
     });
 
     let totalTime = 0;
@@ -1000,15 +975,13 @@ async function heal(targetDuration = null, speedHeal = null) {
             url: API_BASE_URL + "kingdom/heal/speedup",
             token,
             // body: b64xorEnc(itemPayload, xor_password),
-            body: JSON.stringify(itemPayload),
-            returnResponse: false
+            body: itemPayload
         });
 
         await sendRequest({
             url: API_BASE_URL + "auth/analytics",
             token,
-            body: JSON.stringify(analyticsPayload),
-            returnResponse: false
+            body: analyticsPayload
         });
     }
 }
@@ -1020,8 +993,7 @@ async function changeSkin(skinCode = SKIN_CODE_INCREASE_DROP_RATE) {
     const response = await sendRequest({
         url: API_BASE_URL + "kingdom/skin/list",
         token: token,
-        body: JSON.stringify({ type: 0 }),
-        returnResponse: true
+        body: { type: 0 }
     });
 
     // Cari skin ID berdasarkan skinCode yang diberikan
@@ -1052,12 +1024,11 @@ async function changeSkin(skinCode = SKIN_CODE_INCREASE_DROP_RATE) {
     await delay(1000);
 
     // Step 2: Equip skin
-    const equipPayload = JSON.stringify({ itemId: skin._id });
+    const equipPayload = { itemId: skin._id };
     await sendRequest({
         url: API_BASE_URL + "kingdom/skin/equip",
         token: token,
-        body: equipPayload,
-        returnResponse: false
+        body: equipPayload
     });
 
     console.log(`✅ Skin dengan code ${skinCode} berhasil di-equip.`);
@@ -1072,8 +1043,7 @@ async function changeTreasure(page = 3) {
             url: API_BASE_URL + "kingdom/profile/my",
             token: token,
             //body: b64xorEnc({}, xor_password),
-            body: "{}",
-            returnResponse: false
+            body: {}
         });
 
         await delay(1000);
@@ -1081,8 +1051,7 @@ async function changeTreasure(page = 3) {
         const treasureList = await sendRequest({
             url: API_BASE_URL + "kingdom/treasure/list",
             token: token,
-            body: "{}",
-            returnResponse: true
+            body: {}
         });
 
         const currentPage = treasureList.page;
@@ -1098,8 +1067,7 @@ async function changeTreasure(page = 3) {
         await sendRequest({
             url: API_BASE_URL + "kingdom/treasure/page",
             token: token,
-            body: JSON.stringify({ page: currentPage }),
-            returnResponse: false
+            body: { page: currentPage }
         });
 
         await delay(2000);
@@ -1107,8 +1075,7 @@ async function changeTreasure(page = 3) {
         await sendRequest({
             url: API_BASE_URL + "kingdom/treasure/page",
             token: token,
-            body: JSON.stringify({ page }),
-            returnResponse: false
+            body: { page }
         });
 
         console.log(`✅ Treasure berhasil diubah ke page ${page + 1}`);
@@ -1124,8 +1091,7 @@ async function claimVIP() {
         const response = await sendRequest({
             url: API_BASE_URL + "kingdom/vip/info",
             token,
-            body: "{}",
-            returnResponse: true
+            body: {}
         });
 
         if (!response?.result) {
@@ -1144,8 +1110,7 @@ async function claimVIP() {
             url: API_BASE_URL + "kingdom/vip/claim",
             token,
             //body: b64xorEnc({}, xor_password),
-            body: "{}",
-            returnResponse: false
+            body: {}
         });
 
         console.log("🏆 VIP reward berhasil diklaim.");
@@ -1161,8 +1126,7 @@ async function claimDSAVIP() {
         const response = await sendRequest({
             url: API_BASE_URL + "kingdom/dsavip/info",
             token,
-            body: "{}",
-            returnResponse: true
+            body: {}
         });
 
         if (!response?.result) {
@@ -1180,8 +1144,7 @@ async function claimDSAVIP() {
         await sendRequest({
             url: API_BASE_URL + "kingdom/dsavip/claim",
             token,
-            body: "{}",
-            returnResponse: false
+            body: {}
         });
 
         console.log("🏆 DSA VIP reward berhasil diklaim.");
@@ -1198,8 +1161,7 @@ async function claimDailyQuest() {
         return await sendRequest({
             url: API_BASE_URL + "quest/list/daily",
             token,
-            body: "{}",
-            returnResponse: true
+            body: {}
         });
     }
 
@@ -1217,8 +1179,7 @@ async function claimDailyQuest() {
                 await sendRequest({
                     url: API_BASE_URL + "quest/claim/daily",
                     token,
-                    body: JSON.stringify({ questId, code }),
-                    returnResponse: false
+                    body: { questId, code }
                 });
                 console.log(`✅ Claimed daily quest ${code}`);
                 await delay(5000);
@@ -1238,8 +1199,7 @@ async function claimDailyQuest() {
                 await sendRequest({
                     url: API_BASE_URL + "quest/claim/daily/level",
                     token,
-                    body: JSON.stringify({ level }),
-                    returnResponse: false
+                    body: { level }
                 });
                 console.log(`🎁 Claimed reward level ${level}`);
                 await delay(5000);
@@ -1250,50 +1210,7 @@ async function claimDailyQuest() {
         console.error("❌ Gagal klaim daily quest atau reward:", error);
     }
 }
-// async function claimMainQuest() {
-//     if (!hasToken()) return;
 
-//     async function getQuestList() {
-//         return await sendRequest({
-//             url: API_BASE_URL + "quest/list",
-//             token,
-//             body: "{}",
-//             returnResponse: true
-//         });
-//     }
-
-//     try {
-//         // Step 1: Ambil list quest
-//         const response = await getQuestList();
-//         if (!response?.result) return;
-
-//         // Gabungkan main + side quest
-//         const quests = [
-//             ...(response.mainQuests || []),
-//             ...(response.sideQuests || [])
-//         ];
-
-//         // Step 2: Klaim quest dengan status == 2
-//         for (const quest of quests) {
-//             const { code, status } = quest;
-
-//             if (status === STATUS_FINISHED) {
-//                 await sendRequest({
-//                     url: API_BASE_URL + "quest/claim",
-//                     token,
-//                     body: JSON.stringify({ code }),
-//                     returnResponse: false
-//                 });
-
-//                 console.log(`✅ Claimed quest ${code}`);
-//                 await delay(5000);
-//             }
-//         }
-
-//     } catch (error) {
-//         console.error("❌ Gagal klaim quest:", error);
-//     }
-// }
 async function claimMainQuest() {
     if (!hasToken()) return false;
 
@@ -1301,8 +1218,7 @@ async function claimMainQuest() {
         return sendRequest({
             url: API_BASE_URL + "quest/list",
             token,
-            body: "{}",
-            returnResponse: true
+            body: {}
         });
     }
 
@@ -1331,8 +1247,7 @@ async function claimMainQuest() {
             await sendRequest({
                 url: API_BASE_URL + "quest/claim",
                 token,
-                body: JSON.stringify({ code }),
-                returnResponse: false
+                body: { code }
             });
 
             console.log(`✅ Claimed main quest ${code}`);
@@ -1370,16 +1285,14 @@ async function claimEventQuest() {
         return sendRequest({
             url: API_BASE_URL + "event/list",
             token,
-            body: "{}",
-            returnResponse: true
+            body: {}
         });
     }
     async function getEventInfo(rootEventId) {
         return sendRequest({
             url: API_BASE_URL + "event/info",
             token,
-            body: JSON.stringify({rootEventId}),
-            returnResponse: true
+            body: {rootEventId}
         });
     }
 
@@ -1387,8 +1300,7 @@ async function claimEventQuest() {
         return sendRequest({
             url: API_BASE_URL + "event/claim",
             token,
-            body: JSON.stringify({eventId, eventTargetId, code}),
-            returnResponse: true
+            body: {eventId, eventTargetId, code}
         });
     } 
     try {
@@ -1468,15 +1380,13 @@ async function helpAll() {
         await sendRequest({
             url: API_BASE_URL + "alliance/info/my",
             token,
-            body: "{}",
-            returnResponse: false
+            body: {}
         });
 
         const helpList = await sendRequest({
             url: API_BASE_URL + "alliance/help/list",
             token,
-            body: "{}",
-            returnResponse: true
+            body: {}
         });
 
         if (!helpList || !helpList.otherTasks || helpList.otherTasks.length === 0) {
@@ -1489,8 +1399,7 @@ async function helpAll() {
         await sendRequest({
             url: API_BASE_URL + "alliance/help/all",
             token,
-            body: "{}",
-            returnResponse: false
+            body: {}
         });
 
         console.log("✅ Selesai membantu semua tugas.");
@@ -1530,16 +1439,14 @@ async function scheduleAutoDonate() {
             await sendRequest({
                 url: API_BASE_URL + "alliance/info/my",
                 token: token,
-                body: "{}",
-                returnResponse: false
+                body: {}
             });
 
             // Ambil status riset alliance
             const response = await sendRequest({
                 url: API_BASE_URL + "alliance/research/list",
                 token: token,
-                body: "{}",
-                returnResponse: true
+                body: {}
             });
 
             if (response.todayRP >= 10000) {
@@ -1560,16 +1467,14 @@ async function scheduleAutoDonate() {
             await sendRequest({
                 url: API_BASE_URL + "alliance/research/info",
                 token: token,
-                body: JSON.stringify({ researchCode }),
-                returnResponse: false
+                body: { researchCode }
             });
 
             // Donasi ke riset
             const response_donate_all = await sendRequest({
                 url: API_BASE_URL + "alliance/research/donateAll",
                 token: token,
-                body: JSON.stringify({ code: researchCode }),
-                returnResponse: true
+                body: { code: researchCode }
             });
 
             if (!response_donate_all.result) {
@@ -1614,10 +1519,7 @@ async function resourceHarvest() {
                     // body: b64xorEnc({
                     //     position: building.position
                     // }, xor_password),
-                    body: JSON.stringify({
-                        position: building.position
-                    }),
-                    returnResponse: false
+                    body: { position: building.position }
                 });
 
                 console.log(`✅ Memanen bangunan pertama dengan code ${building.code} di posisi ${building.position}`);
@@ -1682,8 +1584,7 @@ async function scheduleAutoOpenFreeChest() {
                 url: API_BASE_URL + "item/freechest",
                 token: token,
                 //body: b64xorEnc({ type: 0 }, xor_password),
-                body: JSON.stringify({ type: 0 }),
-                returnResponse: true
+                body: { type: 0 }
             });
 
             // const response = b64xorDec(res, xor_password);
@@ -1716,8 +1617,7 @@ async function buyCaravan() {
         const caravanList = await sendRequest({
             url: API_BASE_URL + "kingdom/caravan/list",
             token,
-            body: "{}",
-            returnResponse: true
+            body: {}
         });
 
         // Semua item yang ingin dibeli
@@ -1797,8 +1697,7 @@ async function buyCaravan() {
             await sendRequest({
                 url: API_BASE_URL + "kingdom/caravan/buy",
                 token,
-                body: JSON.stringify({ caravanItemId: item._id }),
-                returnResponse: false
+                body: { caravanItemId: item._id }
             });
         }
 
@@ -1846,13 +1745,10 @@ async function startTower(level) {
     if (!hasToken()) return;
 
     try {
-        const payload = JSON.stringify({ searchType: 0, level });
-
         await sendRequest({
             url: API_BASE_URL + "kingdom/watchtower/search",
             token,
-            body: payload,
-            returnResponse: false
+            body: { searchType: 0, level }
         });
 
         console.log(`[${new Date().toLocaleTimeString()}] ✅ startTower (level ${level}) berhasil.`);
@@ -1930,8 +1826,7 @@ async function instantHarvest() {
         await sendRequest({
             url: API_BASE_URL + "skill/use",
             token,
-            body: JSON.stringify({ code: 10018 }),
-            returnResponse: false
+            body: { code: 10018 }
         });
         //await delay(1000);
 
@@ -1939,8 +1834,7 @@ async function instantHarvest() {
         await sendRequest({
             url: API_BASE_URL + "skill/use",
             token,
-            body: JSON.stringify({ code: 10001 }),
-            returnResponse: false
+            body: { code: 10001 }
         });
         await delay(1000);
 
@@ -1956,50 +1850,12 @@ async function instantHarvest() {
     }
 }
 
-// async function scheduleInstantHarvest() {
-//     try {
-//         const { skills } = await sendRequest({
-//             url: API_BASE_URL + "skill/list",
-//             token,
-//             body: "{}",
-//             returnResponse: true
-//         });
-
-//         const skill = skills.find(s => s.code === 10001);
-//         if (!skill) {
-//             console.warn("⚠️ Skill 10001 tidak ditemukan.");
-//             return;
-//         }
-
-//         const waitMs = Math.max(
-//             new Date(skill.nextSkillTime).getTime() + 3 * 60 * 1000 - Date.now(),
-//             0
-//         );
-
-//         const totalSeconds = Math.floor(waitMs / 1000);
-//         const hours = Math.floor(totalSeconds / 3600);
-//         const minutes = Math.floor((totalSeconds % 3600) / 60);
-//         const seconds = totalSeconds % 60;
-
-//         console.log(`🕒 Menunggu ${hours} jam ${minutes} menit ${seconds} detik untuk Instant Harvest`);
-
-
-//         setTimeout(async () => {
-//             await instantHarvest();
-//             scheduleInstantHarvest(); // 🔁 Loop
-//         }, waitMs);
-//     } catch (error) {
-//         console.error("❌ Error saat scheduling:", error);
-//         setTimeout(scheduleInstantHarvest, 3 * 60 * 1000); // Retry in 3 minutes
-//     }
-// }
 async function scheduleInstantHarvest() {
     try {
         const { skills } = await sendRequest({
             url: API_BASE_URL + "skill/list",
             token,
-            body: "{}",
-            returnResponse: true
+            body: {}
         });
 
         const skill = skills.find(s => s.code === 10001);
@@ -2069,8 +1925,7 @@ async function summonMonster() {
         await sendRequest({
             url: API_BASE_URL + "skill/use",
             token,
-            body: JSON.stringify({ code: 10023 }),
-            returnResponse: false
+            body: { code: 10023 }
         });
         //await delay(2000);
 
@@ -2088,8 +1943,7 @@ async function scheduleSummonMonster() {
         const { skills } = await sendRequest({
             url: API_BASE_URL + "skill/list",
             token,
-            body: "{}",
-            returnResponse: true
+            body: {}
         });
 
         const skill = skills.find(s => s.code === 10023);
@@ -2130,8 +1984,7 @@ async function scheduleSkillActivate(codes = [10001]) {
         const { skills } = await sendRequest({
             url: API_BASE_URL + "skill/list",
             token,
-            body: "{}",
-            returnResponse: true
+            body: {}
         });
 
         if (!Array.isArray(codes)) codes = [codes];
@@ -2495,110 +2348,6 @@ function load() {
     bookmarkResults = JSON.parse(localStorage.getItem('bookmarkMonsterRally_bk')) || [];
 }
 
-/*
-async function BookmarkSaveInGame(limit = undefined) {
-    if (!Array.isArray(bookmarkResults)) {
-        console.warn("❗ bookmarkResults tidak ditemukan.");
-        return;
-    }
-
-    const sortedUnique = getSortedUniqueBookmarks();
-    if (sortedUnique.length === 0) {
-        console.warn("⚠️ Tidak ada bookmark yang bisa disimpan.");
-        return;
-    }
-
-    const finalResults = typeof limit === "number" ? sortedUnique.slice(0, limit) : sortedUnique;
-
-    for (const item of finalResults) {
-        const body = JSON.stringify({
-            name: `${item.name} Lv.${item.level}`,
-            loc: item.loc,
-            mark: 1
-        });
-
-        await delay(2000);
-        await sendRequest({
-            url: API_BASE_URL + "kingdom/bookmark/add",
-            token: token,
-            body: body,
-            returnResponse: false
-        });
-
-        console.log(`✅ Saved bookmark: ${item.name} Lv.${item.level} at ${item.loc.join(",")}`);
-    }
-
-    // Kosongkan setelah disimpan
-    bookmarkResults = [];
-    console.log("🧹 bookmarkResults dikosongkan setelah disimpan.");
-}
-
-async function bookmarkDeleteInGame(indexOrRange) {
-    const bookmarks = kingdomData.bookmarks;
-    if (!Array.isArray(bookmarks) || bookmarks.length === 0) {
-        console.warn("Tidak ada bookmark untuk dihapus.");
-        return;
-    }
-
-    let indexesToRemove = [];
-
-    if (typeof indexOrRange === 'undefined') {
-        // Hapus semua (semua index 0-based)
-        indexesToRemove = bookmarks.map((_, i) => i);
-    } else if (typeof indexOrRange === 'number') {
-        const index = indexOrRange - 1;
-        if (index >= 0 && index < bookmarks.length) {
-            indexesToRemove = [index];
-        } else {
-            console.warn("Index tidak valid.");
-            return;
-        }
-    } else if (
-        Array.isArray(indexOrRange) &&
-        indexOrRange.length === 2 &&
-        indexOrRange.every(n => typeof n === 'number')
-    ) {
-        const [start, end] = indexOrRange.map(n => n - 1); // convert to 0-based
-        if (start <= end && start >= 0 && end < bookmarks.length) {
-            for (let i = start; i <= end; i++) {
-                indexesToRemove.push(i);
-            }
-        } else {
-            console.warn("Range index tidak valid.");
-            return;
-        }
-    } else {
-        console.warn("Input tidak dikenali. Gunakan angka atau [start, end].");
-        return;
-    }
-
-    const useDelay = indexesToRemove.length > 1;
-
-    for (let i = 0; i < indexesToRemove.length; i++) {
-        const idx = indexesToRemove[i];
-        const bookmark = bookmarks[idx];
-
-        if (!bookmark || !bookmark.loc) {
-            console.warn(`Bookmark tidak valid pada index ${idx}`);
-            continue;
-        }
-
-        await sendRequest({
-            url: API_BASE_URL + "kingdom/bookmark/remove",
-            token,
-            body: JSON.stringify({ loc: bookmark.loc }),
-            returnResponse: false
-        });
-
-        console.log(`Bookmark urutan ke-${idx + 1} berhasil dihapus`);
-
-        if (useDelay && i < indexesToRemove.length - 1) {
-            await delay(3000);
-        }
-    }
-}
-*/
-
 function getMarchTypeName(marchType) {
     switch (marchType) {
         case MARCH_TYPE_GATHER: return 'Gathering';
@@ -2609,58 +2358,6 @@ function getMarchTypeName(marchType) {
         default: return `Unknown Type (${marchType})`;
     }
 }
-
-// async function sendMarch(loc, marchType, troopIndex, dragoId) {
-//     try {
-//         const marchTypeName = getMarchTypeName(marchType);
-
-//         // 🔁 Cek march queue sebelum lanjut
-//         const marchQueueUsed = await getMarchQueueUsed();
-//         if (marchQueueUsed >= marchLimit) {
-//             console.log(`⛔ March queue penuh (${marchQueueUsed}/${marchLimit}), batal ${marchTypeName} ke (${loc[0]}, ${loc[1]})`);
-//             return false;
-//         }
-
-//         const marchInfo = await getMarchInfo(loc);
-//         if (!marchInfo) return false;
-//         //console.log("✅ March info:", marchInfo);        
-
-//         if (marchInfo?.fo?.occupied === true) {
-//             return false;
-//         }
-
-//         const troops = marchInfo?.saveTroops?.[troopIndex];
-//         if (!troops) {
-//             console.warn(`⚠️ Troops preset ke-${troopIndex} tidak ditemukan.`);
-//             return false;
-//         }
-
-//         const canSendMarch = troops.every(saveTroop => {
-//             const troopInMarch = marchInfo.troops.find(troop => troop.code === saveTroop.code);
-//             return troopInMarch && saveTroop.amount <= troopInMarch.amount;
-//         });
-
-//         if (!canSendMarch) {
-//             console.log(`❌ Gagal ${marchTypeName} ke (${loc[0]}, ${loc[1]}) karena jumlah troops kurang`);
-//             return false;
-//         }
-
-//         const marchStartResponse = await sendRequest({
-//             url: API_BASE_URL + "field/march/start",
-//             token: token,
-//             //body: b64xorEnc(payload, xor_password),
-//             body: JSON.stringify(payloadSendmarch(troops, loc, marchType, dragoId)),
-//             returnResponse: true
-//         });
-
-//         console.log(`✅ March dikirim: ${marchTypeName} ke (${loc[0]}, ${loc[1]})`);
-
-//         return true;
-//     } catch (err) {
-//         console.error("❌ Error saat proses sendMarch:", err);
-//         return false;
-//     }
-// }
 
 async function sendMarch(loc, marchType, troopIndex, dragoId) {
     try {
@@ -2713,8 +2410,7 @@ async function sendMarch(loc, marchType, troopIndex, dragoId) {
         const marchStartResponse = await sendRequest({
             url: API_BASE_URL + "field/march/start",
             token,
-            body: JSON.stringify(payloadSendmarch(troops, loc, marchType, dragoId)),
-            returnResponse: true
+            body: payloadSendmarch(troops, loc, marchType, dragoId)
         });
 
         // ⛔ jika server menolak
@@ -2795,8 +2491,7 @@ async function support(x, y) {
         const dragoList = await sendRequest({
             url: API_BASE_URL + "drago/lair/list",
             token: token,
-            body: "{}",
-            returnResponse: true
+            body: {}
         });
 
         const drago = dragoList.dragos
@@ -2832,8 +2527,7 @@ async function dsc(x, y) {
         const dragoList = await sendRequest({
             url: API_BASE_URL + "drago/lair/list",
             token: token,
-            body: "{}",
-            returnResponse: true
+            body: {}
         });
 
         // const drago = dragoList.dragos
@@ -3158,72 +2852,6 @@ async function startRallyMonsterFromBookmarks(bookmarks = bookmarkMonsterRally) 
     console.log("✅ Semua rally dari bookmark selesai.");
 }
 
-
-// async function rallyMonster(loc, rallyTime = 5, troopIndex = 0, message = "") {
-//     const marchQueueUsed = await getMarchQueueUsed();
-//     if (marchQueueUsed >= marchLimit) {
-//         console.log(`⛔ March queue penuh (${marchQueueUsed}/${marchLimit}), batal set rally.`);
-//         return false;
-//     }
-
-//     const marchInfo = await getMarchInfo(loc);
-//     if (!marchInfo) return false;
-//     //console.log("✅ March info:", marchInfo);
-
-//     if (marchInfo.marchType !== MARCH_TYPE_MONSTER) {
-//         const marchTypeName = getMarchTypeName(marchInfo.marchType);
-//         console.log(`⛔ MarchType bukan untuk rally/attack monster (marchType = ${marchTypeName}).`);
-//         return false;
-//     }    
-
-//     const troops = marchInfo?.saveTroops?.[troopIndex];
-//     if (!troops) {
-//         console.warn(`⚠️ Troops preset ke-${troopIndex} tidak ditemukan.`);
-//         return false;
-//     }
-
-//     const canSendMarch = troops.every(saveTroop => {
-//         const troopInMarch = marchInfo.troops.find(troop => troop.code === saveTroop.code);
-//         return troopInMarch && saveTroop.amount <= troopInMarch.amount;
-//     });
-
-//     if (!canSendMarch) {
-//         console.warn("⛔ Gagal karena jumlah troops kurang dari preset.");
-//         return false;
-//     }
-
-//     const toLoc = [kingdomData.loc[0], ...loc];
-//     const payload = {
-//         marchType: marchInfo.marchType,
-//         toLoc,
-//         marchTroops: troops,
-//         rallyTime,
-//         message
-//     };
-
-//     try {
-//         await useActionPoint();
-//         await delay(1000);
-//         const rallyStartResponse = await sendRequest({
-//             url: API_BASE_URL + "field/rally/start",
-//             token,
-//             //body: b64xorEnc(payload, xor_password),
-//             body: JSON.stringify(payload),
-//             returnResponse: false
-//         });
-
-//         // ⛔ jika server menolak
-//         if (!rallyStartResponse?.result) {
-//             return false;
-//         }        
-
-//         return true;
-//     } catch (err) {
-//         console.error("❌ Gagal set rally:", err);
-//         return false;
-//     }
-// }
-
 async function rallyMonster(loc, rallyTime = 5, troopIndex = 0, message = "") {
     try {
         // =====================
@@ -3295,8 +2923,7 @@ async function rallyMonster(loc, rallyTime = 5, troopIndex = 0, message = "") {
             url: API_BASE_URL + "field/rally/start",
             token,
             //body: b64xorEnc(payload, xor_password),
-            body: JSON.stringify(payload),
-            returnResponse: false
+            body: payload
         });
 
         // server reject
@@ -3315,28 +2942,6 @@ async function rallyMonster(loc, rallyTime = 5, troopIndex = 0, message = "") {
 
 // ada kekurangan bila error fulltask dari sendMarch tidak ditangani
 async function attackMonster(x, y) {
-    // const toLoc = [kingdomData.loc[0], x, y];
-
-    // const payload_marchInfo = {
-    //     fromId: kingdomData.fieldObjectId,
-    //     toLoc: toLoc
-    // };
-
-    // let marchInfoResponse, marchInfo;
-    // try {
-    //     marchInfoResponse = await sendRequest({
-    //         url: API_BASE_URL + "field/march/info",
-    //         token: token,
-    //         //body: b64xorEnc(payload_marchInfo, xor_password),
-    //         body: JSON.stringify(payload_marchInfo),
-    //         returnResponse: true
-    //     });
-    //     //marchInfo = b64xorDec(marchInfoResponse, xor_password);
-    //     marchInfo = marchInfoResponse;
-    // } catch (err) {
-    //     console.error("❌ Gagal ambil march info:", err);
-    //     return false;
-    // }
 
     const marchInfo = await getMarchInfo(loc);
     if (!marchInfo) return false;
@@ -3386,57 +2991,10 @@ async function attackMonster(x, y) {
     }
 }
 
-/*
-async function attackMonster(x, y) {
-    const toLoc = [kingdomData.loc[0], ...[x, y]];
-
-    const payload_marchInfo = {
-        fromId: kingdomData.fieldObjectId,
-        toLoc: toLoc
-    };
-
-    let marchInfoResponse, marchInfo;
-    try {
-        marchInfoResponse = await sendRequest({
-            url: API_BASE_URL + "field/march/info",
-            token: token,
-            body: b64xorEnc(payload_marchInfo, xor_password),
-            returnResponse: true
-        });
-        marchInfo = b64xorDec(marchInfoResponse, xor_password);
-    } catch (err) {
-        console.error("❌ Gagal ambil march info:", err);
-        return;
-    }
-    
-    const monsterLevel = marchInfo?.fo?.level;
-
-    let selectedTroop;
-
-    if (monsterLevel <= 6) {
-        selectedTroop = 0;
-    } else if (monsterLevel <= 7) {
-        selectedTroop = 1;
-    } else if (monsterLevel >= 8) {
-        selectedTroop = 2;
-    }    
-
-    await useActionPoint();
-    await delay(1000);
-    await sendMarch([x, y], 5, selectedTroop); // marchType 7 = support, preset index 2    
-}
-*/
-
-//async function GoblinAttack() {
 async function goblin() {
     let bookmarkMonsterNormal = JSON.parse(localStorage.getItem('bookmarkMonsterNormal_bk')) || [];
     await startAttackMonsterFromBookmarks(bookmarkMonsterNormal);
 }
-
-// async function dk() {
-//     let bookmarkMonsterRally = JSON.parse(localStorage.getItem('bookmarkMonsterRally_bk')) || [];
-//     await startRallyMonsterFromBookmarks(bookmarkMonsterRally);
-// }
 
 // dk();       // semua level
 // dk(5);      // level >= 5
@@ -3545,8 +3103,7 @@ async function exportCvCRankToCSV(eventId, filename = `CvC_Rank_${getTodayKey()}
     const eventListCvC = await sendRequest({
         url: API_BASE_URL + "event/list/cvc",
         token: token,
-        body: "{}",
-        returnResponse: true
+        body: {}
     });
 
     if (!eventListCvC?.result || !Array.isArray(eventListCvC.events)) {
@@ -3567,8 +3124,7 @@ async function exportCvCRankToCSV(eventId, filename = `CvC_Rank_${getTodayKey()}
     const data = await sendRequest({
         url: API_BASE_URL + "event/cvc/ranking/continent",
         token: token,
-        body: JSON.stringify({ eventId, worldId }),
-        returnResponse: true
+        body: { eventId, worldId }
     });
 
     if (!data?.result || !Array.isArray(data.ranking)) {
@@ -3604,8 +3160,7 @@ async function exportCvCWeek1ToCSV(eventId, filename = `CvC_Week1_Rank_${getToda
     const eventListCvC = await sendRequest({
         url: API_BASE_URL + "event/list/cvc",
         token: token,
-        body: "{}",
-        returnResponse: true
+        body: {}
     });
 
     if (!eventListCvC?.result || !Array.isArray(eventListCvC.events)) {
@@ -3626,8 +3181,7 @@ async function exportCvCWeek1ToCSV(eventId, filename = `CvC_Week1_Rank_${getToda
     const data = await sendRequest({
         url: API_BASE_URL + "event/cvc/ranking/continent",
         token: token,
-        body: JSON.stringify({ eventId, worldId }),
-        returnResponse: true
+        body: { eventId, worldId }
     });
 
     if (!data?.result || !Array.isArray(data.ranking)) {
@@ -3648,8 +3202,7 @@ async function exportCvCWeek1ToCSV(eventId, filename = `CvC_Week1_Rank_${getToda
             const historyRes = await sendRequest({
                 url: API_BASE_URL + "kingdom/profile/other/history",
                 token: token,
-                body: JSON.stringify({ kingdomId }),
-                returnResponse: true
+                body: { kingdomId }
             });
 
             if (historyRes?.result) {
@@ -3736,8 +3289,7 @@ async function autoJoinRally() {
         const rallyList = await sendRequest({
             url: API_BASE_URL + "alliance/battle/list/v2",
             token: token,
-            body: "{}",
-            returnResponse: true
+            body: {}
         });
 
         //console.log("📥 Rally list response:", rallyList);
@@ -3870,44 +3422,24 @@ async function autoJoinRally() {
             // await sendRequest({
             //     url: API_BASE_URL + "alliance/info/my",
             //     token: token,
-            //     body: "{}",
-            //     returnResponse: false
+            //     body: {}
             // });
             // await delayRandom();
 
             // await sendRequest({
             //     url: API_BASE_URL + "alliance/battle/list/v2",
             //     token: token,
-            //     body: "{}",
-            //     returnResponse: false
+            //     body: {}
             // });
             // await delayRandom();
 
             const battleInfo = await sendRequest({
                 url: API_BASE_URL + "alliance/battle/info",
                 token: token,
-                body: JSON.stringify({ rallyMoId: battleId }),
-                returnResponse: true
+                body: { rallyMoId: battleId }
             });
             await delayRandom();
             console.log("📥 /alliance/battle/info", battleInfo);
-
-
-            // const payload_marchInfo = {
-            //     fromId: kingdomData.fieldObjectId,
-            //     toLoc: battleInfo.battle.fromLoc,
-            //     rallyMoId: battleId
-            // };
-            // const marchInfoResponse = await sendRequest({
-            //     url: API_BASE_URL + "field/march/info",
-            //     token: token,
-            //     //body: b64xorEnc(payload_marchInfo, xor_password),
-            //     body: JSON.stringify(payload_marchInfo),
-            //     returnResponse: true
-            // });
-            // await delayRandom();
-            // //const marchInfo = b64xorDec(marchInfoResponse, xor_password);
-            // const marchInfo = marchInfoResponse;
 
             const marchInfo = await getMarchInfo(battleInfo.battle.fromLoc, battleId);
             if (!marchInfo) continue;
@@ -3955,8 +3487,7 @@ async function autoJoinRally() {
             const joinRallyResponse = await sendRequest({
                 url: API_BASE_URL + "field/rally/join",
                 token: token,
-                body: JSON.stringify(payload_rally_encrypted),
-                returnResponse: true
+                body: payload_rally_encrypted
             });
             console.log("📥 Join rally response:", joinRallyResponse);
 
