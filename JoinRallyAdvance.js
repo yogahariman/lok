@@ -468,6 +468,10 @@ function getZoneIds(minX, maxX, minY, maxY) {
 //const result = getZoneIds(1, 2000, 1, 2000);
 //console.log(result);
 
+function isApiSuccess(res) {
+    return res !== null && res?.result === true;
+}
+
 async function sendRequest({ url, token, body }) {
     try {
         const response = await fetch(url, {
@@ -660,18 +664,12 @@ async function getMarchInfo(locOrToLoc, battleId = null) {
             body: payload_marchInfo
         });
 
-        if (res === null) {
-            console.log("⛔ Request gagal / server error");
-            return null;
-        }
-
-        //const marchInfo = b64xorDec(res, xor_password);
-
         if (!res?.result) {
             console.warn("❌ March info gagal:", res?.err?.code);
             return null;
         }
 
+        //const marchInfo = b64xorDec(res, xor_password);
         return res;
     } catch (err) {
         console.error("❌ Error getMarchInfo:", err);
