@@ -3574,10 +3574,9 @@ async function autoJoinRally() {
                 token: token,
                 body: { rallyMoId: battleId }
             });
-            if (!battleInfo) continue;
-
-            await delayRandom();
             console.log("📥 /alliance/battle/info", battleInfo);
+            if (!battleInfo) continue;
+            await delayRandom();
 
             const marchInfo = await getMarchInfo(battleInfo.battle.fromLoc, battleId);
             if (!marchInfo) continue;
@@ -3596,10 +3595,7 @@ async function autoJoinRally() {
             if (marchDurationSeconds > timeLeftSeconds) {
                 console.log("❌ Tidak jadi ikut rally karena waktu untuk join kurang.");
                 continue;
-            } else {
-                //console.log("✅ Masih sempat untuk join rally.");
             }
-
 
             const troopsSelected = getTroopGroupByHP(monsterHP, marchInfo);
 
@@ -3611,8 +3607,6 @@ async function autoJoinRally() {
             if (!canJoinRally) {
                 console.log("Tidak jadi ikut rally karena ada jumlah troops kurang.");
                 continue;
-            } else {
-                //console.log("Lanjut ikut rally.");
             }
 
             //const payload_rally_encrypted = b64xorEnc(payloadAutoJoinRally(troopsSelected, battleId), xor_password);
@@ -3627,20 +3621,22 @@ async function autoJoinRally() {
                 token: token,
                 body: payload_rally_encrypted
             });
-            console.log("📥 Join rally response:", joinRallyResponse);
+            // console.log("📥 Join rally response:", joinRallyResponse);
 
             if (!joinRallyResponse) {
                 console.log("❌ Gagal join rally");
-            } else {
-                incrementRallyCount();
-                console.log(
-                    `%c[🎯 RALLY] %c#${getRallyCount()} %c🪖 ${marchQueueUsed + 1}/${marchLimit} %c🦖 ${monsterInfo.name.toUpperCase()} [Lv.${monsterLevel}]`,
-                    'color: green; font-weight: bold;',
-                    'color: cyan;',
-                    'color: yellow;',
-                    'color: orange; font-weight: bold;',
-                );
+                continue;
             }
+
+            incrementRallyCount();
+            console.log(
+                `%c[🎯 RALLY] %c#${getRallyCount()} %c🪖 ${marchQueueUsed + 1}/${marchLimit} %c🦖 ${monsterInfo.name.toUpperCase()} [Lv.${monsterLevel}]`,
+                'color: green; font-weight: bold;',
+                'color: cyan;',
+                'color: yellow;',
+                'color: orange; font-weight: bold;',
+            );
+
             await delayRandom();            
         }
         await changeSkin();
