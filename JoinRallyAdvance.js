@@ -468,10 +468,6 @@ function getZoneIds(minX, maxX, minY, maxY) {
 //const result = getZoneIds(1, 2000, 1, 2000);
 //console.log(result);
 
-function isApiSuccess(res) {
-    return res !== null && res?.result === true;
-}
-
 async function sendRequest({ url, token, body }) {
     try {
         const response = await fetch(url, {
@@ -492,28 +488,84 @@ async function sendRequest({ url, token, body }) {
             body: `json=${encodeURIComponent(JSON.stringify(body))}`
         });
 
-        // ❌ Server merespon tapi status error (4xx / 5xx)
+        // ❌ HTTP error
         if (!response.ok) {
-            console.log(`⛔ HTTP Error ${response.status}`);
+            console.warn(`⛔ HTTP ${response.status} → ${url}`);
             return null;
         }
 
         const text = await response.text();
 
-        // ✅ Coba parse JSON
+        let res;
         try {
-            return JSON.parse(text);
+            res = JSON.parse(text);
         } catch {
-            // ✅ Bukan JSON → kembalikan text
-            return text;
+            console.warn(`❌ Response bukan JSON → ${url}`);
+            return null;
         }
 
+        // ❌ API reject
+        if (res?.result !== true) {
+            const code = res?.err?.code ?? "UNKNOWN";
+            console.warn(`❌ API reject (code: ${code}) → ${url}`);
+            return null;
+        }
+
+        // ✅ SUKSES
+        return res;
+
     } catch (err) {
-        // ❌ Network error / fetch gagal
-        console.log("❌ Gagal fetch:", err);
+        console.warn(`❌ Network error → ${url}`, err);
         return null;
     }
 }
+
+// function isSendRequestSuccess(res) {
+//     return res !== null && res?.result === true;
+// }
+
+// async function sendRequest({ url, token, body }) {
+//     try {
+//         const response = await fetch(url, {
+//             method: "POST",
+//             mode: "cors",
+//             credentials: "omit",
+//             referrer: "https://play.leagueofkingdoms.com/",
+//             headers: {
+//                 "User-Agent": navigator.userAgent,
+//                 "Accept": "*/*",
+//                 "Accept-Language": "en-US,en;q=0.5",
+//                 "x-access-token": token,
+//                 "Content-Type": "application/x-www-form-urlencoded",
+//                 "Sec-Fetch-Dest": "empty",
+//                 "Sec-Fetch-Mode": "cors",
+//                 "Sec-Fetch-Site": "same-site"
+//             },
+//             body: `json=${encodeURIComponent(JSON.stringify(body))}`
+//         });
+
+//         // ❌ Server merespon tapi status error (4xx / 5xx)
+//         if (!response.ok) {
+//             console.log(`⛔ HTTP Error ${response.status}`);
+//             return null;
+//         }
+
+//         const text = await response.text();
+
+//         // ✅ Coba parse JSON
+//         try {
+//             return JSON.parse(text);
+//         } catch {
+//             // ✅ Bukan JSON → kembalikan text
+//             return text;
+//         }
+
+//     } catch (err) {
+//         // ❌ Network error / fetch gagal
+//         console.log("❌ Gagal fetch:", err);
+//         return null;
+//     }
+// }
 
 // async function sendRequest({
 //     url,
@@ -664,10 +716,7 @@ async function getMarchInfo(locOrToLoc, battleId = null) {
             body: payload_marchInfo
         });
 
-        if (!res?.result) {
-            console.warn("❌ March info gagal:", res?.err?.code);
-            return null;
-        }
+        if (!res) return null;
 
         //const marchInfo = b64xorDec(res, xor_password);
         return res;
@@ -696,10 +745,7 @@ async function getMarchLimit() {
         body: {}
     });
 
-    if (res === null) {
-        console.log("⛔ Request gagal / server error");
-        return null;
-    }
+    if (!res) return null;
 
     // Pastikan response valid dan berisi properti yang diharapkan
     if (res && res.result && res.troops && res.troops.info) {
@@ -721,11 +767,7 @@ async function getMarchQueueUsed() {
         body: {}
     });
 
-    if (res === null) {
-        console.log("⛔ Request gagal / server error");
-        return 0;
-    }
-
+    if (!res) return 0;
 
     if (res?.result && Array.isArray(res.troops?.field)) {
         const marchQueueUsed = res.troops.field.length;
@@ -739,13 +781,15 @@ async function getMarchQueueUsed() {
 
 
 async function getItemList() {
-    if (!hasToken()) return;
+    if (!hasToken()) return null;
 
     const res = await sendRequest({
         url: API_BASE_URL + "item/list",
         token: token,
         body: {}
     });
+
+    if (!res) return null;
 
     return res;
 }
@@ -793,10 +837,19 @@ async function useActionPoint() {
     //const infoProfileEnc = await sendRequest(inputRaw);
     //const infoProfile = b64xorDec(infoProfileEnc, xor_password);
     const infoProfile = await sendRequest(inputRaw);
+    if (!infoProfile) {
+        console.log("⚠ Gagal mengambil info profile pada fungsi useActionPoint.");
+        return;
+    }
     const actionPoint = infoProfile?.profile?.actionPoint?.value;
 
     if (actionPoint < 50) {
         const itemList = await getItemList();
+
+        if (!itemList){
+            console.log("⚠ Gagal mengambil item list pada fungsi useActionPoint.");
+            return;
+        }
 
         let codeAP = null;
         let nAp = null;
@@ -843,6 +896,10 @@ async function heal(targetDuration = null, speedHeal = null) {
         token,
         body: {}
     });
+    if (!itemList) {
+        console.log("⚠ Gagal mengambil item list pada fungsi heal.");
+        return;
+    }
 
     function getItemStock(code) {
         const found = itemList?.items?.find(i => i.code === code);
@@ -855,6 +912,10 @@ async function heal(targetDuration = null, speedHeal = null) {
         token,
         body: {}
     });
+    if (!wounded) {
+        console.log("⚠ Gagal mengambil data wounded pada fungsi heal.");
+        return;
+    }
 
     let totalTime = 0;
     if (Array.isArray(wounded?.wounded)) {
