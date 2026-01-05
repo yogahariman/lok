@@ -76,6 +76,7 @@ const OBJECT_CODE_SPARTOI = 20700506
 
 // Error Codes
 const ERROR_CODE_FULL_TASK = "full_task";
+const ERROR_CODE_OCCUPIED = "occupied";
 
 // Skin Codes
 const SKIN_CODE_COOLDOWN_REDUCTION = 10726001;      // skin skill cooldown reduction
@@ -1121,10 +1122,10 @@ async function changeTreasure(page = 3) {
         }        
 
         const currentPage = treasureList.page;
-        console.log(`📦 Treasure saat ini di tab ${currentPage + 1}`);
+        console.log(`📦 Treasure saat ini di page ${currentPage + 1}`);
 
         if (currentPage === page) {
-            console.log("🛑 Treasure sudah di tab yang sama, tidak melakukan perubahan.");
+            console.log("🛑 Treasure sudah di page yang sama, tidak melakukan perubahan.");
             return;
         }
 
@@ -2483,7 +2484,7 @@ async function sendMarch(loc, marchType, troopIndex, dragoId) {
         if (marchInfo?.fo?.occupied === true) {
             return {
                 success: false,
-                errCode: "occupied"
+                errCode: ERROR_CODE_OCCUPIED
             };
         }
 
