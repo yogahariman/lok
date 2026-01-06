@@ -2306,55 +2306,6 @@ function getSortedUniqueBookmarks(bookmarks = bookmarkResults) {
 
     return unique;
 }
-/*
-function getSortedUniqueBookmarksRSS(bookmarks = bookmarkResults) {
-    if (!kingdomData?.loc || kingdomData.loc.length !== 3) {
-        console.warn("❗ Lokasi kingdom tidak valid.");
-        return [];
-    }
-
-    const distance = (loc1, loc2) => {
-        const dx = loc1[1] - loc2[1];
-        const dy = loc1[2] - loc2[2];
-        return Math.sqrt(dx * dx + dy * dy);
-    };
-
-    // Urutkan berdasarkan level (desc), jarak (asc)
-    const sorted = [...bookmarks].sort((a, b) => {
-        if (a.level !== b.level) return b.level - a.level;
-        const distA = distance(kingdomData.loc, a.loc);
-        const distB = distance(kingdomData.loc, b.loc);
-        return distA - distB;
-    });
-
-    // Hapus duplikat lokasi
-    const seen = new Set();
-    const unique = sorted.filter(item => {
-        const key = item.loc.join(",");
-        if (seen.has(key)) return false;
-        seen.add(key);
-        return true;
-    });
-
-    // Geser posisi bila nama sama dengan sebelumnya
-    for (let i = 0; i < unique.length - 1; i++) {
-        let j = i + 1;
-        while (j < unique.length && unique[i].name === unique[j].name) {
-            // Tukar posisi j dan j+1 jika ada
-            if (j + 1 < unique.length) {
-                const temp = unique[j];
-                unique[j] = unique[j + 1];
-                unique[j + 1] = temp;
-            } else {
-                break;
-            }
-            j++;
-        }
-    }
-
-    return unique;
-}
-*/
 function getSortedUniqueBookmarksRSS(bookmarks = bookmarkResults) {
     if (!kingdomData?.loc || kingdomData.loc.length !== 3) {
         console.log("❗ Lokasi kingdom tidak valid.");
@@ -2374,6 +2325,7 @@ function getSortedUniqueBookmarksRSS(bookmarks = bookmarkResults) {
     //     const distB = distance(kingdomData.loc, b.loc);
     //     return distA - distB;
     // });
+    // 1️⃣ Urutkan berdasarkan jarak (asc)
     const sorted = [...bookmarks].sort((a, b) => {
         const distA = distance(kingdomData.loc, a.loc);
         const distB = distance(kingdomData.loc, b.loc);
@@ -2430,51 +2382,6 @@ function getSortedUniqueBookmarksRSS(bookmarks = bookmarkResults) {
 
     return result;
 }
-
-// async function bookmarkFromFieldData(allowedBookmark, fieldData) {
-//     const existingLocs = new Set(bookmarkResults.map(b => b.loc.join(","))); // lokasi yang sudah ada
-//     let index = bookmarkResults.length + 1; // index global berdasarkan jumlah sebelumnya
-
-//     for (const obj of fieldData.objects) {
-//         if (obj.occupied) continue;
-
-//         const codeStr = String(obj.code);
-//         const bookmarkData = allowedBookmark[codeStr];
-
-//         if (
-//             bookmarkData &&
-//             obj.level >= bookmarkData.minLevel &&
-//             (bookmarkData.maxLevel === undefined || obj.level <= bookmarkData.maxLevel)
-//         ) {
-//             const locKey = obj.loc.join(",");
-//             if (existingLocs.has(locKey)) {
-//                 console.log(`⚠️ Already bookmarked: ${bookmarkData.name} Lv.${obj.level} at ${locKey}`);
-//                 continue; // skip penambahan data
-//             }
-
-//             existingLocs.add(locKey);
-
-//             const result = {
-//                 name: bookmarkData.name,
-//                 level: obj.level,
-//                 loc: obj.loc
-//             };
-//             bookmarkResults.push(result);
-
-//             //console.log(`${index++}. 📍 Bookmarked: ${bookmarkData.name} Lv.${obj.level} at ${locKey}`);
-//             const coords = obj.loc.slice(1, 3).map(n => String(n).padStart(4, ' ')).join(",");
-//             const color = bookmarkData.color || "orange"; // default warna jika tidak ada
-
-//             console.log(
-//               `%c📍 ${String(index++).padStart(2)}. [${coords}] ${bookmarkData.name} Lv.${obj.level}`,
-//               `color: ${color}; font-weight: bold;`
-//             );
-
-
-//         }
-//     }
-// }
-
 async function bookmarkFromFieldData(allowedBookmark, fieldData) {
     const existingLocs = new Set(bookmarkResults.map(b => b.loc.join(",")));
     let index = bookmarkResults.length + 1;
@@ -2554,11 +2461,9 @@ async function save() {
     localStorage.setItem('bookmarkMonsterNormal_bk', JSON.stringify(bookmarkMonsterNormal));
     localStorage.setItem('bookmarkMonsterRally_bk', JSON.stringify(bookmarkMonsterRally));
 }
-
 function load() {
     bookmarkResults = JSON.parse(localStorage.getItem('bookmarkMonsterRally_bk')) || [];
 }
-
 function getMarchTypeName(marchType) {
     switch (marchType) {
         case MARCH_TYPE_GATHER: return 'Gathering';
@@ -2569,7 +2474,6 @@ function getMarchTypeName(marchType) {
         default: return `Unknown Type (${marchType})`;
     }
 }
-
 async function sendMarch(loc, marchType, troopIndex, dragoId) {
     try {
         const marchTypeName = getMarchTypeName(marchType);
@@ -2647,16 +2551,13 @@ async function sendMarch(loc, marchType, troopIndex, dragoId) {
         };
     }
 }
-
 async function cm(x, y) {
     await changeTreasure(3);
     await sendMarch([x, y], MARCH_TYPE_GATHER, 3);
 }
-
 async function ce(x, y) {
     await sendMarch([x, y], MARCH_TYPE_CASTLE, 3);
 }
-
 async function rss(minLevel, maxLevel) {
     const bookmarkRSSRaw = localStorage.getItem('bookmarkRSS_bk');
     let bookmarkRSS = [];
@@ -2692,8 +2593,6 @@ async function rss(minLevel, maxLevel) {
 
     await startGatheringRSSFromBookmarks(filtered);
 }
-
-
 // async function SendSupport(x, y) {
 async function support(x, y) {
     let dragoId = null;  // deklarasi di awal supaya bisa diakses di luar try-catch
@@ -2729,7 +2628,6 @@ async function support(x, y) {
         }
     }
 }
-
 //async function SendGatherDSC(x, y) {
 async function dsc(x, y) {
     let dragoId = null;  // deklarasi di awal supaya bisa diakses di luar try-catch
@@ -2768,9 +2666,7 @@ async function dsc(x, y) {
     } else {
         console.log("Tidak ada Drago yang tersedia untuk dikirim.");
     }
-
 }
-
 async function startGatheringRSSFromBookmarks(bookmarks) {
     // Fungsi untuk menghitung jarak antar lokasi
     const distance = (loc1, loc2) => {
@@ -2834,8 +2730,6 @@ async function startGatheringRSSFromBookmarks(bookmarks) {
 
     console.log("✅ Proses gather RSS selesai.");
 }
-
-
 async function startAttackMonsterFromBookmarks(bookmarks = bookmarkMonsterNormal) {
     const distance = (loc1, loc2) => {
         const dx = loc1[1] - loc2[1];
@@ -2900,75 +2794,6 @@ async function startAttackMonsterFromBookmarks(bookmarks = bookmarkMonsterNormal
 
     console.log("✅ Semua Monsters dari bookmark selesai.");
 }
-
-// async function startRallyMonsterFromBookmarks(bookmarks = bookmarkMonsterRally) {
-
-//     const rallyTime = 5;
-//     const troopIndex = 0;
-//     const message = "";
-
-//     const distance = (loc1, loc2) => {
-//         const dx = loc1[1] - loc2[1];
-//         const dy = loc1[2] - loc2[2];
-//         return Math.sqrt(dx * dx + dy * dy);
-//     };
-
-//     const finalResults = getSortedUniqueBookmarks(bookmarks);
-
-//     if (finalResults.length === 0) {
-//         console.warn("⚠️ Tidak ada monster yang bisa dirally.");
-//         return;
-//     }
-
-//     let rallyCount = 1;
-//     let i = 0;
-//     let isSkinMonsterApplied = false;
-
-//     checkAndResetRallyCount(); // Cek dan reset jumlah rally pukul 0 UTC
-
-//     while (i < finalResults.length) {
-//         let marchQueueUsed = await getMarchQueueUsed();
-
-//         if (marchQueueUsed >= marchLimit) {
-//             if (isSkinMonsterApplied) {
-//                 await changeSkin(); // Kembali ke skin default
-//                 isSkinMonsterApplied = false;
-//             }
-
-//             console.log(`⏳ Queue penuh (${marchQueueUsed}/${marchLimit}), tunggu 1 menit...`);
-//             await delay(60000);
-//             continue;
-//         }
-
-//         if (!isSkinMonsterApplied) {
-//             await changeSkin(SKIN_CODE_REDUCE_AP); // Skin rally monster
-//             isSkinMonsterApplied = true;
-//             await delay(2000);
-//         }
-
-//         const b = finalResults[i];
-//         const [, x, y] = b.loc;
-//         const levelText = b.level ? ` Lv.${b.level}` : "";
-//         const dist = Math.round(distance(kingdomData.loc, b.loc));
-
-//         const success = await rallyMonster([x, y], rallyTime, troopIndex, message);
-//         if (success) {
-//             rallyCount++;
-//             incrementRallyCount();
-//             i++;
-//             console.log(`🎯[Rally#${getRallyCount()} 📍 Sisa#${finalResults.length - i - 1}] ${b.name}${levelText} @ (${x}, ${y}) | 📏 Jarak: ${dist}`);
-//         }
-
-//         await delay(5000);
-//     }
-
-//     if (isSkinMonsterApplied) {
-//         await changeSkin(); // Kembali ke skin default di akhir
-//     }
-
-//     console.log("✅ Semua rally dari bookmark selesai.");
-// }
-
 async function startRallyMonsterFromBookmarks(bookmarks = bookmarkMonsterRally) {
     // =====================
     // Konstanta
@@ -3150,7 +2975,6 @@ async function rallyMonster(loc, rallyTime = 5, troopIndex = 0, message = "") {
         return false;
     }
 }
-
 // ada kekurangan bila error fulltask dari sendMarch tidak ditangani
 async function attackMonster(x, y) {
 
@@ -3201,12 +3025,10 @@ async function attackMonster(x, y) {
         return false;
     }
 }
-
 async function goblin() {
     let bookmarkMonsterNormal = JSON.parse(localStorage.getItem('bookmarkMonsterNormal_bk')) || [];
     await startAttackMonsterFromBookmarks(bookmarkMonsterNormal);
 }
-
 // dk();       // semua level
 // dk(5);      // level >= 5
 // dk(4, 6);   // level 4 sampai 6
@@ -3236,9 +3058,7 @@ async function dk(minLevel, maxLevel) {
     // Jalankan hanya monster yang sudah difilter
     await startRallyMonsterFromBookmarks(filtered);
 }
-
-
-
+/*
 async function dk_Doom3() {
     let bookmarkMonsterRally = JSON.parse(localStorage.getItem('bookmarkMonsterRally_bk')) || [];
 
@@ -3256,8 +3076,6 @@ async function dk_Doom3() {
 
     await startRallyMonsterFromBookmarks(bookmarkMonsterRally);
 }
-
-/*
 async function dk_CongressIsForbiddenArea() {
     let bookmarkMonsterRally = JSON.parse(localStorage.getItem('bookmarkMonsterRally_bk')) || [];
 
@@ -3272,9 +3090,6 @@ async function dk_CongressIsForbiddenArea() {
 
     await startRallyMonsterFromBookmarks(bookmarkMonsterRally);
 }
-*/
-
-/*
 async function dk_bawah() {
     let bookmarkMonsterRally = JSON.parse(localStorage.getItem('bookmarkMonsterRally_bk')) || [];
 
@@ -3290,8 +3105,6 @@ async function dk_bawah() {
 
     await startRallyMonsterFromBookmarks(bookmarkMonsterRally);
 }
-*/
-/*
 async function dk_atas() {
     let bookmarkMonsterRally = JSON.parse(localStorage.getItem('bookmarkMonsterRally_bk')) || [];
 
