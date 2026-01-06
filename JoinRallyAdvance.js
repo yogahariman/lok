@@ -30,9 +30,9 @@ let bookmarkResults = [];
 const API_BASE_URL = 'https://api-lok-live.leagueofkingdoms.com/api/'
 
 //Quest Status
-const STATUS_PENDING  = 1; // belum selesai
+const STATUS_PENDING = 1; // belum selesai
 const STATUS_FINISHED = 2; // sudah selesai, BELUM di-claim
-const STATUS_CLAIMED  = 3; // sudah di-claim
+const STATUS_CLAIMED = 3; // sudah di-claim
 
 // Dragon's Nest Status
 const DRAGO_LAIR_STATUS_STANDBY = 1; // On Standby
@@ -344,14 +344,14 @@ async function decodeGzipPayload(payload) {
             // fallback: string biasa
             return payload;
         }
-    } 
+    }
     // Jika array / Uint8Array / ArrayBuffer
     else if (Array.isArray(payload) || ArrayBuffer.isView(payload)) {
         bytes = new Uint8Array(payload);
-    } 
+    }
     else if (payload instanceof ArrayBuffer) {
         bytes = new Uint8Array(payload);
-    } 
+    }
     else {
         console.error("❌ Unsupported payload type:", payload);
         return null;
@@ -614,6 +614,268 @@ async function sendRequest({ url, token, body }) {
 //     }
 // }
 
+async function getMyProfile() {
+    if (!hasToken()) return null;
+
+    return await sendRequest({
+        url: API_BASE_URL + "kingdom/profile/my",
+        token,
+        //body: b64xorEnc({}, xor_password),
+        body: {}
+    });
+}
+
+async function getTroopsProfile() {
+    if (!hasToken()) return null;
+
+    return await sendRequest({
+        url: API_BASE_URL + "kingdom/profile/troops",
+        token,
+        body: {}
+    });
+}
+
+async function getMyAllianceInfo() {
+    if (!hasToken()) return null;
+
+    return await sendRequest({
+        url: API_BASE_URL + "alliance/info/my",
+        token,
+        body: {}
+    });
+}
+
+
+async function getVipInfo() {
+    if (!hasToken()) return null;
+
+    return await sendRequest({
+        url: API_BASE_URL + "kingdom/vip/info",
+        token,
+        body: {}
+    });
+}
+
+async function getDsavipInfo() {
+    if (!hasToken()) return null;
+
+    return await sendRequest({
+        url: API_BASE_URL + "kingdom/dsavip/info",
+        token,
+        body: {}
+    });
+}
+
+async function getHospitalWounded() {
+    if (!hasToken()) return null;
+
+    return sendRequest({
+        url: API_BASE_URL + "kingdom/hospital/wounded",
+        token,
+        body: {}
+    });
+}
+
+async function getItemList() {
+    if (!hasToken()) return null;
+
+    return await sendRequest({
+        url: API_BASE_URL + "item/list",
+        token,
+        body: {}
+    });
+}
+async function getTreasureList() {
+    if (!hasToken()) return null;
+
+    return await sendRequest({
+        url: API_BASE_URL + "kingdom/treasure/list",
+        token: token,
+        body: {}
+    });
+}
+
+async function getCaravanList() {
+    if (!hasToken()) return null;
+
+    return await sendRequest({
+        url: API_BASE_URL + "kingdom/caravan/list",
+        token,
+        body: {}
+    });
+}
+
+async function getEventList() {
+    if (!hasToken()) return null;
+
+    return await sendRequest({
+        url: API_BASE_URL + "event/list",
+        token,
+        body: {}
+    });
+}
+
+async function getEventInfo(rootEventId) {
+    if (!hasToken()) return null;
+
+    return await sendRequest({
+        url: API_BASE_URL + "event/info",
+        token,
+        body: { rootEventId }
+    });
+}
+
+async function getDailyQuest() {
+    if (!hasToken()) return null;
+
+    return await sendRequest({
+        url: API_BASE_URL + "quest/list/daily",
+        token,
+        body: {}
+    });
+}
+
+async function getQuestList() {
+    if (!hasToken()) return null;
+
+    return await sendRequest({
+        url: API_BASE_URL + "quest/list",
+        token,
+        body: {}
+    });
+}
+
+async function getHelpList() {
+    if (!hasToken()) return null;
+
+    return await sendRequest({
+        url: API_BASE_URL + "alliance/help/list",
+        token,
+        body: {}
+    });
+}
+
+async function getAllianceResearchList() {
+    if (!hasToken()) return null;
+
+    return await sendRequest({
+        url: API_BASE_URL + "alliance/research/list",
+        token,
+        body: {}
+    });
+}
+
+async function getSkillList() {
+    if (!hasToken()) return null;
+
+    return await sendRequest({
+        url: API_BASE_URL + "skill/list",
+        token,
+        body: {}
+    });
+}
+
+async function getDragoLairList() {
+    if (!hasToken()) return null;
+
+    return await sendRequest({
+        url: API_BASE_URL + "drago/lair/list",
+        token: token,
+        body: {}
+    });
+}
+
+async function getRallyList() {
+    if (!hasToken()) return null;
+
+    return await sendRequest({
+        url: API_BASE_URL + "alliance/battle/list/v2",
+        token: token,
+        body: {}
+    });
+}
+
+async function getRallyInfo(battleId) {            
+    if (!hasToken()) return null;
+
+    return await sendRequest({
+        url: API_BASE_URL + "alliance/battle/info",
+        token: token,
+        body: { rallyMoId: battleId }
+    });
+}
+
+async function getEventListCvC() {
+    if (!hasToken()) return null;
+
+    return await sendRequest({
+        url: API_BASE_URL + "event/list/cvc",
+        token: token,
+        body: {}
+    });
+}
+
+async function claimEventReward(eventId, eventTargetId, code) {
+    if (!hasToken()) return null;
+
+    return await sendRequest({
+        url: API_BASE_URL + "event/claim",
+        token,
+        body: { eventId, eventTargetId, code }
+    });
+}
+
+async function claimVipReward() {
+    if (!hasToken()) return null;
+
+    return sendRequest({
+        url: API_BASE_URL + "kingdom/vip/claim",
+        token,
+        //body: b64xorEnc({}, xor_password),
+        body: {}
+    });
+}
+
+async function claimDsavipReward() {
+    if (!hasToken()) return null;
+
+    return await sendRequest({
+        url: API_BASE_URL + "kingdom/dsavip/claim",
+        token,
+        body: {}
+    });
+}
+
+async function helpAllMembers() {
+    if (!hasToken()) return null;
+
+    return await sendRequest({
+        url: API_BASE_URL + "alliance/help/all",
+        token,
+        body: {}
+    });
+}
+
+async function getAllianceResearchInfo(researchCode) {
+    if (!hasToken()) return null;
+
+    return await sendRequest({
+        url: API_BASE_URL + "alliance/research/info",
+        token,
+        body: { researchCode }
+    });
+    
+}
+
+async function getAllianceResearchDonateAll(researchCode) {
+    if (!hasToken()) return null;
+
+    return await sendRequest({
+        url: API_BASE_URL + "alliance/research/donateAll",
+        token,
+        body: { code: researchCode }
+    });
+}
 
 function createJoinRallyPayload(codes, amounts, rallyMoId) {
     if (!Array.isArray(codes) || !Array.isArray(amounts) || codes.length !== amounts.length) {
@@ -740,11 +1002,7 @@ function getTroopGroupByHP(monsterHP, marchInfo) {
 async function getMarchLimit() {
     if (!hasToken()) return 10;
 
-    const res = await sendRequest({
-        url: API_BASE_URL + "kingdom/profile/troops",
-        token: token,
-        body: {}
-    });
+    const res = await getTroopsProfile();
 
     if (!res) return 10;
 
@@ -760,40 +1018,21 @@ async function getMarchLimit() {
 }
 
 async function getMarchQueueUsed() {
-    // default marchLimit bila gagal ambil
-    if (!hasToken()) return marchLimit;
+    // default bila gagal
+    let result = marchLimit;
 
-    const res = await sendRequest({
-        url: API_BASE_URL + "kingdom/profile/troops",
-        token: token,
-        body: {}
-    });
+    if (!hasToken()) return result;
 
-    if (!res) return marchLimit;
+    const res = await getTroopsProfile();
+    if (!res) return result;
 
-    if (res?.result && Array.isArray(res.troops?.field)) {
-        const marchQueueUsed = res.troops.field.length;
-        //console.log("Jumlah march queue yang digunakan:", marchQueueUsed);
-        return marchQueueUsed;
+    if (Array.isArray(res.troops?.field)) {
+        result = res.troops.field.length;
     } else {
         console.log("⚠️ Field troops tidak ditemukan atau bukan array:", res);
-        return marchLimit;
     }
-}
 
-
-async function getItemList() {
-    if (!hasToken()) return null;
-
-    const res = await sendRequest({
-        url: API_BASE_URL + "item/list",
-        token: token,
-        body: {}
-    });
-
-    if (!res) return null;
-
-    return res;
+    return result;
 }
 
 function getAmountItemList(data, targetCode) {
@@ -830,15 +1069,9 @@ async function useItem(code, amount) {
 async function useActionPoint() {
     if (!hasToken()) return;
 
-    const inputRaw = {
-        url: API_BASE_URL + "kingdom/profile/my",
-        token: token,
-        //body: b64xorEnc({}, xor_password),
-        body: {}
-    };
     //const infoProfileEnc = await sendRequest(inputRaw);
     //const infoProfile = b64xorDec(infoProfileEnc, xor_password);
-    const infoProfile = await sendRequest(inputRaw);
+    const infoProfile = await getMyProfile();
     if (!infoProfile) {
         console.log("⚠ Gagal mengambil info profile pada fungsi useActionPoint.");
         return;
@@ -848,7 +1081,7 @@ async function useActionPoint() {
     if (actionPoint < 50) {
         const itemList = await getItemList();
 
-        if (!itemList){
+        if (!itemList) {
             console.log("⚠ Gagal mengambil item list pada fungsi useActionPoint.");
             return;
         }
@@ -905,11 +1138,7 @@ async function heal(targetDuration = null, speedHeal = null) {
     }
 
     // Ambil data wounded
-    const wounded = await sendRequest({
-        url: API_BASE_URL + "kingdom/hospital/wounded",
-        token,
-        body: {}
-    });
+    const wounded = await getHospitalWounded();
     if (!wounded) {
         console.log("⚠ Gagal mengambil data wounded pada fungsi heal.");
         return;
@@ -1056,7 +1285,7 @@ async function changeSkin(skinCode = SKIN_CODE_INCREASE_DROP_RATE) {
     if (!res) {
         console.log("❌ Gagal mengambil daftar skin.");
         return null;
-    }    
+    }
 
     // Cari skin ID berdasarkan skinCode yang diberikan
     let skin = res?.skins?.find(s => s.code === skinCode);
@@ -1101,25 +1330,14 @@ async function changeTreasure(page = 3) {
     if (!hasToken()) return;
 
     try {
-        await sendRequest({
-            url: API_BASE_URL + "kingdom/profile/my",
-            token: token,
-            //body: b64xorEnc({}, xor_password),
-            body: {}
-        });
-
+        await getMyProfile();
         await delay(1000);
 
-        const treasureList = await sendRequest({
-            url: API_BASE_URL + "kingdom/treasure/list",
-            token: token,
-            body: {}
-        });
-
+        const treasureList = await getTreasureList();
         if (!treasureList) {
             console.log("❌ Gagal mengambil daftar treasure.");
             return;
-        }        
+        }
 
         const currentPage = treasureList.page;
         console.log(`📦 Treasure saat ini di page ${currentPage + 1}`);
@@ -1155,12 +1373,7 @@ async function claimVIP() {
     if (!hasToken()) return;
 
     try {
-        const res = await sendRequest({
-            url: API_BASE_URL + "kingdom/vip/info",
-            token,
-            body: {}
-        });
-
+        const res = await getVipInfo();
         if (!res) {
             console.log("❌ Gagal mengambil info VIP.");
             return;
@@ -1173,12 +1386,7 @@ async function claimVIP() {
 
         console.log("🎁 Mengklaim VIP reward...");
 
-        await sendRequest({
-            url: API_BASE_URL + "kingdom/vip/claim",
-            token,
-            //body: b64xorEnc({}, xor_password),
-            body: {}
-        });
+        await claimVipReward();
 
         console.log("🏆 VIP reward berhasil diklaim.");
     } catch (error) {
@@ -1190,11 +1398,7 @@ async function claimDSAVIP() {
     if (!hasToken()) return;
 
     try {
-        const res = await sendRequest({
-            url: API_BASE_URL + "kingdom/dsavip/info",
-            token,
-            body: {}
-        });
+        const res = await getDsavipInfo();
         if (!res) {
             console.log("❌ Gagal mengambil info DSA VIP.");
             return;
@@ -1207,11 +1411,7 @@ async function claimDSAVIP() {
 
         console.log("🎁 Mengklaim DSA VIP reward...");
 
-        await sendRequest({
-            url: API_BASE_URL + "kingdom/dsavip/claim",
-            token,
-            body: {}
-        });
+        await claimDsavipReward();
 
         console.log("🏆 DSA VIP reward berhasil diklaim.");
     } catch (error) {
@@ -1221,15 +1421,6 @@ async function claimDSAVIP() {
 
 async function claimDailyQuest() {
     if (!hasToken()) return;
-
-    // Fungsi ambil list quest harian
-    async function getDailyQuest() {
-        return await sendRequest({
-            url: API_BASE_URL + "quest/list/daily",
-            token,
-            body: {}
-        });
-    }
 
     try {
         // Step 1: Ambil list quest awal
@@ -1279,14 +1470,6 @@ async function claimDailyQuest() {
 
 async function claimMainQuest() {
     if (!hasToken()) return false;
-
-    async function getQuestList() {
-        return sendRequest({
-            url: API_BASE_URL + "quest/list",
-            token,
-            body: {}
-        });
-    }
 
     try {
         const response = await getQuestList();
@@ -1347,28 +1530,7 @@ async function claimMainQuestAll() {
 
 async function claimEventQuest() {
     if (!hasToken()) return false;
-    async function getEventList() {
-        return sendRequest({
-            url: API_BASE_URL + "event/list",
-            token,
-            body: {}
-        });
-    }
-    async function getEventInfo(rootEventId) {
-        return sendRequest({
-            url: API_BASE_URL + "event/info",
-            token,
-            body: {rootEventId}
-        });
-    }
 
-    async function claimEvent(eventId, eventTargetId, code) {
-        return sendRequest({
-            url: API_BASE_URL + "event/claim",
-            token,
-            body: {eventId, eventTargetId, code}
-        });
-    } 
     try {
         const eventList = await getEventList();
         if (!eventList) return false;
@@ -1392,15 +1554,15 @@ async function claimEventQuest() {
                 );
                 for (const { code, _id } of finishedQuests) {
 
-                    const res = await claimEvent(
+                    const res = await claimEventReward(
                         rootEventId,
                         _id,
                         code
                     );
 
-                    if (!res){
+                    if (!res) {
                         console.log(`⚠️ Gagal klaim event quest ${code}`, res);
-                    }else{
+                    } else {
                         console.log(`✅ Claimed event quest ${code}`);
                     }
 
@@ -1443,18 +1605,9 @@ async function helpAll() {
     try {
         if (!hasToken()) return;
 
-        await sendRequest({
-            url: API_BASE_URL + "alliance/info/my",
-            token,
-            body: {}
-        });
+        await getMyAllianceInfo();
 
-        const helpList = await sendRequest({
-            url: API_BASE_URL + "alliance/help/list",
-            token,
-            body: {}
-        });
-
+        const helpList = await getHelpList();
         if (!helpList) {
             console.log("❌ Gagal mengambil daftar bantuan alliance.");
             return;
@@ -1467,11 +1620,7 @@ async function helpAll() {
 
         console.log(`🛠️ Menjalankan helpAll untuk ${helpList.otherTasks.length} task...`);
 
-        await sendRequest({
-            url: API_BASE_URL + "alliance/help/all",
-            token,
-            body: {}
-        });
+        await helpAllMembers();
 
         console.log("✅ Selesai membantu semua tugas.");
 
@@ -1507,19 +1656,10 @@ async function scheduleAutoDonate() {
             console.log("🔄 Mengecek status donasi...");
 
             // Trigger agar sistem memperbarui data alliance (kadang perlu)
-            await sendRequest({
-                url: API_BASE_URL + "alliance/info/my",
-                token: token,
-                body: {}
-            });
+            await getMyAllianceInfo();
 
             // Ambil status riset alliance
-            const response = await sendRequest({
-                url: API_BASE_URL + "alliance/research/list",
-                token: token,
-                body: {}
-            });
-
+            const response = await getAllianceResearchList();
             if (!response) {
                 console.log("⚠️ Gagal mengambil status riset alliance.");
                 break;
@@ -1540,19 +1680,10 @@ async function scheduleAutoDonate() {
             console.log("📌 Mendonasikan ke riset code:", researchCode);
 
             // Info riset (kadang perlu sebelum donate)
-            await sendRequest({
-                url: API_BASE_URL + "alliance/research/info",
-                token: token,
-                body: { researchCode }
-            });
+            await getAllianceResearchInfo(researchCode);
 
             // Donasi ke riset
-            const response_donate_all = await sendRequest({
-                url: API_BASE_URL + "alliance/research/donateAll",
-                token: token,
-                body: { code: researchCode }
-            });
-
+            const response_donate_all = await getAllianceResearchDonateAll(researchCode);
             if (!response_donate_all) {
                 console.log("⚠️ Gagal melakukan donasi.");
                 await delay(3 * 60 * 60 * 1000);
@@ -1686,15 +1817,10 @@ async function scheduleAutoOpenFreeChest() {
 }
 
 async function buyCaravan() {
-     if (!hasToken()) return null;
+    if (!hasToken()) return null;
 
     try {
-        const caravanList = await sendRequest({
-            url: API_BASE_URL + "kingdom/caravan/list",
-            token,
-            body: {}
-        });
-
+        const caravanList = await getCaravanList();
         if (!caravanList) {
             console.log("❌ Gagal mengambil daftar caravan.");
             return null;
@@ -1719,7 +1845,7 @@ async function buyCaravan() {
             ITEM_CODE_STONE_1K, ITEM_CODE_STONE_5K, ITEM_CODE_STONE_10K,
             ITEM_CODE_STONE_50K, ITEM_CODE_STONE_100K, ITEM_CODE_STONE_500K,
             ITEM_CODE_STONE_1M, ITEM_CODE_STONE_5M, ITEM_CODE_STONE_10M,
-            
+
             // Gold
             ITEM_CODE_GOLD_1K, ITEM_CODE_GOLD_5K, ITEM_CODE_GOLD_10K,
             ITEM_CODE_GOLD_50K, ITEM_CODE_GOLD_100K, ITEM_CODE_GOLD_500K,
@@ -1932,12 +2058,7 @@ async function instantHarvest() {
 
 async function scheduleInstantHarvest() {
     try {
-        const res = await sendRequest({
-            url: API_BASE_URL + "skill/list",
-            token,
-            body: {}
-        });
-
+        const res = await getSkillList();
         if (!res) {
             console.log("❌ Gagal mengambil daftar skill untuk Instant Harvest.");
             return;
@@ -2027,12 +2148,7 @@ async function summonMonster() {
 
 async function scheduleSummonMonster() {
     try {
-        const res = await sendRequest({
-            url: API_BASE_URL + "skill/list",
-            token,
-            body: {}
-        });
-
+        const res = await getSkillList();
         if (!res) {
             console.log("❌ Gagal mengambil daftar skill untuk Summon Monster.");
             return;
@@ -2075,12 +2191,7 @@ async function scheduleSummonMonster() {
 // 10023 summon monster
 async function scheduleSkillActivate(codes = [10001]) {
     try {
-        const res = await sendRequest({
-            url: API_BASE_URL + "skill/list",
-            token,
-            body: {}
-        });
-
+        const res = await getSkillList();
         if (!res) {
             console.log("❌ Gagal mengambil daftar skill untuk skill aktif.");
             return;
@@ -2120,31 +2231,31 @@ async function scheduleSkillActivate(codes = [10001]) {
         setTimeout(async () => {
             try {
                 if (nextSkill.code === 10001) {
-            // ==============================
-            // 🔻 Auto-disable AutoJoin
-            // ==============================
-            const prevAutoJoin = getAutoJoinStatus();  // simpan status sebelumnya
-            localStorage.setItem('autojoin_enabled', 'false');
-            updateAutoJoinButton();
-            console.log("⛔ AutoJoin disabled sementara untuk InstantHarvest");
+                    // ==============================
+                    // 🔻 Auto-disable AutoJoin
+                    // ==============================
+                    const prevAutoJoin = getAutoJoinStatus();  // simpan status sebelumnya
+                    localStorage.setItem('autojoin_enabled', 'false');
+                    updateAutoJoinButton();
+                    console.log("⛔ AutoJoin disabled sementara untuk InstantHarvest");
 
-            // ==============================
-            // Jalankan Instant Harvest
-            // ==============================
-            await delay(1 * 60 * 1000); // delay tambahan sebelum eksekusi
-            await instantHarvest();
+                    // ==============================
+                    // Jalankan Instant Harvest
+                    // ==============================
+                    await delay(1 * 60 * 1000); // delay tambahan sebelum eksekusi
+                    await instantHarvest();
 
-            // ==============================
-            // 🔺 Aktifkan kembali AutoJoin jika sebelumnya ON
-            // ==============================
-            if (prevAutoJoin) {
-                localStorage.setItem('autojoin_enabled', 'true');
-                updateAutoJoinButton();
-                console.log("▶️ AutoJoin diaktifkan kembali setelah InstantHarvest");
-            } else {
-                console.log("⛔ AutoJoin tetap OFF (karena sebelumnya OFF)");
-            }
-        } else if (nextSkill.code === 10023) {
+                    // ==============================
+                    // 🔺 Aktifkan kembali AutoJoin jika sebelumnya ON
+                    // ==============================
+                    if (prevAutoJoin) {
+                        localStorage.setItem('autojoin_enabled', 'true');
+                        updateAutoJoinButton();
+                        console.log("▶️ AutoJoin diaktifkan kembali setelah InstantHarvest");
+                    } else {
+                        console.log("⛔ AutoJoin tetap OFF (karena sebelumnya OFF)");
+                    }
+                } else if (nextSkill.code === 10023) {
                     await summonMonster();
                 } else {
                     console.log(`⚠️ Tidak ada handler untuk skill ${nextSkill.code}`);
@@ -2589,13 +2700,8 @@ async function support(x, y) {
     let dragoId = null;  // deklarasi di awal supaya bisa diakses di luar try-catch
 
     try {
-        const dragoList = await sendRequest({
-            url: API_BASE_URL + "drago/lair/list",
-            token: token,
-            body: {}
-        });
-
-        if(!dragoList) {
+        const dragoList = await getDragoLairList();
+        if (!dragoList) {
             console.error("Gagal mendapatkan daftar drago");
             return;
         }
@@ -2612,12 +2718,12 @@ async function support(x, y) {
         console.error("Gagal mengambil daftar drago:", err);
     }
 
-    if (dragoId) {        
+    if (dragoId) {
         const result = await sendMarch([x, y], MARCH_TYPE_SUPPORT, 3, dragoId);
         if (!result.success) {
             console.error(`❌ Gagal kirim march ke (${x}, ${y})`);
         }
-    } else {        
+    } else {
         const result = await sendMarch([x, y], MARCH_TYPE_SUPPORT, 3);
         if (!result.success) {
             console.error(`❌ Gagal kirim march ke (${x}, ${y})`);
@@ -2630,13 +2736,8 @@ async function dsc(x, y) {
     let dragoId = null;  // deklarasi di awal supaya bisa diakses di luar try-catch
 
     try {
-        const dragoList = await sendRequest({
-            url: API_BASE_URL + "drago/lair/list",
-            token: token,
-            body: {}
-        });
-
-        if(!dragoList) {
+        const dragoList = await getDragoLairList();
+        if (!dragoList) {
             console.error("Gagal mendapatkan daftar drago");
             return;
         }
@@ -2686,7 +2787,7 @@ async function startGatheringRSSFromBookmarks(bookmarks) {
     if (!Array.isArray(res) || res.length === 0) {
         console.log("⚠️ Tidak ada RSS.");
         return;
-    }    
+    }
 
     // const limit = Math.min(marchLimit, res.length);
     // const finalResults = res.slice(0, limit);
@@ -2724,7 +2825,7 @@ async function startGatheringRSSFromBookmarks(bookmarks) {
             }
 
             continue;
-        }        
+        }
 
         console.log(`🏕️ Gathering ${b.name}${levelText} di (${x}, ${y}) — jarak ${dist}`);
 
@@ -3211,12 +3312,7 @@ async function exportCvCRankToCSV(eventId, filename = `CvC_Rank_${getTodayKey()}
     const worldId = kingdomData.worldId;
 
     // Fetch list of CvC events
-    const eventListCvC = await sendRequest({
-        url: API_BASE_URL + "event/list/cvc",
-        token: token,
-        body: {}
-    });
-
+    const eventListCvC = await getEventListCvC();
     if (!eventListCvC || !Array.isArray(eventListCvC.events)) {
         console.error("❌ Gagal mengambil daftar event CvC.");
         return;
@@ -3273,12 +3369,7 @@ async function exportCvCWeek1ToCSV(eventId, filename = `CvC_Week1_Rank_${getToda
     const worldId = kingdomData.worldId;
 
     // Ambil daftar event CvC
-    const eventListCvC = await sendRequest({
-        url: API_BASE_URL + "event/list/cvc",
-        token: token,
-        body: {}
-    });
-
+    const eventListCvC = await getEventListCvC();
     if (!eventListCvC) {
         console.error("❌ Gagal mengambil daftar event CvC.");
         return;
@@ -3331,7 +3422,7 @@ async function exportCvCWeek1ToCSV(eventId, filename = `CvC_Week1_Rank_${getToda
                 body: { kingdomId }
             });
 
-            if(!historyRes) {
+            if (!historyRes) {
                 console.log(`⚠️ Gagal mengambil data history untuk kingdom ${kingdomId}`);
                 continue;
             }
@@ -3417,12 +3508,7 @@ async function autoJoinRally() {
 
     try {
         await delayRandom();
-        const rallyList = await sendRequest({
-            url: API_BASE_URL + "alliance/battle/list/v2",
-            token: token,
-            body: {}
-        });
-
+        const rallyList = await getRallyList();
         if (!rallyList) {
             console.log("⚠️ Gagal mendapatkan daftar rally.");
             return;
@@ -3447,7 +3533,7 @@ async function autoJoinRally() {
         if (rallies.length === 0) {
             console.log("⚠️ Semua rally targetMonster = null");
             return; // atau return false / null sesuai fungsi kamu
-        }        
+        }
 
         rallies.sort((a, b) => {
             // Urutkan berdasarkan code ASCENDING
@@ -3499,7 +3585,7 @@ async function autoJoinRally() {
             if (rallyCount > 220) {
                 return; // hentikan eksekusi
             }
-        }        
+        }
 
         // 🔁 Cek march queue sebelum lanjut
         marchQueueUsed = await getMarchQueueUsed();
@@ -3555,25 +3641,12 @@ async function autoJoinRally() {
             await useActionPoint();
             await delayRandom();
 
-            // await sendRequest({
-            //     url: API_BASE_URL + "alliance/info/my",
-            //     token: token,
-            //     body: {}
-            // });
-            // await delayRandom();
+            await getMyAllianceInfo();
+            await delayRandom();
+            await getRallyList();
+            await delayRandom();
 
-            // await sendRequest({
-            //     url: API_BASE_URL + "alliance/battle/list/v2",
-            //     token: token,
-            //     body: {}
-            // });
-            // await delayRandom();
-
-            const battleInfo = await sendRequest({
-                url: API_BASE_URL + "alliance/battle/info",
-                token: token,
-                body: { rallyMoId: battleId }
-            });
+            const battleInfo = await getRallyInfo(battleId);
             console.log("📥 /alliance/battle/info", battleInfo);
             if (!battleInfo) continue;
             await delayRandom();
@@ -3637,7 +3710,7 @@ async function autoJoinRally() {
                 'color: orange; font-weight: bold;',
             );
 
-            await delayRandom();            
+            await delayRandom();
         }
         await changeSkin();
     } catch (err) {
@@ -3745,7 +3818,7 @@ async function monitorWebSocket() {
 
                 // socf-lok-live
                 else if (path === '/field/objects/v4') {
-                    
+
                     // console.log('Raw packs:', message.packs);
 
                     if (window.allowedBookmark && Object.keys(window.allowedBookmark).length > 0) {
@@ -3916,7 +3989,7 @@ async function handleAuthResponse(xhr) {
                 scheduleClaimDailyQuest();
                 // runClaimMainQuest();
                 // await delay(5000);
-            }            
+            }
 
             /*
             //claim VIP reward
