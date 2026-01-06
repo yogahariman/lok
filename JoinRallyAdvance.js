@@ -465,6 +465,72 @@ function getZoneIds(minX, maxX, minY, maxY) {
     return Array.from(zoneIds);
 }
 
+function createJoinRallyPayload(codes, amounts, rallyMoId) {
+    if (!Array.isArray(codes) || !Array.isArray(amounts) || codes.length !== amounts.length) {
+        console.error("❌ Input 'codes' dan 'amounts' harus array dengan panjang yang sama.");
+        return null;
+    }
+
+    const marchTroops = codes.map((code, index) => ({
+        code: code,
+        level: 0,
+        select: 0,
+        amount: amounts[index],
+        dead: 0,
+        wounded: 0,
+        hp: 0,
+        attack: 0,
+        defense: 0,
+        seq: 0
+    }));
+
+    return {
+        marchTroops,
+        rallyMoId
+    };
+}
+
+function payloadAutoJoinRally(troops, rallyMoId) {
+    const marchTroops = troops.map(({ code, amount }) => ({
+        code,
+        level: 0,
+        select: 0,
+        amount,
+        dead: 0,
+        wounded: 0,
+        hp: 0,
+        attack: 0,
+        defense: 0,
+        seq: 0
+    }));
+
+    return { marchTroops, rallyMoId };
+}
+
+function payloadSendmarch(troops, loc, marchType, dragoId) {
+    const toLoc = [kingdomData.loc[0], ...loc];
+    const marchTroops = troops.map(({ code, amount }) => ({
+        code,
+        level: 0,
+        select: 0,
+        amount,
+        dead: 0,
+        wounded: 0,
+        hp: 0,
+        attack: 0,
+        defense: 0,
+        seq: 0
+    }));
+
+    return {
+        fromId: kingdomData.fieldObjectId,
+        marchType,
+        toLoc,
+        marchTroops,
+        ...(dragoId !== undefined ? { dragoId } : {})
+    };
+}
+
 // Contoh penggunaan:
 //const result = getZoneIds(1, 2000, 1, 2000);
 //console.log(result);
@@ -877,70 +943,14 @@ async function getAllianceResearchDonateAll(researchCode) {
     });
 }
 
-function createJoinRallyPayload(codes, amounts, rallyMoId) {
-    if (!Array.isArray(codes) || !Array.isArray(amounts) || codes.length !== amounts.length) {
-        console.error("❌ Input 'codes' dan 'amounts' harus array dengan panjang yang sama.");
-        return null;
-    }
+async function setTreasurePage(currentPage) {
+    if (!hasToken()) return null;
 
-    const marchTroops = codes.map((code, index) => ({
-        code: code,
-        level: 0,
-        select: 0,
-        amount: amounts[index],
-        dead: 0,
-        wounded: 0,
-        hp: 0,
-        attack: 0,
-        defense: 0,
-        seq: 0
-    }));
-
-    return {
-        marchTroops,
-        rallyMoId
-    };
-}
-
-function payloadAutoJoinRally(troops, rallyMoId) {
-    const marchTroops = troops.map(({ code, amount }) => ({
-        code,
-        level: 0,
-        select: 0,
-        amount,
-        dead: 0,
-        wounded: 0,
-        hp: 0,
-        attack: 0,
-        defense: 0,
-        seq: 0
-    }));
-
-    return { marchTroops, rallyMoId };
-}
-
-function payloadSendmarch(troops, loc, marchType, dragoId) {
-    const toLoc = [kingdomData.loc[0], ...loc];
-    const marchTroops = troops.map(({ code, amount }) => ({
-        code,
-        level: 0,
-        select: 0,
-        amount,
-        dead: 0,
-        wounded: 0,
-        hp: 0,
-        attack: 0,
-        defense: 0,
-        seq: 0
-    }));
-
-    return {
-        fromId: kingdomData.fieldObjectId,
-        marchType,
-        toLoc,
-        marchTroops,
-        ...(dragoId !== undefined ? { dragoId } : {})
-    };
+    return await sendRequest({
+        url: API_BASE_URL + "kingdom/treasure/page",
+        token: token,
+        body: { page: currentPage }
+    });
 }
 
 async function getMarchInfo(locOrToLoc, battleId = null) {
@@ -988,7 +998,6 @@ async function getMarchInfo(locOrToLoc, battleId = null) {
         return null;
     }
 }
-
 
 function getTroopGroupByHP(monsterHP, marchInfo) {
     const troops = marchInfo?.saveTroops || kingdomData.saveTroops;
@@ -1064,6 +1073,7 @@ async function useItem(code, amount) {
         body: analyticsPayload
     });
 }
+
 
 
 async function useActionPoint() {
@@ -1348,20 +1358,9 @@ async function changeTreasure(page = 3) {
         }
 
         await delay(1000);
-
-        await sendRequest({
-            url: API_BASE_URL + "kingdom/treasure/page",
-            token: token,
-            body: { page: currentPage }
-        });
-
+        await setTreasurePage(currentPage);
         await delay(2000);
-
-        await sendRequest({
-            url: API_BASE_URL + "kingdom/treasure/page",
-            token: token,
-            body: { page }
-        });
+        await setTreasurePage(page);
 
         console.log(`✅ Treasure berhasil diubah ke page ${page + 1}`);
     } catch (error) {
