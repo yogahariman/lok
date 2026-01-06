@@ -371,7 +371,7 @@ async function decodeGzipPayload(payload) {
             }
         }
     } catch (e) {
-        console.warn("Native gzip failed:", e);
+        console.log("Native gzip failed:", e);
     }
 
 
@@ -404,7 +404,7 @@ async function decodeGzipPayload(payload) {
 
 function hasToken() {
     if (!token) {
-        console.warn("⏳ Token belum tersedia.");
+        console.log("⏳ Token belum tersedia.");
         return false;
     }
     return true;
@@ -491,7 +491,7 @@ async function sendRequest({ url, token, body }) {
 
         // ❌ HTTP error
         if (!response.ok) {
-            console.warn(`⛔ HTTP ${response.status} → ${url}`);
+            console.log(`⛔ HTTP ${response.status} → ${url}`);
             return null;
         }
 
@@ -501,14 +501,14 @@ async function sendRequest({ url, token, body }) {
         try {
             res = JSON.parse(text);
         } catch {
-            console.warn(`❌ Response bukan JSON → ${url}`);
+            console.log(`❌ Response bukan JSON → ${url}`);
             return null;
         }
 
         // ❌ API reject
         if (res?.result !== true) {
             const code = res?.err?.code ?? "UNKNOWN";
-            console.warn(`❌ API reject (code: ${code}) → ${url}`);
+            console.log(`❌ API reject (code: ${code}) → ${url}`);
             return null;
         }
 
@@ -516,7 +516,7 @@ async function sendRequest({ url, token, body }) {
         return res;
 
     } catch (err) {
-        console.warn(`❌ Network error → ${url}`, err);
+        console.log(`❌ Network error → ${url}`, err);
         return null;
     }
 }
@@ -683,7 +683,7 @@ function payloadSendmarch(troops, loc, marchType, dragoId) {
 
 async function getMarchInfo(locOrToLoc, battleId = null) {
     if (!Array.isArray(locOrToLoc)) {
-        console.warn("❌ loc / toLoc wajib array");
+        console.log("❌ loc / toLoc wajib array");
         return null;
     }
 
@@ -697,7 +697,7 @@ async function getMarchInfo(locOrToLoc, battleId = null) {
     else if (locOrToLoc.length === 2) {
         toLoc = [kingdomData.loc[0], ...locOrToLoc];
     } else {
-        console.warn("❌ Format loc / toLoc tidak valid:", locOrToLoc);
+        console.log("❌ Format loc / toLoc tidak valid:", locOrToLoc);
         return null;
     }
 
@@ -754,7 +754,7 @@ async function getMarchLimit() {
         console.log("✅ marchLimit:", marchLimit);
         return marchLimit;
     } else {
-        console.warn("⚠️ Gagal mendapatkan marchLimit dari response:", res);
+        console.log("⚠️ Gagal mendapatkan marchLimit dari response:", res);
         return 10;
     }
 }
@@ -776,7 +776,7 @@ async function getMarchQueueUsed() {
         //console.log("Jumlah march queue yang digunakan:", marchQueueUsed);
         return marchQueueUsed;
     } else {
-        console.warn("⚠️ Field troops tidak ditemukan atau bukan array:", res);
+        console.log("⚠️ Field troops tidak ditemukan atau bukan array:", res);
         return marchLimit;
     }
 }
@@ -953,7 +953,7 @@ async function heal(targetDuration = null, speedHeal = null) {
     if (speedHeal) {
         const cfg = HEAL_SPEED[speedHeal];
         if (!cfg) {
-            console.warn(`⚠ Speed '${speedHeal}' tidak dikenal`);
+            console.log(`⚠ Speed '${speedHeal}' tidak dikenal`);
             return;
         }
 
@@ -961,7 +961,7 @@ async function heal(targetDuration = null, speedHeal = null) {
         const need = Math.ceil(targetSeconds / cfg.seconds);
 
         if (stock < need) {
-            console.warn(`⚠ Stok speed '${speedHeal}' kurang! Punya ${stock}, butuh ${need}.`);
+            console.log(`⚠ Stok speed '${speedHeal}' kurang! Punya ${stock}, butuh ${need}.`);
             return;
         }
 
@@ -999,7 +999,7 @@ async function heal(targetDuration = null, speedHeal = null) {
     }
 
     if (plan.length === 0) {
-        console.warn("❌ Tidak ada kombinasi item yang cukup untuk heal.");
+        console.log("❌ Tidak ada kombinasi item yang cukup untuk heal.");
         return;
     }
 
@@ -1054,7 +1054,7 @@ async function changeSkin(skinCode = SKIN_CODE_INCREASE_DROP_RATE) {
     });
 
     if (!res) {
-        console.warn("❌ Gagal mengambil daftar skin.");
+        console.log("❌ Gagal mengambil daftar skin.");
         return null;
     }    
 
@@ -1077,7 +1077,7 @@ async function changeSkin(skinCode = SKIN_CODE_INCREASE_DROP_RATE) {
 
         // Jika tetap tidak ada setelah pengecekan ulang
         if (!skin) {
-            console.warn(`❌ Skin dengan code ${skinCode} tidak ditemukan.`);
+            console.log(`❌ Skin dengan code ${skinCode} tidak ditemukan.`);
             return null;
         }
     }
@@ -1117,7 +1117,7 @@ async function changeTreasure(page = 3) {
         });
 
         if (!treasureList) {
-            console.warn("❌ Gagal mengambil daftar treasure.");
+            console.log("❌ Gagal mengambil daftar treasure.");
             return;
         }        
 
@@ -1162,7 +1162,7 @@ async function claimVIP() {
         });
 
         if (!res) {
-            console.warn("❌ Gagal mengambil info VIP.");
+            console.log("❌ Gagal mengambil info VIP.");
             return;
         }
 
@@ -1196,7 +1196,7 @@ async function claimDSAVIP() {
             body: {}
         });
         if (!res) {
-            console.warn("❌ Gagal mengambil info DSA VIP.");
+            console.log("❌ Gagal mengambil info DSA VIP.");
             return;
         }
 
@@ -1399,7 +1399,7 @@ async function claimEventQuest() {
                     );
 
                     if (!res){
-                        console.warn(`⚠️ Gagal klaim event quest ${code}`, res);
+                        console.log(`⚠️ Gagal klaim event quest ${code}`, res);
                     }else{
                         console.log(`✅ Claimed event quest ${code}`);
                     }
@@ -1564,7 +1564,7 @@ async function scheduleAutoDonate() {
             await delay(3 * 60 * 60 * 1000);
 
         } catch (err) {
-            console.warn("❌ Error saat proses donasi:", err);
+            console.log("❌ Error saat proses donasi:", err);
             break;
         }
     }
@@ -1666,7 +1666,7 @@ async function scheduleAutoOpenFreeChest() {
             const response = res;
 
             if (!response) {
-                console.warn("🛑 Batas harian sudah tercapai. Tidak akan membuka chest.");
+                console.log("🛑 Batas harian sudah tercapai. Tidak akan membuka chest.");
                 break;
             }
 
@@ -1810,7 +1810,7 @@ async function scheduleBuyCaravan() {
             console.log(`🕒 Menunggu ${readableTime} sebelum pembelian berikutnya...`);
         } else {
             delayMs = 10 * 60 * 1000;
-            console.warn(`⚠️ Tidak dapat mengambil expired time. Menunggu default 10 menit.`);
+            console.log(`⚠️ Tidak dapat mengambil expired time. Menunggu default 10 menit.`);
         }
 
         await delay(delayMs);
@@ -2042,14 +2042,14 @@ async function scheduleSummonMonster() {
 
         const skill = skills.find(s => s.code === 10023);
         if (!skill) {
-            console.warn("⚠️ Skill summon monster tidak ditemukan.");
+            console.log("⚠️ Skill summon monster tidak ditemukan.");
             return;
         }
 
         const nextSkillTimestamp = new Date(skill.nextSkillTime).getTime();
         const now = Date.now();
         if (!nextSkillTimestamp || isNaN(nextSkillTimestamp)) {
-            console.warn("⚠️ Tidak bisa membaca waktu cooldown skill.");
+            console.log("⚠️ Tidak bisa membaca waktu cooldown skill.");
             return;
         }
 
@@ -2094,7 +2094,7 @@ async function scheduleSkillActivate(codes = [10001]) {
         const targetSkills = skills.filter(skill => codes.includes(skill.code));
 
         if (targetSkills.length === 0) {
-            console.warn("⚠️ Tidak ada skill yang ditemukan dari kode:", codes);
+            console.log("⚠️ Tidak ada skill yang ditemukan dari kode:", codes);
             return;
         }
 
@@ -2147,7 +2147,7 @@ async function scheduleSkillActivate(codes = [10001]) {
         } else if (nextSkill.code === 10023) {
                     await summonMonster();
                 } else {
-                    console.warn(`⚠️ Tidak ada handler untuk skill ${nextSkill.code}`);
+                    console.log(`⚠️ Tidak ada handler untuk skill ${nextSkill.code}`);
                 }
             } catch (err) {
                 console.error(`❌ Gagal mengeksekusi skill ${nextSkill.code}:`, err);
@@ -2166,7 +2166,7 @@ async function scheduleSkillActivate(codes = [10001]) {
 
 function getSortedUniqueBookmarks(bookmarks = bookmarkResults) {
     if (!kingdomData?.loc || kingdomData.loc.length !== 3) {
-        console.warn("❗ Lokasi kingdom tidak valid.");
+        console.log("❗ Lokasi kingdom tidak valid.");
         return [];
     }
 
@@ -2247,7 +2247,7 @@ function getSortedUniqueBookmarksRSS(bookmarks = bookmarkResults) {
 */
 function getSortedUniqueBookmarksRSS(bookmarks = bookmarkResults) {
     if (!kingdomData?.loc || kingdomData.loc.length !== 3) {
-        console.warn("❗ Lokasi kingdom tidak valid.");
+        console.log("❗ Lokasi kingdom tidak valid.");
         return [];
     }
 
@@ -2576,7 +2576,7 @@ async function rss(minLevel, maxLevel) {
     }
 
     if (filtered.length === 0) {
-        console.warn("⚠️ Tidak ada RSS yang cocok dengan filter.");
+        console.log("⚠️ Tidak ada RSS yang cocok dengan filter.");
         return;
     }
 
@@ -2666,7 +2666,7 @@ async function dsc(x, y) {
         }
 
     } else {
-        console.warn("Tidak ada Drago yang tersedia untuk dikirim.");
+        console.log("Tidak ada Drago yang tersedia untuk dikirim.");
     }
 
 }
@@ -2684,7 +2684,7 @@ async function startGatheringRSSFromBookmarks(bookmarks) {
     const res = getSortedUniqueBookmarksRSS(bookmarks) || [];
 
     if (!Array.isArray(res) || res.length === 0) {
-        console.warn("⚠️ Tidak ada RSS.");
+        console.log("⚠️ Tidak ada RSS.");
         return;
     }    
 
@@ -2705,7 +2705,7 @@ async function startGatheringRSSFromBookmarks(bookmarks) {
 
         const b = finalResults[i];
         if (!b?.loc || b.loc.length < 3) {
-            console.warn("⚠️ Bookmark tidak valid:", b);
+            console.log("⚠️ Bookmark tidak valid:", b);
             continue;
         }
 
@@ -2746,7 +2746,7 @@ async function startAttackMonsterFromBookmarks(bookmarks = bookmarkMonsterNormal
     const finalResults = getSortedUniqueBookmarks(bookmarks);
 
     if (finalResults.length === 0) {
-        console.warn("⚠️ Tidak ada monster yang bisa diserang.");
+        console.log("⚠️ Tidak ada monster yang bisa diserang.");
         return;
     }
 
@@ -2891,7 +2891,7 @@ async function startRallyMonsterFromBookmarks(bookmarks = bookmarkMonsterRally) 
     // =====================
     const finalResults = getSortedUniqueBookmarks(bookmarks);
     if (!finalResults.length) {
-        console.warn("⚠️ Tidak ada monster yang bisa dirally.");
+        console.log("⚠️ Tidak ada monster yang bisa dirally.");
         return;
     }
 
@@ -2994,7 +2994,7 @@ async function rallyMonster(loc, rallyTime = 5, troopIndex = 0, message = "") {
         // =====================
         const troopsSelected = marchInfo?.saveTroops?.[troopIndex];
         if (!troopsSelected) {
-            console.warn(`⚠️ Troops index ke-${troopIndex} tidak ditemukan.`);
+            console.log(`⚠️ Troops index ke-${troopIndex} tidak ditemukan.`);
             return false;
         }
 
@@ -3008,7 +3008,7 @@ async function rallyMonster(loc, rallyTime = 5, troopIndex = 0, message = "") {
         });
 
         if (!canSendMarch) {
-            console.warn("⛔ Gagal karena jumlah troops kurang.");
+            console.log("⛔ Gagal karena jumlah troops kurang.");
             return false;
         }
 
@@ -3039,7 +3039,7 @@ async function rallyMonster(loc, rallyTime = 5, troopIndex = 0, message = "") {
 
         // server reject
         if (!response) {
-            console.warn("⛔ Server menolak start rally.");
+            console.log("⛔ Server menolak start rally.");
             return false;
         }
 
@@ -3066,7 +3066,7 @@ async function attackMonster(x, y) {
 
     const monsterLevel = marchInfo?.fo?.level;
     if (monsterLevel === undefined) {
-        console.warn("⚠️ Level monster tidak ditemukan.");
+        console.log("⚠️ Level monster tidak ditemukan.");
         return false;
     }
 
@@ -3079,7 +3079,7 @@ async function attackMonster(x, y) {
     } else if (monsterLevel >= 8) {
         selectedTroop = 2;
     } else {
-        console.warn("⚠️ Level monster di luar jangkauan.");
+        console.log("⚠️ Level monster di luar jangkauan.");
         return false;
     }
 
@@ -3090,7 +3090,7 @@ async function attackMonster(x, y) {
         const result = await sendMarch([x, y], MARCH_TYPE_MONSTER, selectedTroop);
 
         if (!result.success) {
-            console.warn(`⚠️ March ditolak (bukan error) ke (${x}, ${y})`);
+            console.log(`⚠️ March ditolak (bukan error) ke (${x}, ${y})`);
             return false;
         }
 
@@ -3332,7 +3332,7 @@ async function exportCvCWeek1ToCSV(eventId, filename = `CvC_Week1_Rank_${getToda
             });
 
             if(!historyRes) {
-                console.warn(`⚠️ Gagal mengambil data history untuk kingdom ${kingdomId}`);
+                console.log(`⚠️ Gagal mengambil data history untuk kingdom ${kingdomId}`);
                 continue;
             }
 
@@ -3341,7 +3341,7 @@ async function exportCvCWeek1ToCSV(eventId, filename = `CvC_Week1_Rank_${getToda
                 death = historyRes.history?.stats?.battle?.death || 0;
             }
         } catch (err) {
-            console.warn(`⚠️ Gagal mengambil data history untuk kingdom ${kingdomId}`, err);
+            console.log(`⚠️ Gagal mengambil data history untuk kingdom ${kingdomId}`, err);
         }
 
         rows.push([
@@ -3397,7 +3397,7 @@ async function sendTelegramMessage(token, message) {
             //console.log('✅ chat_id ditemukan:', chatId);
             await send(chatId);
         } else {
-            console.warn('⚠️ Tidak menemukan chat_id. Pastikan sudah kirim pesan ke bot.');
+            console.log('⚠️ Tidak menemukan chat_id. Pastikan sudah kirim pesan ke bot.');
         }
     }
 
@@ -3424,7 +3424,7 @@ async function autoJoinRally() {
         });
 
         if (!rallyList) {
-            console.warn("⚠️ Gagal mendapatkan daftar rally.");
+            console.log("⚠️ Gagal mendapatkan daftar rally.");
             return;
         }
 
@@ -3445,7 +3445,7 @@ async function autoJoinRally() {
 
         // ⛔ Jika SEMUA targetMonster null → stop di sini
         if (rallies.length === 0) {
-            console.warn("⚠️ Semua rally targetMonster = null");
+            console.log("⚠️ Semua rally targetMonster = null");
             return; // atau return false / null sesuai fungsi kamu
         }        
 
@@ -3647,7 +3647,7 @@ async function autoJoinRally() {
 
 async function monitorWebSocket() {
     if (window._originalWebSocket) {
-        console.warn('[⚠️] WebSocket monitor sudah aktif.');
+        console.log('[⚠️] WebSocket monitor sudah aktif.');
         return;
     }
 
@@ -3671,7 +3671,7 @@ async function monitorWebSocket() {
             const rally = rallyQueue.shift(); // Ambil satu dari antrean
 
             if (!getAutoJoinStatus()) {
-                console.warn('[🛑] Auto Join OFF - Menghapus rally dari antrean:', rally);
+                console.log('[🛑] Auto Join OFF - Menghapus rally dari antrean:', rally);
                 continue; // Lewatkan rally ini tanpa diproses
             }
 
@@ -3803,7 +3803,7 @@ async function handleAuthResponse(xhr) {
     if (!xhr._url || !targetEndpoints.some(endpoint => xhr._url.includes(endpoint))) return;
 
     if (!xhr.response) {
-        console.warn("⚠️ Response kosong:", xhr._url);
+        console.log("⚠️ Response kosong:", xhr._url);
         return;
     }
 
