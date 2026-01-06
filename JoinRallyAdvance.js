@@ -1329,7 +1329,7 @@ async function claimMainQuest() {
     }
 }
 
-async function claimMainQuestRepeat() {
+async function claimMainQuestAll() {
     console.log("🚀 Mulai klaim main quest");
 
     while (true) {
