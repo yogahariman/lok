@@ -163,6 +163,8 @@ const ITEM_CODE_SPEEDUP_BUILDING_1H = 10103016
 const ITEM_CODE_SPEEDUP_BUILDING_3H = 10103017
 const ITEM_CODE_SPEEDUP_BUILDING_8H = 10103018
 const ITEM_CODE_SPEEDUP_BUILDING_1D = 10103019
+const ITEM_CODE_SPEEDUP_BUILDING_3D = 10103020
+const ITEM_CODE_SPEEDUP_BUILDING_7D = 10103021
 
 const ITEM_CODE_SPEEDUP_RESEARCH_1M = 10103022
 const ITEM_CODE_SPEEDUP_RESEARCH_5M = 10103023
@@ -172,6 +174,8 @@ const ITEM_CODE_SPEEDUP_RESEARCH_1H = 10103026
 const ITEM_CODE_SPEEDUP_RESEARCH_3H = 10103027
 const ITEM_CODE_SPEEDUP_RESEARCH_8H = 10103028
 const ITEM_CODE_SPEEDUP_RESEARCH_1D = 10103029
+const ITEM_CODE_SPEEDUP_RESEARCH_3D = 10103030
+const ITEM_CODE_SPEEDUP_RESEARCH_7D = 10103031
 
 const ITEM_CODE_SPEEDUP_TRAIN_1M = 10103032
 const ITEM_CODE_SPEEDUP_TRAIN_5M = 10103033
@@ -181,15 +185,19 @@ const ITEM_CODE_SPEEDUP_TRAIN_1H = 10103036
 const ITEM_CODE_SPEEDUP_TRAIN_3H = 10103037
 const ITEM_CODE_SPEEDUP_TRAIN_8H = 10103038
 const ITEM_CODE_SPEEDUP_TRAIN_1D = 10103039
+const ITEM_CODE_SPEEDUP_TRAIN_3D = 10103040
+const ITEM_CODE_SPEEDUP_TRAIN_7D = 10103041
 
-const ITEM_CODE_RECOVER_1M = 10103042
-const ITEM_CODE_RECOVER_5M = 10103043
-const ITEM_CODE_RECOVER_10M = 10103044
-const ITEM_CODE_RECOVER_30M = 10103045
-const ITEM_CODE_RECOVER_1H = 10103046
-const ITEM_CODE_RECOVER_3H = 10103047
-const ITEM_CODE_RECOVER_8H = 10103048
-const ITEM_CODE_RECOVER_1D = 10103049
+const ITEM_CODE_SPEEDUP_HEAL_1M = 10103042
+const ITEM_CODE_SPEEDUP_HEAL_5M = 10103043
+const ITEM_CODE_SPEEDUP_HEAL_10M = 10103044
+const ITEM_CODE_SPEEDUP_HEAL_30M = 10103045
+const ITEM_CODE_SPEEDUP_HEAL_1H = 10103046
+const ITEM_CODE_SPEEDUP_HEAL_3H = 10103047
+const ITEM_CODE_SPEEDUP_HEAL_8H = 10103048
+const ITEM_CODE_SPEEDUP_HEAL_1D = 10103049
+const ITEM_CODE_SPEEDUP_HEAL_3D = 10103050
+const ITEM_CODE_SPEEDUP_HEAL_7D = 10103051
 
 // Item Codes
 const ITEM_CODE_FOOD_BOOST_8H = 10102001
@@ -204,19 +212,147 @@ const ITEM_CODE_GOLD_BOOST_1D = 10102008
 const ITEM_CODE_GATHERING_BOOST_8H = 10102009
 const ITEM_CODE_GATHERING_BOOST_1D = 10102010
 
+
+const SPEEDUP_TYPE = {
+    GENERIC: "generic",
+    BUILDING: "building",
+    RESEARCH: "research",
+    TRAIN: "train",
+    HEAL: "heal",
+};
+const SPEEDUP_DURATION = {
+    "1m": 60,
+    "5m": 5 * 60,
+    "10m": 10 * 60,
+    "30m": 30 * 60,
+    "1h": 60 * 60,
+    "3h": 3 * 60 * 60,
+    "8h": 8 * 60 * 60,
+    "1d": 24 * 60 * 60,
+    "3d": 3 * 24 * 60 * 60,
+    "7d": 7 * 24 * 60 * 60,
+    "30d": 30 * 24 * 60 * 60,
+};
+const SPEEDUP_ITEM = {
+    [SPEEDUP_TYPE.GENERIC]: {
+        "1m": ITEM_CODE_SPEEDUP_1M,
+        "5m": ITEM_CODE_SPEEDUP_5M,
+        "10m": ITEM_CODE_SPEEDUP_10M,
+        "30m": ITEM_CODE_SPEEDUP_30M,
+        "1h": ITEM_CODE_SPEEDUP_1H,
+        "3h": ITEM_CODE_SPEEDUP_3H,
+        "8h": ITEM_CODE_SPEEDUP_8H,
+        "1d": ITEM_CODE_SPEEDUP_1D,
+        "3d": ITEM_CODE_SPEEDUP_3D,
+        "7d": ITEM_CODE_SPEEDUP_7D,
+        "30d": ITEM_CODE_SPEEDUP_30D,
+    },
+
+    [SPEEDUP_TYPE.BUILDING]: {
+        "1m": ITEM_CODE_SPEEDUP_BUILDING_1M,
+        "5m": ITEM_CODE_SPEEDUP_BUILDING_5M,
+        "10m": ITEM_CODE_SPEEDUP_BUILDING_10M,
+        "30m": ITEM_CODE_SPEEDUP_BUILDING_30M,
+        "1h": ITEM_CODE_SPEEDUP_BUILDING_1H,
+        "3h": ITEM_CODE_SPEEDUP_BUILDING_3H,
+        "8h": ITEM_CODE_SPEEDUP_BUILDING_8H,
+        "1d": ITEM_CODE_SPEEDUP_BUILDING_1D,
+        "3d": ITEM_CODE_SPEEDUP_BUILDING_3D,
+        "7d": ITEM_CODE_SPEEDUP_BUILDING_7D,
+    },
+
+    [SPEEDUP_TYPE.RESEARCH]: {
+        "1m": ITEM_CODE_SPEEDUP_RESEARCH_1M,
+        "5m": ITEM_CODE_SPEEDUP_RESEARCH_5M,
+        "10m": ITEM_CODE_SPEEDUP_RESEARCH_10M,
+        "30m": ITEM_CODE_SPEEDUP_RESEARCH_30M,
+        "1h": ITEM_CODE_SPEEDUP_RESEARCH_1H,
+        "3h": ITEM_CODE_SPEEDUP_RESEARCH_3H,
+        "8h": ITEM_CODE_SPEEDUP_RESEARCH_8H,
+        "1d": ITEM_CODE_SPEEDUP_RESEARCH_1D,
+        "3d": ITEM_CODE_SPEEDUP_RESEARCH_3D,
+        "7d": ITEM_CODE_SPEEDUP_RESEARCH_7D,
+    },
+
+    [SPEEDUP_TYPE.TRAIN]: {
+        "1m": ITEM_CODE_SPEEDUP_TRAIN_1M,
+        "5m": ITEM_CODE_SPEEDUP_TRAIN_5M,
+        "10m": ITEM_CODE_SPEEDUP_TRAIN_10M,
+        "30m": ITEM_CODE_SPEEDUP_TRAIN_30M,
+        "1h": ITEM_CODE_SPEEDUP_TRAIN_1H,
+        "3h": ITEM_CODE_SPEEDUP_TRAIN_3H,
+        "8h": ITEM_CODE_SPEEDUP_TRAIN_8H,
+        "1d": ITEM_CODE_SPEEDUP_TRAIN_1D,
+        "3d": ITEM_CODE_SPEEDUP_TRAIN_3D,
+        "7d": ITEM_CODE_SPEEDUP_TRAIN_7D,
+    },
+
+    [SPEEDUP_TYPE.HEAL]: {
+        "1m": ITEM_CODE_SPEEDUP_HEAL_1M,
+        "5m": ITEM_CODE_SPEEDUP_HEAL_5M,
+        "10m": ITEM_CODE_SPEEDUP_HEAL_10M,
+        "30m": ITEM_CODE_SPEEDUP_HEAL_30M,
+        "1h": ITEM_CODE_SPEEDUP_HEAL_1H,
+        "3h": ITEM_CODE_SPEEDUP_HEAL_3H,
+        "8h": ITEM_CODE_SPEEDUP_HEAL_8H,
+        "1d": ITEM_CODE_SPEEDUP_HEAL_1D,
+        "3d": ITEM_CODE_SPEEDUP_HEAL_3D,
+        "7d": ITEM_CODE_SPEEDUP_HEAL_7D,
+    },
+};
+// cara pakai:
+// const speedup = getSpeedupInfo(
+//     SPEEDUP_TYPE.HEAL,
+//     "3h"
+// );
+
+// if (speedup) {
+//     await useItem(speedup.code);
+//     console.log(`⏱️ ${speedup.seconds} detik`);
+// }
+
+function getSpeedupInfo(type, duration) {
+    const code = SPEEDUP_ITEM[type]?.[duration];
+    const seconds = SPEEDUP_DURATION[duration];
+
+    if (!code || !seconds) {
+        console.warn("❌ Speedup tidak valid", { type, duration });
+        return null;
+    }
+
+    return {
+        type,
+        duration,
+        code,
+        seconds,
+    };
+}
+
+
+
 const HEAL_SPEED = {
-    "1m": { code: 10103042, seconds: 60 },
-    "5m": { code: 10103043, seconds: 5 * 60 },
-    "10m": { code: 10103044, seconds: 10 * 60 },
-    "30m": { code: 10103045, seconds: 30 * 60 },
-    "1h": { code: 10103046, seconds: 60 * 60 },
-    "3h": { code: 10103047, seconds: 3 * 60 * 60 },
-    "8h": { code: 10103048, seconds: 8 * 60 * 60 },
-    "1d": { code: 10103049, seconds: 24 * 60 * 60 },
-    "3d": { code: 10103050, seconds: 3 * 24 * 60 * 60 },
-    "7d": { code: 10103051, seconds: 7 * 24 * 60 * 60 },
+    "1m": { code: ITEM_CODE_SPEEDUP_HEAL_1M, seconds: 60 },
+    "5m": { code: ITEM_CODE_SPEEDUP_HEAL_5M, seconds: 5 * 60 },
+    "10m": { code: ITEM_CODE_SPEEDUP_HEAL_10M, seconds: 10 * 60 },
+    "30m": { code: ITEM_CODE_SPEEDUP_HEAL_30M, seconds: 30 * 60 },
+    "1h": { code: ITEM_CODE_SPEEDUP_HEAL_1H, seconds: 60 * 60 },
+    "3h": { code: ITEM_CODE_SPEEDUP_HEAL_3H, seconds: 3 * 60 * 60 },
+    "8h": { code: ITEM_CODE_SPEEDUP_HEAL_8H, seconds: 8 * 60 * 60 },
+    "1d": { code: ITEM_CODE_SPEEDUP_HEAL_1D, seconds: 24 * 60 * 60 },
+    "3d": { code: ITEM_CODE_SPEEDUP_HEAL_3D, seconds: 3 * 24 * 60 * 60 },
+    "7d": { code: ITEM_CODE_SPEEDUP_HEAL_7D, seconds: 7 * 24 * 60 * 60 },
 };
 
+function getMarchTypeName(marchType) {
+    switch (marchType) {
+        case MARCH_TYPE_GATHER: return 'Gathering';
+        case MARCH_TYPE_CASTLE: return 'Attack/Rally Castle';
+        case MARCH_TYPE_MONSTER: return 'Attack/Rally Monster';
+        case MARCH_TYPE_SUPPORT: return 'Support';
+        case MARCH_TYPE_RALLY: return 'Join Rally';
+        default: return `Unknown Type (${marchType})`;
+    }
+}
 
 // Decode base64 to bytes
 function base64ToBytes(b64) {
@@ -1190,22 +1326,31 @@ async function heal(targetDuration = null, speedHeal = null) {
     //  FITUR 1 : Jika speedHeal dipilih → pakai itu saja
     // =====================================================
     if (speedHeal) {
-        const cfg = HEAL_SPEED[speedHeal];
-        if (!cfg) {
-            console.log(`⚠ Speed '${speedHeal}' tidak dikenal`);
+        const speedup = getSpeedupInfo(SPEEDUP_TYPE.HEAL, speedHeal);
+
+        if (!speedup) {
+            console.log(`⚠ Speed heal '${speedHeal}' tidak dikenal`);
             return;
         }
 
-        const stock = getItemStock(cfg.code);
-        const need = Math.ceil(targetSeconds / cfg.seconds);
+        const stock = getItemStock(speedup.code);
+        const need = Math.ceil(targetSeconds / speedup.seconds);
 
         if (stock < need) {
-            console.log(`⚠ Stok speed '${speedHeal}' kurang! Punya ${stock}, butuh ${need}.`);
+            console.log(
+                `⚠ Stok speed heal '${speedHeal}' kurang! ` +
+                `Punya ${stock}, butuh ${need}.`
+            );
             return;
         }
 
-        await useSpeedItem(cfg.code, need);
-        console.log(`✔ Heal ${targetSeconds}s memakai ${speedHeal} ×${need}`);
+        await useSpeedItem(speedup.code, need);
+
+        console.log(
+            `✔ Heal ${targetSeconds}s ` +
+            `memakai ${speedHeal} ×${need}`
+        );
+
         return;
     }
 
@@ -1213,15 +1358,18 @@ async function heal(targetDuration = null, speedHeal = null) {
     //  FITUR 2 : AUTO CARI KOMBINASI TERBAIK
     // =====================================================
 
-    // Urutkan speed dari durasi terbesar ke terkecil
-    const speeds = Object.entries(HEAL_SPEED)
-        .map(([k, v]) => ({ key: k, ...v }))
+    // Ambil semua speed heal, urutkan dari durasi terbesar
+    const speeds = Object.keys(SPEEDUP_DURATION)
+        .map(d => getSpeedupInfo(SPEEDUP_TYPE.HEAL, d))
+        .filter(Boolean)
         .sort((a, b) => b.seconds - a.seconds);
 
     let remaining = targetSeconds;
     const plan = [];
 
     for (const sp of speeds) {
+        if (remaining <= 0) break;
+
         const stock = getItemStock(sp.code);
         if (stock <= 0) continue;
 
@@ -1229,57 +1377,79 @@ async function heal(targetDuration = null, speedHeal = null) {
         if (maxUse <= 0) continue;
 
         const use = Math.min(stock, maxUse);
-        if (use > 0) {
-            plan.push({ code: sp.code, amount: use, seconds: sp.seconds });
-            remaining -= use * sp.seconds;
-        }
 
-        if (remaining <= 0) break;
+        plan.push({
+            code: sp.code,
+            amount: use,
+            seconds: sp.seconds,
+            duration: sp.duration,
+        });
+
+        remaining -= use * sp.seconds;
     }
 
     if (plan.length === 0) {
-        console.log("❌ Tidak ada kombinasi item yang cukup untuk heal.");
+        console.log("❌ Tidak ada kombinasi speed heal yang cukup.");
         return;
     }
 
+
     // Eksekusi semua item yang direncanakan
     await changeTreasure(1);
-    for (const p of plan) {
-        await useSpeedItem(p.code, p.amount);
-    }
-    await changeTreasure();
 
+    for (const p of plan) {
+        try {
+            await useSpeedItem(p.code, p.amount);
+        } catch (err) {
+            console.error("❌ Gagal memakai item:", p.code, err);
+            break;
+        }
+    }
+
+    await changeTreasure(0);
 
     const usedSeconds = targetSeconds - remaining;
 
-    console.log("✔ Heal selesai");
+    if (remaining > 0) {
+        console.log("⚠ Heal belum sepenuhnya selesai");
+    } else {
+        console.log("✔ Heal selesai");
+    }
+
     console.log("📦 Kombinasi item:");
     plan.forEach(p =>
         console.log(` - ${p.code} ×${p.amount} (${p.seconds}s)`));
 
     console.log(`⏱ Total healed: ${usedSeconds}s`);
 
+
     // Helper → gunakan item
     async function useSpeedItem(code, amount) {
-        const itemPayload = { code, amount, isBuy: 0 };
-        const analyticsPayload = {
-            url: "item/use",
-            param: `${code}|${amount}`
-        };
+        if (!amount || amount <= 0) return;
 
-        await sendRequest({
+        const itemPayload = { code, amount, isBuy: 0 };
+
+        const res = await sendRequest({
             url: API_BASE_URL + "kingdom/heal/speedup",
             token,
             // body: b64xorEnc(itemPayload, xor_password),
             body: itemPayload
         });
 
+        if (!res?.result) {
+            throw new Error("Heal speedup gagal");
+        }
+
         await sendRequest({
             url: API_BASE_URL + "auth/analytics",
             token,
-            body: analyticsPayload
+            body: {
+                url: "item/use",
+                param: `${code}|${amount}`
+            }
         });
     }
+
 }
 
 async function changeSkin(skinCode = SKIN_CODE_INCREASE_DROP_RATE) {
@@ -2464,16 +2634,7 @@ async function save() {
 function load() {
     bookmarkResults = JSON.parse(localStorage.getItem('bookmarkMonsterRally_bk')) || [];
 }
-function getMarchTypeName(marchType) {
-    switch (marchType) {
-        case MARCH_TYPE_GATHER: return 'Gathering';
-        case MARCH_TYPE_CASTLE: return 'Attack/Rally Castle';
-        case MARCH_TYPE_MONSTER: return 'Attack/Rally Monster';
-        case MARCH_TYPE_SUPPORT: return 'Support';
-        case MARCH_TYPE_RALLY: return 'Join Rally';
-        default: return `Unknown Type (${marchType})`;
-    }
-}
+
 async function sendMarch(loc, marchType, troopIndex, dragoId) {
     try {
         const marchTypeName = getMarchTypeName(marchType);
