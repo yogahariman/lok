@@ -328,20 +328,107 @@ function getSpeedupInfo(type, duration) {
     };
 }
 
+const ITEM_NAME = {
+    [ITEM_CODE_FOOD]: "Food",
+    [ITEM_CODE_LUMBER]: "Lumber",
+    [ITEM_CODE_STONE]: "Stone",
+    [ITEM_CODE_GOLD]: "Gold",
+    [ITEM_CODE_CRYSTAL]: "Crystal",
+    // VIP
+    [ITEM_CODE_VIP_10]: "VIP 10",
+    [ITEM_CODE_VIP_100]: "VIP 100",
+    [ITEM_CODE_VIP_500]: "VIP 500",
+    [ITEM_CODE_VIP_1000]: "VIP 1,000",
+    [ITEM_CODE_VIP_5000]: "VIP 5,000",
+    [ITEM_CODE_VIP_10000]: "VIP 10,000",
 
+    // Food
+    [ITEM_CODE_FOOD_1K]: "Food 1K",
+    [ITEM_CODE_FOOD_5K]: "Food 5K",
+    [ITEM_CODE_FOOD_10K]: "Food 10K",
+    [ITEM_CODE_FOOD_1M]: "Food 1M",
+    [ITEM_CODE_FOOD_5M]: "Food 5M",
+    [ITEM_CODE_FOOD_10M]: "Food 10M",
 
-const HEAL_SPEED = {
-    "1m": { code: ITEM_CODE_SPEEDUP_HEAL_1M, seconds: 60 },
-    "5m": { code: ITEM_CODE_SPEEDUP_HEAL_5M, seconds: 5 * 60 },
-    "10m": { code: ITEM_CODE_SPEEDUP_HEAL_10M, seconds: 10 * 60 },
-    "30m": { code: ITEM_CODE_SPEEDUP_HEAL_30M, seconds: 30 * 60 },
-    "1h": { code: ITEM_CODE_SPEEDUP_HEAL_1H, seconds: 60 * 60 },
-    "3h": { code: ITEM_CODE_SPEEDUP_HEAL_3H, seconds: 3 * 60 * 60 },
-    "8h": { code: ITEM_CODE_SPEEDUP_HEAL_8H, seconds: 8 * 60 * 60 },
-    "1d": { code: ITEM_CODE_SPEEDUP_HEAL_1D, seconds: 24 * 60 * 60 },
-    "3d": { code: ITEM_CODE_SPEEDUP_HEAL_3D, seconds: 3 * 24 * 60 * 60 },
-    "7d": { code: ITEM_CODE_SPEEDUP_HEAL_7D, seconds: 7 * 24 * 60 * 60 },
+    // Lumber
+    [ITEM_CODE_LUMBER_1K]: "Lumber 1K",
+    [ITEM_CODE_LUMBER_5K]: "Lumber 5K",
+    [ITEM_CODE_LUMBER_10K]: "Lumber 10K",
+    [ITEM_CODE_LUMBER_50K]: "Lumber 50K",
+    [ITEM_CODE_LUMBER_100K]: "Lumber 100K",
+    [ITEM_CODE_LUMBER_500K]: "Lumber 500K",
+    [ITEM_CODE_LUMBER_1M]: "Lumber 1M",
+    [ITEM_CODE_LUMBER_5M]: "Lumber 5M",
+    [ITEM_CODE_LUMBER_10M]: "Lumber 10M",
+
+    // Stone
+    [ITEM_CODE_STONE_1K]: "Stone 1K",
+    [ITEM_CODE_STONE_5K]: "Stone 5K",
+    [ITEM_CODE_STONE_10K]: "Stone 10K",
+    [ITEM_CODE_STONE_50K]: "Stone 50K",
+    [ITEM_CODE_STONE_100K]: "Stone 100K",
+    [ITEM_CODE_STONE_500K]: "Stone 500K",
+    [ITEM_CODE_STONE_1M]: "Stone 1M",
+    [ITEM_CODE_STONE_5M]: "Stone 5M",
+    [ITEM_CODE_STONE_10M]: "Stone 10M",
+
+    // Gold
+    [ITEM_CODE_GOLD_1K]: "Gold 1K",
+    [ITEM_CODE_GOLD_5K]: "Gold 5K",
+    [ITEM_CODE_GOLD_10K]: "Gold 10K",
+    [ITEM_CODE_GOLD_50K]: "Gold 50K",
+    [ITEM_CODE_GOLD_100K]: "Gold 100K",
+    [ITEM_CODE_GOLD_500K]: "Gold 500K",
+    [ITEM_CODE_GOLD_1M]: "Gold 1M",
+    [ITEM_CODE_GOLD_5M]: "Gold 5M",
+    [ITEM_CODE_GOLD_10M]: "Gold 10M",
+
+    // AP
+    [ITEM_CODE_ACTION_POINTS_10]: "Action Points 10",
+    [ITEM_CODE_ACTION_POINTS_20]: "Action Points 20",
+    [ITEM_CODE_ACTION_POINTS_50]: "Action Points 50",
+    [ITEM_CODE_ACTION_POINTS_100]: "Action Points 100",
+
+    // Boosts
+    [ITEM_CODE_FOOD_BOOST_8H]: "Food Boost 8h",
+    [ITEM_CODE_FOOD_BOOST_1D]: "Food Boost 1d",
+    [ITEM_CODE_LUMBER_BOOST_8H]: "Lumber Boost 8h",
+    [ITEM_CODE_LUMBER_BOOST_1D]: "Lumber Boost 1d",
+    [ITEM_CODE_STONE_BOOST_8H]: "Stone Boost 8h",
+    [ITEM_CODE_STONE_BOOST_1D]: "Stone Boost 1d",
+    [ITEM_CODE_GOLD_BOOST_8H]: "Gold Boost 8h",
+    [ITEM_CODE_GOLD_BOOST_1D]: "Gold Boost 1d",
+    [ITEM_CODE_GATHERING_BOOST_8H]: "Gathering Boost 8h",
+    [ITEM_CODE_GATHERING_BOOST_1D]: "Gathering Boost 1d",
+
+    // Speedups
+    [ITEM_CODE_SPEEDUP_1M]: "Speedup 1m",
+    [ITEM_CODE_SPEEDUP_5M]: "Speedup 5m",
+    [ITEM_CODE_SPEEDUP_10M]: "Speedup 10m",
+    [ITEM_CODE_SPEEDUP_30M]: "Speedup 30m",
+    [ITEM_CODE_SPEEDUP_1H]: "Speedup 1h",
+    [ITEM_CODE_SPEEDUP_3H]: "Speedup 3h",
+    [ITEM_CODE_SPEEDUP_8H]: "Speedup 8h",
+    [ITEM_CODE_SPEEDUP_1D]: "Speedup 1d",
+    [ITEM_CODE_SPEEDUP_3D]: "Speedup 3d",
+    [ITEM_CODE_SPEEDUP_7D]: "Speedup 7d",
 };
+function getItemName(code) {
+    return ITEM_NAME[code] ?? `Unknown Item (${code})`;
+}
+
+// const HEAL_SPEED = {
+//     "1m": { code: ITEM_CODE_SPEEDUP_HEAL_1M, seconds: 60 },
+//     "5m": { code: ITEM_CODE_SPEEDUP_HEAL_5M, seconds: 5 * 60 },
+//     "10m": { code: ITEM_CODE_SPEEDUP_HEAL_10M, seconds: 10 * 60 },
+//     "30m": { code: ITEM_CODE_SPEEDUP_HEAL_30M, seconds: 30 * 60 },
+//     "1h": { code: ITEM_CODE_SPEEDUP_HEAL_1H, seconds: 60 * 60 },
+//     "3h": { code: ITEM_CODE_SPEEDUP_HEAL_3H, seconds: 3 * 60 * 60 },
+//     "8h": { code: ITEM_CODE_SPEEDUP_HEAL_8H, seconds: 8 * 60 * 60 },
+//     "1d": { code: ITEM_CODE_SPEEDUP_HEAL_1D, seconds: 24 * 60 * 60 },
+//     "3d": { code: ITEM_CODE_SPEEDUP_HEAL_3D, seconds: 3 * 24 * 60 * 60 },
+//     "7d": { code: ITEM_CODE_SPEEDUP_HEAL_7D, seconds: 7 * 24 * 60 * 60 },
+// };
 
 function getMarchTypeName(marchType) {
     switch (marchType) {
@@ -2067,7 +2154,12 @@ async function buyCaravan() {
         });
 
         for (const item of availableItems) {
-            console.log(`🛒 Membeli item: code=${item.code}, costItemCode=${item.costItemCode}, id=${item._id}`);
+            // console.log(`🛒 Membeli item: code=${item.code}, costItemCode=${item.costItemCode}, id=${item._id}`);
+            console.log(
+                `🛒 Membeli item: ${getItemName(item.code)} ` +
+                `(cost=${getItemName(item.costItemCode)}, id=${item._id})`
+            );
+
             await delay(1000);
             await sendRequest({
                 url: API_BASE_URL + "kingdom/caravan/buy",
