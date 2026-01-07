@@ -1283,6 +1283,10 @@ async function heal(targetDuration = null, speedHeal = null) {
         return found ? found.amount : 0;
     }
 
+    // Eksekusi semua item yang direncanakan
+    await changeTreasure(1);
+    await delay(5000);
+
     // Ambil data wounded
     const wounded = await getHospitalWounded();
     if (!wounded) {
@@ -1393,10 +1397,6 @@ async function heal(targetDuration = null, speedHeal = null) {
         return;
     }
 
-
-    // Eksekusi semua item yang direncanakan
-    await changeTreasure(1);
-
     for (const p of plan) {
         try {
             await useSpeedItem(p.code, p.amount);
@@ -1406,7 +1406,7 @@ async function heal(targetDuration = null, speedHeal = null) {
         }
     }
 
-    await changeTreasure(0);
+    await changeTreasure();
 
     const usedSeconds = targetSeconds - remaining;
 
@@ -1418,7 +1418,7 @@ async function heal(targetDuration = null, speedHeal = null) {
 
     console.log("📦 Kombinasi item:");
     plan.forEach(p =>
-        console.log(` - ${p.code} ×${p.amount} (${p.seconds}s)`));
+        console.log(` - ${p.duration} ×${p.amount} (${p.seconds}s)`));
 
     console.log(`⏱ Total healed: ${usedSeconds}s`);
 
