@@ -2154,11 +2154,11 @@ async function buyCaravan() {
         });
 
         for (const item of availableItems) {
-            // console.log(`🛒 Membeli item: code=${item.code}, costItemCode=${item.costItemCode}, id=${item._id}`);
-            console.log(
-                `🛒 Membeli item: ${getItemName(item.code)} ` +
-                `(cost=${getItemName(item.costItemCode)}, id=${item._id})`
-            );
+            // console.log(
+            //     `🛒 Membeli item: ${getItemName(item.code)} ` +
+            //     `(cost=${getItemName(item.costItemCode)}, id=${item._id})`
+            // );
+            console.log(`🛒 Membeli item: ${getItemName(item.code)}`);
 
             await delay(1000);
             await sendRequest({
