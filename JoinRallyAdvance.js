@@ -1111,7 +1111,7 @@ async function getEventListCvC() {
 
 /*(async () => {
     for (let i = 1; i <= 1000; i++) {
-        const result = await claimChestFree(CHEST_TYPE_PLATiNUM);
+        const result = await claimChestFree(CHEST_TYPE_PLATINUM);
         console.log(`Chest ${i}:`, result);
         await delay(5000); // delay 5 detik antara klaim
     }
