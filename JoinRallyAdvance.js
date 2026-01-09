@@ -34,6 +34,11 @@ const STATUS_PENDING = 1; // belum selesai
 const STATUS_FINISHED = 2; // sudah selesai, BELUM di-claim
 const STATUS_CLAIMED = 3; // sudah di-claim
 
+// Chest type
+const CHEST_TYPE_SILVER = 0
+const CHEST_TYPE_GOLD = 1
+const CHEST_TYPE_PLATINUM = 2
+
 // Dragon's Nest Status
 const DRAGO_LAIR_STATUS_STANDBY = 1; // On Standby
 const DRAGO_LAIR_STATUS_DEFENDING = 2; // Defending
@@ -1135,6 +1140,17 @@ async function claimDsavipReward() {
     });
 }
 
+async function claimChestFreeReward(type){
+    if (!hasToken()) return null;
+
+    return await sendRequest({
+                url: API_BASE_URL + "item/freechest",
+                token: token,
+                //body: b64xorEnc({ type: 0 }, xor_password),
+                body: { type }
+            });
+}
+
 async function helpAllMembers() {
     if (!hasToken()) return null;
 
@@ -2042,12 +2058,7 @@ async function scheduleAutoOpenFreeChest() {
         try {
             await delay(7 * 60 * 1000);
 
-            const res = await sendRequest({
-                url: API_BASE_URL + "item/freechest",
-                token: token,
-                //body: b64xorEnc({ type: 0 }, xor_password),
-                body: { type: 0 }
-            });
+            const res = await claimChestFreeReward(CHEST_TYPE_SILVER);
 
             // const response = b64xorDec(res, xor_password);
             const response = res;
