@@ -1109,16 +1109,6 @@ async function getEventListCvC() {
     });
 }
 
-async function claimEventReward(eventId, eventTargetId, code) {
-    if (!hasToken()) return null;
-
-    return await sendRequest({
-        url: API_BASE_URL + "event/claim",
-        token,
-        body: { eventId, eventTargetId, code }
-    });
-}
-
 /*(async () => {
     for (let i = 1; i <= 100; i++) {
         const result = await claimChestFree(CHEST_TYPE_PLATiNUM);
@@ -1687,7 +1677,7 @@ async function claimDSAVIP() {
     }
 }
 
-async function claimDailyQuest() {
+async function claimQuestDaily() {
     if (!hasToken()) return;
 
     try {
@@ -1736,7 +1726,7 @@ async function claimDailyQuest() {
     }
 }
 
-async function claimMainQuest() {
+async function claimQuestMain() {
     if (!hasToken()) return false;
 
     try {
@@ -1780,11 +1770,11 @@ async function claimMainQuest() {
     }
 }
 
-async function claimMainQuestAll() {
+async function claimQuestMainAll() {
     console.log("🚀 Mulai klaim main quest");
 
     while (true) {
-        const hasClaimed = await claimMainQuest();
+        const hasClaimed = await claimQuestMain();
 
         if (!hasClaimed) {
             console.log("🛑 Semua main quest sudah diklaim");
@@ -1796,7 +1786,7 @@ async function claimMainQuestAll() {
     }
 }
 
-async function claimEventQuest() {
+async function claimQuestEvent() {
     if (!hasToken()) return false;
 
     try {
@@ -1822,11 +1812,11 @@ async function claimEventQuest() {
                 );
                 for (const { code, _id } of finishedQuests) {
 
-                    const res = await claimEventReward(
-                        rootEventId,
-                        _id,
-                        code
-                    );
+                    const res = await sendRequest({
+                        url: API_BASE_URL + "event/claim",
+                        token,
+                        body: { eventId: rootEventId, eventTargetId: _id, code }
+                    });
 
                     if (!res) {
                         console.log(`⚠️ Gagal klaim event quest ${code}`, res);
@@ -1847,11 +1837,11 @@ async function claimEventQuest() {
     }
 }
 
-async function scheduleClaimDailyQuest() {
+async function scheduleClaimQuestDaily() {
     const runAll = async () => {
-        await claimMainQuest();
-        await claimDailyQuest();
-        await claimEventQuest();
+        await claimQuestMain();
+        await claimQuestDaily();
+        await claimQuestEvent();
     };
 
     try {
@@ -4058,40 +4048,9 @@ async function handleAuthResponse(xhr) {
             }
 
             if (setting.scheduleClaimDailyQuest) {
-                scheduleClaimDailyQuest();
-                // runClaimMainQuest();
+                scheduleClaimQuestDaily();
                 // await delay(5000);
             }
-
-            /*
-            //claim VIP reward
-            await claimVIP();
-            await delay(10 * 1000);
-            await claimDSAVIP();
-            await delay(10 * 1000);
-
-            // Help all
-            scheduleHelpAll();
-            await delay(10 * 1000);
-            // Donate
-            scheduleAutoDonate();
-            await delay(10 * 1000);
-            // Open Free Chest
-            scheduleAutoOpenFreeChest();
-            await delay(10 * 1000);
-            //instant harvest and summon monster
-            //scheduleSkillActivate([10001, 10023]);
-            scheduleSkillActivate();
-            await delay(10 * 1000);
-            //buy caravan
-            scheduleBuyCaravan();
-            //resource Harvest
-            await delay(3 * 60 * 1000);
-            scheduleResourceHarvest();
-            // daily Quest
-            await delay(5 * 60 * 1000);
-            scheduleClaimDailyQuest();
-            */
         }
 
     } catch (err) {
