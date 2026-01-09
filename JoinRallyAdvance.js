@@ -1119,7 +1119,7 @@ async function claimChestFree(type){
                 body: { type }
             });
 }
-
+// for (let i = 1; i <= 10 && await claimChestPlatinum() !== null; i++) await delay(5000);
 async function claimChestPlatinum({
     delayMs = 5000,
     maxTry = Infinity
