@@ -1109,14 +1109,6 @@ async function getEventListCvC() {
     });
 }
 
-/*(async () => {
-    for (let i = 1; i <= 1000; i++) {
-        const result = await claimChestFree(CHEST_TYPE_PLATINUM);
-        console.log(`Chest ${i}:`, result);
-        await delay(5000); // delay 5 detik antara klaim
-    }
-})();*/
-
 async function claimChestFree(type){
     if (!hasToken()) return null;
 
@@ -1127,6 +1119,32 @@ async function claimChestFree(type){
                 body: { type }
             });
 }
+
+async function claimChestPlatinum({
+    delayMs = 5000,
+    maxTry = Infinity
+} = {}) {
+
+    let i = 1;
+
+    while (i <= maxTry) {
+        const result = await claimChestFree(CHEST_TYPE_PLATINUM);
+
+        // jika API return null → stop
+        if (result === null) {
+            console.log("⛔ Claim dihentikan (response null).");
+            break;
+        }
+
+        console.log(`🎁 Chest ${i}:`, result);
+
+        i++;
+        await delay(delayMs);
+    }
+
+    console.log(`✅ Selesai claim. Total: ${i - 1} chest`);
+}
+
 
 async function helpAllMembers() {
     if (!hasToken()) return null;
