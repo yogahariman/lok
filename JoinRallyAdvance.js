@@ -1119,7 +1119,14 @@ async function claimEventReward(eventId, eventTargetId, code) {
     });
 }
 
-// for (let i=1;i<=100;i++) console.log(`Chest ${i}:`, await claimChestFree(i));
+/*(async () => {
+    for (let i = 1; i <= 100; i++) {
+        const result = await claimChestFree(i);
+        console.log(`Chest ${i}:`, result);
+        await delay(5000); // delay 5 detik antara klaim
+    }
+})();*/
+
 async function claimChestFree(type){
     if (!hasToken()) return null;
 
