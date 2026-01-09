@@ -1119,28 +1119,7 @@ async function claimEventReward(eventId, eventTargetId, code) {
     });
 }
 
-async function claimVipReward() {
-    if (!hasToken()) return null;
-
-    return sendRequest({
-        url: API_BASE_URL + "kingdom/vip/claim",
-        token,
-        //body: b64xorEnc({}, xor_password),
-        body: {}
-    });
-}
-
-async function claimDsavipReward() {
-    if (!hasToken()) return null;
-
-    return await sendRequest({
-        url: API_BASE_URL + "kingdom/dsavip/claim",
-        token,
-        body: {}
-    });
-}
-
-async function claimChestFreeReward(type){
+async function claimChestFree(type){
     if (!hasToken()) return null;
 
     return await sendRequest({
@@ -1658,7 +1637,12 @@ async function claimVIP() {
 
         console.log("🎁 Mengklaim VIP reward...");
 
-        await claimVipReward();
+        await sendRequest({
+            url: API_BASE_URL + "kingdom/vip/claim",
+            token,
+            //body: b64xorEnc({}, xor_password),
+            body: {}
+        });
 
         console.log("🏆 VIP reward berhasil diklaim.");
     } catch (error) {
@@ -1683,7 +1667,11 @@ async function claimDSAVIP() {
 
         console.log("🎁 Mengklaim DSA VIP reward...");
 
-        await claimDsavipReward();
+        await sendRequest({
+            url: API_BASE_URL + "kingdom/dsavip/claim",
+            token,
+            body: {}
+        });
 
         console.log("🏆 DSA VIP reward berhasil diklaim.");
     } catch (error) {
@@ -2058,7 +2046,7 @@ async function scheduleAutoOpenFreeChest() {
         try {
             await delay(7 * 60 * 1000);
 
-            const res = await claimChestFreeReward(CHEST_TYPE_SILVER);
+            const res = await claimChestFree(CHEST_TYPE_SILVER);
 
             // const response = b64xorDec(res, xor_password);
             const response = res;
