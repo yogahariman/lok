@@ -1119,6 +1119,7 @@ async function claimEventReward(eventId, eventTargetId, code) {
     });
 }
 
+// for (let i=1;i<=100;i++) console.log(`Chest ${i}:`, await claimChestFree(i));
 async function claimChestFree(type){
     if (!hasToken()) return null;
 
