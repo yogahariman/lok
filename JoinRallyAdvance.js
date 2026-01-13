@@ -2124,7 +2124,7 @@ async function scheduleAutoOpenFreeChest() {
     // 4. Loop
     while (true) {
         try {
-            await delay(10 * 1000);
+            await delay(60 * 1000);
 
             // --------------------------
             // SILVER (patokan utama)
