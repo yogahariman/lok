@@ -2194,6 +2194,7 @@ async function buyCaravan() {
 
             // Food
             ITEM_CODE_FOOD_1K, ITEM_CODE_FOOD_5K, ITEM_CODE_FOOD_10K,
+            ITEM_CODE_FOOD_50K, ITEM_CODE_FOOD_100K, ITEM_CODE_FOOD_500K,
             ITEM_CODE_FOOD_1M, ITEM_CODE_FOOD_5M, ITEM_CODE_FOOD_10M,
 
             // Lumber
