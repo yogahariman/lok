@@ -2133,8 +2133,6 @@ async function scheduleAutoOpenFreeChest() {
             // SILVER — patokan utama
             // --------------------------------
             const resSilver = await claimChestFree(CHEST_TYPE_SILVER);
-            await delay(20 * 1000);
-
 
             if (!resSilver) {
                 console.log("🛑 Silver sudah tidak bisa dibuka lagi.");
@@ -2155,6 +2153,7 @@ async function scheduleAutoOpenFreeChest() {
             for (const chest of extraChests) {
                 if (!chest.active) continue;
 
+                await delay(20 * 1000);
                 const res = await claimChestFree(chest.type);
 
                 if (!res) {
@@ -2162,7 +2161,6 @@ async function scheduleAutoOpenFreeChest() {
                     chest.active = false;
                 } else {
                     console.log(`✨ ${chest.key} dibuka.`);
-                    await delay(20 * 1000);
                 }
             }
 
