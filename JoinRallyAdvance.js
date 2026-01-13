@@ -2030,6 +2030,7 @@ async function scheduleResourceHarvest() {
     }
 }
 
+/*
 async function scheduleAutoOpenFreeChest() {
     if (!hasToken()) return;
 
@@ -2074,17 +2075,117 @@ async function scheduleAutoOpenFreeChest() {
 
             currentChestNum = response?.freechest?.silver?.num ?? currentChestNum + 1;
 
+            console.log(`✅ Silver Free Chest dibuka. Total sekarang: ${currentChestNum}/${dailyFreeChestLimit}`);
+
             if (currentChestNum >= dailyFreeChestLimit) {
                 console.log("🛑 Batas harian sudah tercapai. Tidak akan membuka chest.");
                 break;
             }
 
-            console.log(`✅ Silver Free Chest dibuka. Total sekarang: ${currentChestNum}/${dailyFreeChestLimit}`);
         } catch (err) {
             console.error("❌ Gagal membuka Silver Free Chest:", err);
             break;
         }
     }
+}
+*/
+
+async function scheduleAutoOpenFreeChest() {
+    if (!hasToken()) return;
+
+    // 1. Ambil level Treasure House
+    const treasureHouse = kingdomData.buildings.find(b => b.position === 4);
+    const treasureHouseLevel = treasureHouse?.level ?? 0;
+
+    // 2. Tentukan daily free chest limit berdasarkan level
+    const dailyChestMap = {
+        26: 10, 27: 10, 28: 10, 29: 10,
+        30: 12, 31: 13, 32: 14, 33: 15,
+        34: 16, 35: 20
+    };
+    const dailyFreeChestLimit = dailyChestMap[treasureHouseLevel] ?? 0;
+
+    // 3. Ambil progress silver
+    let currentSilver = kingdomData.freeChest?.silver?.num ?? 0;
+
+    console.log(`📦 Treasure House L${treasureHouseLevel} | Silver: ${currentSilver}/${dailyFreeChestLimit}`);
+
+    if (currentSilver >= dailyFreeChestLimit) {
+        console.log("🛑 Batas harian Silver sudah tercapai.");
+        return;
+    }
+
+    console.log("🚀 Auto open Free Chest dimulai...");
+
+    // FLAG GOLD & PLATINUM
+    let canOpenGold = true;
+    let canOpenPlatinum = true;
+
+    // 4. Loop
+    while (true) {
+        try {
+            await delay(10 * 1000);
+
+            // --------------------------
+            // SILVER (patokan utama)
+            // --------------------------
+            const resSilver = await claimChestFree(CHEST_TYPE_SILVER);
+            const responseSilver = resSilver;
+
+            if (!responseSilver) {
+                console.log("🛑 Silver habis. Stop loop.");
+                break;
+            }
+
+            currentSilver = responseSilver?.freechest?.silver?.num ?? currentSilver + 1;
+
+            console.log(`✨ Silver dibuka → ${currentSilver}/${dailyFreeChestLimit}`);
+
+            if (currentSilver >= dailyFreeChestLimit) {
+                console.log("🛑 Silver mencapai limit. Stop.");
+                break;
+            }
+
+            // --------------------------
+            // GOLD (hanya claim jika masih aktif)
+            // --------------------------
+            if (canOpenGold) {
+                const resGold = await claimChestFree(CHEST_TYPE_GOLD);
+
+                if (!resGold) {
+                    console.log("⚠️ Gold sudah tidak bisa diclaim lagi → Nonaktifkan.");
+                    canOpenGold = false; // MATIKAN GOLD
+                } else {
+                    console.log("✨ Gold Free Chest dibuka.");
+                }
+            }
+
+            // --------------------------
+            // PLATINUM (hanya claim jika masih aktif)
+            // --------------------------
+            if (canOpenPlatinum) {
+                const resPlat = await claimChestFree(CHEST_TYPE_PLATINUM);
+
+                if (!resPlat) {
+                    console.log("⚠️ Platinum tidak bisa diclaim lagi → Nonaktifkan.");
+                    canOpenPlatinum = false; // MATIKAN PLATINUM
+                } else {
+                    console.log("✨ Platinum Free Chest dibuka.");
+                }
+            }
+
+            // --------------------------
+            // Semua chest lain sudah habis tapi silver masih lanjut
+            // (loop tetap lanjut sampai silver limit)
+            // --------------------------
+
+        } catch (err) {
+            console.error("❌ Error membuka chest:", err);
+            break;
+        }
+    }
+
+    console.log("🎉 Auto open free chest selesai.");
 }
 
 async function buyCaravan() {
