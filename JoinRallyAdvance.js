@@ -1,7 +1,7 @@
 // Note
-// 1. instant harvest skin sementara tetep setelah selesai
+// 1. cek marchInfo troops harus kuda
 // 2. set rally dk
-// 3. claim event quest
+// 3. 
 
 // (async () => {
 //     for (let i = 0; i < 10; i++) {
