@@ -2147,13 +2147,14 @@ async function scheduleAutoOpenFreeChest() {
                 break;
             }
 
+            await delay(20 * 1000);
+
             // --------------------------------
             // GOLD & PLATINUM — ikut klaim
             // --------------------------------
             for (const chest of extraChests) {
                 if (!chest.active) continue;
 
-                await delay(20 * 1000);
                 const res = await claimChestFree(chest.type);
 
                 if (!res) {
@@ -2161,6 +2162,7 @@ async function scheduleAutoOpenFreeChest() {
                     chest.active = false;
                 } else {
                     console.log(`✨ ${chest.key} dibuka.`);
+                    await delay(20 * 1000);
                 }
             }
 
