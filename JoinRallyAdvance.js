@@ -2060,7 +2060,7 @@ async function scheduleAutoOpenFreeChest() {
     // 4. Loop auto buka chest
     while (true) {
         try {
-            await delay(1 * 60 * 1000);
+            await delay(10 * 1000);
 
             const res = await claimChestFree(CHEST_TYPE_SILVER);
 
@@ -4020,34 +4020,29 @@ async function handleAuthResponse(xhr) {
 
             if (setting.claimVIP) {
                 await claimVIP();
-                await delay(2000);
+                await delay(2 * 1000);
             }
 
             if (setting.claimDSAVIP) {
                 await claimDSAVIP();
-                await delay(2000);
+                await delay(2 * 1000);
             }
 
             if (setting.scheduleHelpAll) {
-                //scheduleHelpAll();
-                await helpAll();
-                await delay(2000);
+                scheduleHelpAll();
+                // await helpAll();
+                await delay(2 * 1000);
             }
 
             if (setting.scheduleAutoDonate) {
                 scheduleAutoDonate();
-                await delay(2000);
-            }
-
-            if (setting.scheduleAutoOpenFreeChest) {
-                scheduleAutoOpenFreeChest();
-                await delay(2000);
+                await delay(2 * 1000);
             }
 
             if (setting.scheduleResourceHarvest) {
-                //scheduleResourceHarvest();
-                await resourceHarvest();
-                await delay(5000);
+                scheduleResourceHarvest();
+                //await resourceHarvest();
+                await delay(10 * 1000);
             }
 
             if (setting.scheduleSummonMonster) {
@@ -4057,17 +4052,21 @@ async function handleAuthResponse(xhr) {
 
             if (setting.scheduleInstantHarvest) {
                 scheduleSkillActivate(10001);
-                // await delay(0.5 * 60 * 1000);
+                await delay(2 * 60 * 1000);
             }
 
             if (setting.scheduleBuyCaravan) {
                 scheduleBuyCaravan();
-                await delay(5000);
+                await delay(10 * 1000);
             }
 
             if (setting.scheduleClaimDailyQuest) {
                 scheduleClaimQuestDaily();
-                // await delay(5000);
+                await delay(10 * 1000);
+            }
+            if (setting.scheduleAutoOpenFreeChest) {
+                scheduleAutoOpenFreeChest();
+                //await delay(2000);
             }
         }
 
