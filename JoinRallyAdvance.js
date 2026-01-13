@@ -204,6 +204,10 @@ const ITEM_CODE_SPEEDUP_HEAL_1D = 10103049
 const ITEM_CODE_SPEEDUP_HEAL_3D = 10103050
 const ITEM_CODE_SPEEDUP_HEAL_7D = 10103051
 
+const ITEM_CODE_CHEST_SILVER = 10104024
+const ITEM_CODE_CHEST_GOLD = 10104025
+const ITEM_CODE_CHEST_PLATINUM = 10104142
+
 // Item Codes
 const ITEM_CODE_FOOD_BOOST_8H = 10102001
 const ITEM_CODE_FOOD_BOOST_1D = 10102002
@@ -1346,16 +1350,15 @@ async function useActionPoint() {
             nAp = 1;
         }
 
-        //open silver chest [10104024, 10104025, 10104142]
-        if (getAmountItemList(itemList, 10104024) >= 20) {
-            await useItem(10104024, 20);
+        if (getAmountItemList(itemList, ITEM_CODE_CHEST_SILVER) >= 20) {
+            await useItem(ITEM_CODE_CHEST_SILVER, 20);
             await delay(3000);
-            if (getAmountItemList(itemList, 10104025) >= 20) {
-                await useItem(10104025, 20);
+            if (getAmountItemList(itemList, ITEM_CODE_CHEST_GOLD) >= 20) {
+                await useItem(ITEM_CODE_CHEST_GOLD, 20);
                 await delay(3000);
             }
-            if (getAmountItemList(itemList, 10104142) >= 1) {
-                await useItem(10104142, 1);
+            if (getAmountItemList(itemList, ITEM_CODE_CHEST_PLATINUM) >= 1) {
+                await useItem(ITEM_CODE_CHEST_PLATINUM, 1);
                 await delay(1000);
             }
         }
