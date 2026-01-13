@@ -2093,11 +2093,10 @@ async function scheduleAutoOpenFreeChest() {
 async function scheduleAutoOpenFreeChest() {
     if (!hasToken()) return;
 
-    // 1. Ambil level Treasure House
+    // Ambil level Treasure House & limit
     const treasureHouse = kingdomData.buildings.find(b => b.position === 4);
     const treasureHouseLevel = treasureHouse?.level ?? 0;
 
-    // 2. Tentukan daily free chest limit berdasarkan level
     const dailyChestMap = {
         26: 10, 27: 10, 28: 10, 29: 10,
         30: 12, 31: 13, 32: 14, 33: 15,
@@ -2105,81 +2104,66 @@ async function scheduleAutoOpenFreeChest() {
     };
     const dailyFreeChestLimit = dailyChestMap[treasureHouseLevel] ?? 0;
 
-    // 3. Ambil progress silver
+    // Silver progress
     let currentSilver = kingdomData.freeChest?.silver?.num ?? 0;
 
     console.log(`📦 Treasure House L${treasureHouseLevel} | Silver: ${currentSilver}/${dailyFreeChestLimit}`);
 
     if (currentSilver >= dailyFreeChestLimit) {
-        console.log("🛑 Batas harian Silver sudah tercapai.");
+        console.log("🛑 Silver limit tercapai.");
         return;
     }
 
     console.log("🚀 Auto open Free Chest dimulai...");
 
-    // FLAG GOLD & PLATINUM
-    let canOpenGold = true;
-    let canOpenPlatinum = true;
+    // Mapping chest lain yang mengikuti silver loop
+    const extraChests = [
+        { type: CHEST_TYPE_GOLD, key: "gold", active: true },
+        { type: CHEST_TYPE_PLATINUM, key: "platinum", active: true }
+    ];
 
-    // 4. Loop
+    // MAIN LOOP (hanya berhenti karena silver)
     while (true) {
         try {
+
+            // --------------------------------
+            // SILVER — patokan utama
+            // --------------------------------
+            const resSilver = await claimChestFree(CHEST_TYPE_SILVER);
             await delay(20 * 1000);
 
-            // --------------------------
-            // SILVER (patokan utama)
-            // --------------------------
-            const resSilver = await claimChestFree(CHEST_TYPE_SILVER);
-            const responseSilver = resSilver;
 
-            if (!responseSilver) {
-                console.log("🛑 Silver habis. Stop loop.");
+            if (!resSilver) {
+                console.log("🛑 Silver sudah tidak bisa dibuka lagi.");
                 break;
             }
 
-            currentSilver = responseSilver?.freechest?.silver?.num ?? currentSilver + 1;
-
+            currentSilver = resSilver?.freechest?.silver?.num ?? (currentSilver + 1);
             console.log(`✨ Silver dibuka → ${currentSilver}/${dailyFreeChestLimit}`);
 
             if (currentSilver >= dailyFreeChestLimit) {
-                console.log("🛑 Silver mencapai limit. Stop.");
+                console.log("🛑 Limit Silver tercapai. Stop loop.");
                 break;
             }
 
-            // --------------------------
-            // GOLD (hanya claim jika masih aktif)
-            // --------------------------
-            if (canOpenGold) {
-                await delay(20 * 1000);
-                const resGold = await claimChestFree(CHEST_TYPE_GOLD);
+            // --------------------------------
+            // GOLD & PLATINUM — ikut klaim
+            // --------------------------------
+            for (const chest of extraChests) {
+                if (!chest.active) continue;
 
-                if (!resGold) {
-                    console.log("⚠️ Gold sudah tidak bisa diclaim lagi → Nonaktifkan.");
-                    canOpenGold = false; // MATIKAN GOLD
+                const res = await claimChestFree(chest.type);
+
+                if (!res) {
+                    console.log(`⚠️ ${chest.key} sudah habis → nonaktif.`);
+                    chest.active = false;
                 } else {
-                    console.log("✨ Gold Free Chest dibuka.");
+                    console.log(`✨ ${chest.key} dibuka.`);
+                    await delay(20 * 1000);
                 }
             }
 
-            // --------------------------
-            // PLATINUM (hanya claim jika masih aktif)
-            // --------------------------
-            if (canOpenPlatinum) {
-                await delay(20 * 1000);
-                const resPlat = await claimChestFree(CHEST_TYPE_PLATINUM);
-
-                if (!resPlat) {
-                    console.log("⚠️ Platinum tidak bisa diclaim lagi → Nonaktifkan.");
-                    canOpenPlatinum = false; // MATIKAN PLATINUM
-                } else {
-                    console.log("✨ Platinum Free Chest dibuka.");
-                }
-            }
-
-            // --------------------------
-            // Semua chest lain sudah habis tapi silver masih lanjut
-            // (loop tetap lanjut sampai silver limit)
-            // --------------------------
+            // (silver tetap lanjut walau gold/plat habis)
 
         } catch (err) {
             console.error("❌ Error membuka chest:", err);
@@ -2187,8 +2171,9 @@ async function scheduleAutoOpenFreeChest() {
         }
     }
 
-    console.log("🎉 Auto open free chest selesai.");
+    console.log("🎉 Auto Free Chest selesai.");
 }
+
 
 async function buyCaravan() {
     if (!hasToken()) return null;
