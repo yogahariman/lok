@@ -4137,24 +4137,24 @@ async function handleAuthResponse(xhr) {
                 await delay(10 * 1000);
             }
 
+            if (setting.scheduleBuyCaravan) {
+                scheduleBuyCaravan();
+                await delay(1 * 60 * 1000);
+            }
+
             if (setting.scheduleSummonMonster) {
                 scheduleSkillActivate(10023);
-                await delay(0.5 * 60 * 1000);
+                await delay(1 * 60 * 1000);
             }
 
             if (setting.scheduleInstantHarvest) {
                 scheduleSkillActivate(10001);
-                await delay(2 * 60 * 1000);
-            }
-
-            if (setting.scheduleBuyCaravan) {
-                scheduleBuyCaravan();
-                await delay(10 * 1000);
+                await delay(3 * 60 * 1000);
             }
 
             if (setting.scheduleClaimDailyQuest) {
                 scheduleClaimQuestDaily();
-                await delay(10 * 1000);
+                await delay(1 * 60 * 1000);
             }
             if (setting.scheduleAutoOpenFreeChest) {
                 scheduleAutoOpenFreeChest();
