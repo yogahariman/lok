@@ -2060,7 +2060,7 @@ async function scheduleAutoOpenFreeChest() {
     // 4. Loop auto buka chest
     while (true) {
         try {
-            await delay(7 * 60 * 1000);
+            await delay(1 * 60 * 1000);
 
             const res = await claimChestFree(CHEST_TYPE_SILVER);
 
