@@ -2051,7 +2051,7 @@ async function scheduleAutoOpenFreeChest() {
     console.log(`📦 Treasure House Level ${treasureHouseLevel} | Silver Free Chest: ${currentChestNum}/${dailyFreeChestLimit}`);
 
     if (currentChestNum >= dailyFreeChestLimit) {
-        //console.log("🛑 Batas harian sudah tercapai. Tidak akan membuka chest.");
+        console.log("🛑 Batas harian sudah tercapai. Tidak akan membuka chest.");
         return;
     }
 
