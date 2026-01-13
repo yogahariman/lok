@@ -2124,7 +2124,7 @@ async function scheduleAutoOpenFreeChest() {
     // 4. Loop
     while (true) {
         try {
-            await delay(60 * 1000);
+            await delay(20 * 1000);
 
             // --------------------------
             // SILVER (patokan utama)
@@ -2150,6 +2150,7 @@ async function scheduleAutoOpenFreeChest() {
             // GOLD (hanya claim jika masih aktif)
             // --------------------------
             if (canOpenGold) {
+                await delay(20 * 1000);
                 const resGold = await claimChestFree(CHEST_TYPE_GOLD);
 
                 if (!resGold) {
@@ -2164,6 +2165,7 @@ async function scheduleAutoOpenFreeChest() {
             // PLATINUM (hanya claim jika masih aktif)
             // --------------------------
             if (canOpenPlatinum) {
+                await delay(20 * 1000);
                 const resPlat = await claimChestFree(CHEST_TYPE_PLATINUM);
 
                 if (!resPlat) {
