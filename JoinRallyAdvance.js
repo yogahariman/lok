@@ -247,9 +247,9 @@ const TROOP_CODE_PALADIN = 50100106
 const TROOP_CODE_MARKSMAN = 50100206
 const TROOP_CODE_MARAUDER = 50100306
 // // Tier 6.2
-// const TROOP_CODE_DESTROYER = 50100107
-// const TROOP_CODE_MUSKETEER = 50100207
-// const TROOP_CODE_VALKYRIE = 50100307
+const TROOP_CODE_DESTROYER = 50100107
+const TROOP_CODE_MUSKETEER = 50100207
+const TROOP_CODE_VALKYRIE = 50100307
 
 const SPEEDUP_TYPE = {
     GENERIC: "generic",
@@ -1341,6 +1341,11 @@ async function useItem(code, amount) {
     });
 }
 
+function isMessageAllowed(message) {
+  const msg = (message || "").toLowerCase();
+  const forbidden = ["bot", "archer", "infa", "don't", "test"];
+  return !forbidden.some(word => msg.includes(word));
+}
 
 
 async function useActionPoint() {
@@ -3854,6 +3859,7 @@ async function autoJoinRally() {
 
             const marchInfo = await getMarchInfo(battleInfo.battle.fromLoc, battleId);
             if (!marchInfo) continue;
+            if (!isMessageAllowed(battleInfo.battle.message)) continue;
             //console.log("✅ March rally info:", marchInfo);            
             await delayRandom();
 

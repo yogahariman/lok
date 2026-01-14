@@ -1,0 +1,266 @@
+// /alliance/battle/info
+battleInfo={
+  "result": true,
+  "battle": {
+    "_id": "6966f7085a587a6ccae9ae9b",
+    "marchType": 5,
+    "isRally": true,
+    "param": {
+      "message": ""
+    },
+    "fromLoc": [
+      105,
+      1704,
+      1361
+    ],
+    "toLoc": [
+      105,
+      1703,
+      1357
+    ],
+    "startTime": "2026-01-14T01:53:12.262Z",
+    "endTime": "2026-01-14T01:58:12.262Z",
+    "state": 4,
+    "distance": 5,
+    "time": 300,
+    "rallyTroops": [
+      {
+        "kingdomId": "61941133ebfd652cc682a5cd",
+        "troops": [
+          {
+            "code": 50100107,
+            "level": 0,
+            "select": 0,
+            "amount": 3454,
+            "dead": 0,
+            "wounded": 0,
+            "hp": 0,
+            "attack": 0,
+            "defense": 0,
+            "seq": 0
+          },
+          {
+            "code": 50100207,
+            "level": 0,
+            "select": 0,
+            "amount": 25307,
+            "dead": 0,
+            "wounded": 0,
+            "hp": 0,
+            "attack": 0,
+            "defense": 0,
+            "seq": 0
+          },
+          {
+            "code": 50100307,
+            "level": 0,
+            "select": 0,
+            "amount": 481,
+            "dead": 0,
+            "wounded": 0,
+            "hp": 0,
+            "attack": 0,
+            "defense": 0,
+            "seq": 0
+          },
+          {
+            "code": 50100106,
+            "level": 0,
+            "select": 0,
+            "amount": 494358,
+            "dead": 0,
+            "wounded": 0,
+            "hp": 0,
+            "attack": 0,
+            "defense": 0,
+            "seq": 0
+          }
+        ],
+        "moId": "6966f7085a587a6ccae9ae97",
+        "mo": {
+          "_id": "6966f7085a587a6ccae9ae97",
+          "marchType": 5,
+          "kingdom": {
+            "_id": "61941133ebfd652cc682a5cd",
+            "level": 35,
+            "power": 556326836,
+            "name": "CUWILANSHENG",
+            "alliance": {
+              "_id": "6357fdc33418a44aaa3a255e",
+              "name": "ShinraTensei",
+              "tag": "$HIN",
+              "power": 24129876372,
+              "leaderKingdomId": "681a76c108c12bbd98c14ec3",
+              "description": "<color=#181f2c>_____________</color><size=50><color=#FFA500><b>$HINRA TENSEI</b> </color></size>\n\n<color=#181f2c>___________________</color><size=30><color=#0066cc><b>▂ ▃ ▅ ▃ ▂</b></color></size>\n<color=#181f2c>______________</color><size=32><color=#00FFFF><i><b>WE ARE LESS SPARTA!</b></i></color></size>\n<color=#181f2c>_________________</color><size=28><color=#FFFFFF><b>Part of C59 Family</b></color></size>\n<color=#181f2c>__________________</color><size=32><color=#00FFFF><i><b>Join us NOW!</b></i></color></size>\n<color=#181f2c>___________________</color><size=30><color=#0066cc><b>▂ ▃ ▅ ▃ ▂</b></color></size>\n\n<color=#181f2c>________________</color><size=25><color=#FFFFFF><b>FOR READ DETAIL RULES</b></color></size>\n<color=#181f2c>__________________</color><size=22><color=#FFFFFF><b>join official discord C59</b></color></size>\n<color=#181f2c>_____________</color><size=25><color=#FF1A1A><b>https://discord.gg/Nq8pKcxX </b></color></size>",
+              "numMembers": 99,
+              "maxMembers": 100,
+              "flag": {
+                "backShape": 16,
+                "patternShape": 0
+              },
+              "option": {
+                "minPower": 0,
+                "minLevel": 1,
+                "allowType": 2
+              },
+              "langCode": "all",
+              "level": 8,
+              "exp": 79068330,
+              "alliancePoint": 39003900,
+              "worldId": 105,
+              "nft": {
+                "index": 7,
+                "num": 5
+              }
+            },
+            "skin": {
+              "itemId": "68678bd8e694e56b1203c583"
+            },
+            "faceCode": 0,
+            "congressTitle": 0,
+            "lord": {
+              "level": 50,
+              "xp": 19285170,
+              "point": 0
+            },
+            "worldId": 105
+          },
+          "allianceId": "6357fdc33418a44aaa3a255e",
+          "fromLoc": [
+            105,
+            1704,
+            1361
+          ],
+          "toLoc": [
+            105,
+            1703,
+            1357
+          ],
+          "startTime": "2026-01-14T01:53:12.252Z",
+          "endTime": "2026-01-14T01:58:19.252Z",
+          "state": 5,
+          "distance": 5,
+          "time": 307,
+          "troops": [
+            {
+              "code": 50100107,
+              "level": 0,
+              "select": 0,
+              "amount": 3454,
+              "dead": 0,
+              "wounded": 0,
+              "hp": 0,
+              "attack": 0,
+              "defense": 0,
+              "seq": 0
+            },
+            {
+              "code": 50100207,
+              "level": 0,
+              "select": 0,
+              "amount": 25307,
+              "dead": 0,
+              "wounded": 0,
+              "hp": 0,
+              "attack": 0,
+              "defense": 0,
+              "seq": 0
+            },
+            {
+              "code": 50100307,
+              "level": 0,
+              "select": 0,
+              "amount": 481,
+              "dead": 0,
+              "wounded": 0,
+              "hp": 0,
+              "attack": 0,
+              "defense": 0,
+              "seq": 0
+            },
+            {
+              "code": 50100106,
+              "level": 0,
+              "select": 0,
+              "amount": 494358,
+              "dead": 0,
+              "wounded": 0,
+              "hp": 0,
+              "attack": 0,
+              "defense": 0,
+              "seq": 0
+            }
+          ],
+          "isRally": false,
+          "drago": {
+            "parts": []
+          }
+        }
+      }
+    ],
+    "allianceId": "6357fdc33418a44aaa3a255e",
+    "kingdomId": "61941133ebfd652cc682a5cd",
+    "targetMonsterId": "6966f6c876aa6b1b4fad37bd",
+    "isBF": false,
+    "message": "",
+    "drago": {
+      "parts": []
+    },
+    "fromAlliance": {
+      "_id": "6357fdc33418a44aaa3a255e",
+      "name": "ShinraTensei",
+      "tag": "$HIN",
+      "flag": {
+        "backShape": 16,
+        "patternShape": 0
+      }
+    },
+    "leaderKingdom": {
+      "_id": "61941133ebfd652cc682a5cd",
+      "name": "CUWILANSHENG",
+      "power": 556326836,
+      "faceCode": 0
+    },
+    "targetMonster": {
+      "_id": "6966f6c876aa6b1b4fad37bd",
+      "loc": [
+        105,
+        1703,
+        1357
+      ],
+      "level": 2,
+      "code": 20200203,
+      "param": {
+        "value": 1000000
+      },
+      "state": 1,
+      "expired": "2026-01-14T02:52:08.277Z"
+    },
+    "maxTroops": 6204000,
+    "numTroops": 523600,
+    "leaderFO": {
+      "_id": "6951beb5d2e86fb51acb0f6d",
+      "loc": [
+        105,
+        1704,
+        1361
+      ],
+      "level": 35,
+      "code": 20300101,
+      "occupied": {
+        "moIds": [],
+        "id": "61941133ebfd652cc682a5cd",
+        "started": "2025-12-28T23:35:17.062Z",
+        "skin": 10710001,
+        "skinGrade": 3,
+        "name": "CUWILANSHENG",
+        "worldId": 105,
+        "allianceId": "6357fdc33418a44aaa3a255e",
+        "allianceTag": "$HIN",
+        "shield": 0,
+        "skinEnchantLevel": 2
+      },
+      "state": 1
+    }
+  }
+}
