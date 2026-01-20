@@ -82,6 +82,7 @@ const OBJECT_CODE_SPARTOI = 20700506
 // Error Codes
 const ERROR_CODE_FULL_TASK = "full_task";
 const ERROR_CODE_OCCUPIED = "occupied";
+const ERROR_CODE_UNKNOWN = "unknown_error";
 
 // Skin Codes
 const SKIN_CODE_COOLDOWN_REDUCTION = 10726001;      // skin skill cooldown reduction
@@ -2926,7 +2927,7 @@ async function sendMarch(loc, marchType, troopIndex, dragoId) {
         if (!marchStartResponse) {
             return {
                 success: false,
-                errCode: marchStartResponse?.err?.code || "unknown_error"
+                errCode: marchStartResponse?.err?.code || ERROR_CODE_UNKNOWN
             };
         }
 
@@ -3106,12 +3107,17 @@ async function startGatheringRSSFromBookmarks(bookmarks) {
         const result = await sendMarch([x, y], MARCH_TYPE_GATHER, 1); // marchType 1 = gathering, preset index 1
 
         console.log(' result:', result);
-        
+
         if (!result.success) {
             console.log(`❌ Gagal kirim march ke (${x}, ${y})`);
 
             if (result.errCode === ERROR_CODE_FULL_TASK) {
                 console.log("⛔ Task penuh, stop loop");
+                break; // atau return;
+            }
+
+            if (result.errCode === ERROR_CODE_UNKNOWN) {
+                console.log("⛔ Error tidak diketahui, stop loop");
                 break; // atau return;
             }
 
