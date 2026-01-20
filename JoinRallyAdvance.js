@@ -3105,6 +3105,8 @@ async function startGatheringRSSFromBookmarks(bookmarks) {
 
         const result = await sendMarch([x, y], MARCH_TYPE_GATHER, 1); // marchType 1 = gathering, preset index 1
 
+        console.log(' result:', result);
+        
         if (!result.success) {
             console.log(`❌ Gagal kirim march ke (${x}, ${y})`);
 
