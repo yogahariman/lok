@@ -1123,7 +1123,7 @@ async function getRallyList() {
     });
 }
 
-async function getRallyInfo(battleId) {            
+async function getRallyInfo(battleId) {
     if (!hasToken()) return null;
 
     return await sendRequest({
@@ -1143,15 +1143,15 @@ async function getEventListCvC() {
     });
 }
 
-async function claimChestFree(type){
+async function claimChestFree(type) {
     if (!hasToken()) return null;
 
     return await sendRequest({
-                url: API_BASE_URL + "item/freechest",
-                token: token,
-                //body: b64xorEnc({ type: 0 }, xor_password),
-                body: { type }
-            });
+        url: API_BASE_URL + "item/freechest",
+        token: token,
+        //body: b64xorEnc({ type: 0 }, xor_password),
+        body: { type }
+    });
 }
 // for (let i = 1; i <= 10 && await claimChestPlatinum() !== null; i++) await delay(5000);
 async function claimChestPlatinum({
@@ -1198,7 +1198,7 @@ async function getAllianceResearchInfo(researchCode) {
         token,
         body: { researchCode }
     });
-    
+
 }
 
 async function getAllianceResearchDonateAll(researchCode) {
@@ -1343,9 +1343,9 @@ async function useItem(code, amount) {
 }
 
 function isMessageAllowed(message) {
-  const msg = (message || "").toLowerCase();
-  const forbidden = ["bot", "archer", "infa", "don't", "test"];
-  return !forbidden.some(word => msg.includes(word));
+    const msg = (message || "").toLowerCase();
+    const forbidden = ["bot", "archer", "infa", "don't", "test"];
+    return !forbidden.some(word => msg.includes(word));
 }
 
 
@@ -3105,8 +3105,6 @@ async function startGatheringRSSFromBookmarks(bookmarks) {
         const dist = Math.round(distance(kingdomData.loc, b.loc));
 
         const result = await sendMarch([x, y], MARCH_TYPE_GATHER, 1); // marchType 1 = gathering, preset index 1
-
-        console.log(' result:', result);
 
         if (!result.success) {
             console.log(`❌ Gagal kirim march ke (${x}, ${y})`);
