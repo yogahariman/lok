@@ -2182,7 +2182,7 @@ async function scheduleAutoOpenFreeChest() {
                 break;
             }
 
-            await delay(20 * 1000);
+            await delay(5 * 1000);
 
             // --------------------------------
             // GOLD & PLATINUM — ikut klaim
@@ -2197,7 +2197,7 @@ async function scheduleAutoOpenFreeChest() {
                     chest.active = false;
                 } else {
                     console.log(`✨ ${chest.key} dibuka.`);
-                    await delay(20 * 1000);
+                    await delay(5 * 1000);
                 }
             }
 
