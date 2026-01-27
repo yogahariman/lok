@@ -4142,12 +4142,12 @@ async function handleAuthResponse(xhr) {
             // jalankan tower tiap menit ke 2 detik ke 10
             //scheduleStartTower();
 
-            await delay(30 * 1000);
+            await delay(60 * 1000);
 
             //Join Rally
-            await autoJoinRally();
+            // await autoJoinRally();
 
-            await delay(3 * 60 * 1000);
+            // await delay(3 * 60 * 1000);
 
             const setting = window._lokSettings || {};
 
@@ -4188,15 +4188,17 @@ async function handleAuthResponse(xhr) {
                 await delay(1 * 60 * 1000);
             }
 
+            if (setting.scheduleClaimDailyQuest) {
+                scheduleClaimQuestDaily();
+                await delay(1 * 60 * 1000);
+            }
+
             if (setting.scheduleInstantHarvest) {
                 scheduleSkillActivate(10001);
                 await delay(3 * 60 * 1000);
             }
 
-            if (setting.scheduleClaimDailyQuest) {
-                scheduleClaimQuestDaily();
-                await delay(1 * 60 * 1000);
-            }
+
             if (setting.scheduleAutoOpenFreeChest) {
                 scheduleAutoOpenFreeChest();
                 //await delay(2000);
