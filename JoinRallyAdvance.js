@@ -3318,6 +3318,10 @@ async function rallyMonster(loc, rallyTime = 5, troopIndex = 0, message = "") {
         // 4. Ambil troops pada tab ke-{troopIndex}
         // =====================
         const troopsSelected = marchInfo?.saveTroops?.[troopIndex];
+        if (!Array.isArray(troopsSelected)) {
+            console.log("⛔ Troops preset invalid.");
+            return false;
+        }
         if (!troopsSelected) {
             console.log(`⚠️ Troops index ke-${troopIndex} tidak ditemukan.`);
             return false;
@@ -3344,7 +3348,7 @@ async function rallyMonster(loc, rallyTime = 5, troopIndex = 0, message = "") {
         const payload = {
             marchType: marchInfo.marchType,
             toLoc,
-            marchTroops: troopsPreset,
+            marchTroops: troopsSelected,
             rallyTime,
             message
         };
