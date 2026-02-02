@@ -15,6 +15,7 @@
 // (async () => { for (let i = 0; i < 16; i++) await useItem(10104106, 1), await delay(500); })();
 
 // Deklarasi awal variabel sebagai null
+let lastRequestError = null;
 let token = null;
 let regionHash = null;
 let xor_password = null;
@@ -802,6 +803,7 @@ function payloadSendmarch(troops, loc, marchType, dragoId) {
 //console.log(result);
 
 async function sendRequest({ url, token, body }) {
+    lastRequestError = null;
     try {
         const response = await fetch(url, {
             method: "POST",
@@ -823,6 +825,10 @@ async function sendRequest({ url, token, body }) {
 
         // ❌ HTTP error
         if (!response.ok) {
+            lastRequestError = {
+                type: "HTTP",
+                code: response.status
+            };            
             console.log(`⛔ HTTP ${response.status} → ${url}`);
             return null;
         }
@@ -833,6 +839,10 @@ async function sendRequest({ url, token, body }) {
         try {
             res = JSON.parse(text);
         } catch {
+            lastRequestError = {
+                type: "PARSE",
+                code: "INVALID_JSON"
+            };            
             console.log(`❌ Response bukan JSON → ${url}`);
             return null;
         }
@@ -840,6 +850,10 @@ async function sendRequest({ url, token, body }) {
         // ❌ API reject
         if (res?.result !== true) {
             const code = res?.err?.code ?? "UNKNOWN";
+            lastRequestError = {
+                type: "API",
+                code
+            };            
             console.log(`❌ API reject (code: ${code}) → ${url}`);
             return null;
         }
@@ -848,6 +862,10 @@ async function sendRequest({ url, token, body }) {
         return res;
 
     } catch (err) {
+        lastRequestError = {
+            type: "NETWORK",
+            code: err?.message ?? "NETWORK_ERROR"
+        };        
         console.log(`❌ Network error → ${url}`, err);
         return null;
     }
@@ -1576,7 +1594,7 @@ async function heal(targetDuration = null, speedHeal = null) {
             body: itemPayload
         });
 
-        if (!res?.result) {
+        if (!res) {
             throw new Error("Heal speedup gagal");
         }
 
@@ -2931,7 +2949,8 @@ async function sendMarch(loc, marchType, troopIndex, dragoId) {
         if (!marchStartResponse) {
             return {
                 success: false,
-                errCode: marchStartResponse?.err?.code || ERROR_CODE_UNKNOWN
+                //errCode: marchStartResponse?.err?.code || ERROR_CODE_UNKNOWN
+                errCode: lastRequestError?.code || ERROR_CODE_UNKNOWN
             };
         }
 
