@@ -3134,17 +3134,17 @@ async function startGatheringRSSFromBookmarks(bookmarks) {
         if (!result.success) {
             console.log(`❌ Gagal kirim march ke (${x}, ${y})`);
 
-            if (result.errCode === ERROR_CODE_FULL_TASK) {
-                console.log("⛔ Task penuh, stop loop");
-                break; // atau return;
-            }
+            // if (result.errCode === ERROR_CODE_FULL_TASK) {
+            //     console.log("⛔ Task penuh, stop loop");
+            //     break; // atau return;
+            // }
 
-            if (result.errCode === ERROR_CODE_UNKNOWN) {
-                console.log("⛔ Error tidak diketahui, stop loop");
-                break; // atau return;
-            }
+            // if (result.errCode === ERROR_CODE_UNKNOWN) {
+            //     console.log("⛔ Error tidak diketahui, stop loop");
+            //     break; // atau return;
+            // }
 
-            continue;
+            break;
         }
 
         console.log(`🏕️ Gathering ${b.name}${levelText} di (${x}, ${y}) — jarak ${dist}`);
