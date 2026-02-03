@@ -3290,9 +3290,10 @@ async function startRallyMonsterFromBookmarks(bookmarks = bookmarkMonsterRally) 
             MESSAGE
         );
 
+        index++;
+        
         if (success) {
             incrementRallyCount();
-            index++;
 
             console.log(
                 `🎯 [Rally#${getRallyCount()} | Sisa ${finalResults.length - index}] ` +
