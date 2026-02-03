@@ -3291,7 +3291,7 @@ async function startRallyMonsterFromBookmarks(bookmarks = bookmarkMonsterRally) 
         );
 
         index++;
-        
+
         if (success) {
             incrementRallyCount();
 
@@ -3785,7 +3785,7 @@ async function autoJoinRally() {
             // Jika code sama, urutkan berdasarkan level DESCENDING
             return b.targetMonster.level - a.targetMonster.level;
         });
-        console.log("📥 Rally list:", rallies);
+        //console.log("📥 Rally list:", rallies);
 
         rallies.forEach(b => {
             if (!b.isJoined) {
@@ -3889,7 +3889,7 @@ async function autoJoinRally() {
             await delayRandom();
 
             const battleInfo = await getRallyInfo(battleId);
-            console.log("📥 /alliance/battle/info", battleInfo);
+            //console.log("📥 /alliance/battle/info", battleInfo);
             if (!battleInfo) continue;
             await delayRandom();
 
