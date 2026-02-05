@@ -2178,8 +2178,8 @@ async function scheduleAutoOpenFreeChest() {
 
     // Mapping chest lain yang mengikuti silver loop
     const extraChests = [
-        { type: CHEST_TYPE_GOLD, key: "gold", active: true },
-        { type: CHEST_TYPE_PLATINUM, key: "platinum", active: true }
+        { type: CHEST_TYPE_GOLD, key: "gold", active: false },
+        { type: CHEST_TYPE_PLATINUM, key: "platinum", active: false }
     ];
 
     // MAIN LOOP (hanya berhenti karena silver)
