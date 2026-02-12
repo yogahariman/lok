@@ -3926,7 +3926,15 @@ async function autoJoinRally() {
             }
 
             //const payload_rally_encrypted = b64xorEnc(payloadAutoJoinRally(troopsSelected, battleId), xor_password);
-            const payload_rally_encrypted = payloadAutoJoinRally(troopsSelected, battleId);
+            const hasCustomTroops = Array.isArray(window.troopCodes) && Array.isArray(window.troopAmounts);
+            const payload_rally = hasCustomTroops
+                ? createJoinRallyPayload(window.troopCodes, window.troopAmounts, battleId)
+                : payloadAutoJoinRally(troopsSelected, battleId);
+
+            if (!payload_rally) {
+                console.log("❌ Payload join rally tidak valid.");
+                continue;
+            }
 
             // console.log("troopsSelected : ", troopsSelected);
             // console.log("battleId : ", battleId);
@@ -3935,7 +3943,7 @@ async function autoJoinRally() {
             const joinRallyResponse = await sendRequest({
                 url: API_BASE_URL + "field/rally/join",
                 token: token,
-                body: payload_rally_encrypted
+                body: payload_rally
             });
             // console.log("📥 Join rally response:", joinRallyResponse);
 
@@ -4340,8 +4348,6 @@ window.addEventListener('load', () => {
         }
     }, 1000); // cek setiap 1 detik sampai 5x
 });
-
-
 
 
 
