@@ -2114,7 +2114,8 @@ async function scheduleAutoOpenFreeChest() {
     // Silver progress
     let currentSilver = kingdomData.freeChest?.silver?.num ?? 0;
 
-    console.log(`📦 Treasure House L${treasureHouseLevel} | Silver: ${currentSilver}/${dailyFreeChestLimit}`);
+    // console.log(`📦 Treasure House L${treasureHouseLevel} | Silver: ${currentSilver}/${dailyFreeChestLimit}`);
+    console.log(`📦 Silver Chest: ${currentSilver}/${dailyFreeChestLimit}`);
 
     if (currentSilver >= dailyFreeChestLimit) {
         console.log("🛑 Silver limit tercapai.");
