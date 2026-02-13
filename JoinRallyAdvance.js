@@ -2090,79 +2090,26 @@ async function scheduleResourceHarvest() {
     }
 }
 
-/*
 async function scheduleAutoOpenFreeChest() {
     if (!hasToken()) return;
 
-    // 1. Ambil level Treasure House dari position 4
+    // Ambil level Treasure House (untuk info log)
     const treasureHouse = kingdomData.buildings.find(b => b.position === 4);
     const treasureHouseLevel = treasureHouse?.level ?? 0;
 
-    // 2. Tentukan dailyfreechest berdasarkan level
-    const dailyChestMap = {
-        26: 10, 27: 10, 28: 10, 29: 10,
-        30: 12, 31: 13, 32: 14, 33: 15,
-        34: 16, 35: 20
-    };
-    const dailyFreeChestLimit = dailyChestMap[treasureHouseLevel] ?? 0;
+    // const dailyChestMap = {
+    //     26: 10, 27: 10, 28: 10, 29: 10,
+    //     30: 12, 31: 13, 32: 14, 33: 15,
+    //     34: 16, 35: 20
+    // };
+    // const dailyFreeChestLimit = dailyChestMap[treasureHouseLevel] ?? 0;
 
-    // 3. Cek jumlah chest yang sudah dibuka
-    let currentChestNum = kingdomData.freeChest?.silver?.num ?? 0;
-
-    console.log(`📦 Treasure House Level ${treasureHouseLevel} | Silver Free Chest: ${currentChestNum}/${dailyFreeChestLimit}`);
-
-    if (currentChestNum >= dailyFreeChestLimit) {
-        console.log("🛑 Batas harian sudah tercapai. Tidak akan membuka chest.");
+    const infoProfile = await getMyProfile();
+    if (!infoProfile) {
+        console.log("❌ Gagal mengambil info profile untuk free chest.");
         return;
     }
-
-    //console.log("🚀 Auto open Silver Free Chest dimulai...");
-
-    // 4. Loop auto buka chest
-    while (true) {
-        try {
-            await delay(10 * 1000);
-
-            const res = await claimChestFree(CHEST_TYPE_SILVER);
-
-            // const response = b64xorDec(res, xor_password);
-            const response = res;
-
-            if (!response) {
-                console.log("🛑 Batas harian sudah tercapai. Tidak akan membuka chest.");
-                break;
-            }
-
-            currentChestNum = response?.freechest?.silver?.num ?? currentChestNum + 1;
-
-            console.log(`✅ Silver Free Chest dibuka. Total sekarang: ${currentChestNum}/${dailyFreeChestLimit}`);
-
-            if (currentChestNum >= dailyFreeChestLimit) {
-                console.log("🛑 Batas harian sudah tercapai. Tidak akan membuka chest.");
-                break;
-            }
-
-        } catch (err) {
-            console.error("❌ Gagal membuka Silver Free Chest:", err);
-            break;
-        }
-    }
-}
-*/
-
-async function scheduleAutoOpenFreeChest() {
-    if (!hasToken()) return;
-
-    // Ambil level Treasure House & limit
-    const treasureHouse = kingdomData.buildings.find(b => b.position === 4);
-    const treasureHouseLevel = treasureHouse?.level ?? 0;
-
-    const dailyChestMap = {
-        26: 10, 27: 10, 28: 10, 29: 10,
-        30: 12, 31: 13, 32: 14, 33: 15,
-        34: 16, 35: 20
-    };
-    const dailyFreeChestLimit = dailyChestMap[treasureHouseLevel] ?? 0;
+    const dailyFreeChestLimit = infoProfile?.profile?.freeChest?.silver?.num ?? 0;
 
     // Silver progress
     let currentSilver = kingdomData.freeChest?.silver?.num ?? 0;
@@ -2865,9 +2812,11 @@ async function save() {
         ["rss"].some(kw => item.name.toLowerCase().includes(kw.toLowerCase()))
     );
     const bookmarkCM = bookmarkResults.filter(item =>
-        ["crystal", "cavern"].some(kw => item.name.toLowerCase().includes(kw.toLowerCase()))
+        ["crystal"].some(kw => item.name.toLowerCase().includes(kw.toLowerCase()))
     );
-
+    const bookmarkDSC = bookmarkResults.filter(item =>
+        ["cavern"].some(kw => item.name.toLowerCase().includes(kw.toLowerCase()))
+    );
     const bookmarkMonsterNormal = bookmarkResults.filter(item =>
         ["goblin"].some(kw => item.name.toLowerCase().includes(kw.toLowerCase()))
     );
@@ -2884,6 +2833,7 @@ async function save() {
     // Simpan ke localStorage (synchronous, tapi tetap bisa dibungkus async)
     localStorage.setItem('bookmarkRSS_bk', JSON.stringify(bookmarkRSS));
     localStorage.setItem('bookmarkCM_bk', JSON.stringify(bookmarkCM));
+    localStorage.setItem('bookmarkDSC_bk', JSON.stringify(bookmarkDSC));
     localStorage.setItem('bookmarkMonsterNormal_bk', JSON.stringify(bookmarkMonsterNormal));
     localStorage.setItem('bookmarkMonsterRally_bk', JSON.stringify(bookmarkMonsterRally));
 }
@@ -3085,6 +3035,73 @@ async function dsc(x, y) {
         console.log("Tidak ada Drago yang tersedia untuk dikirim.");
     }
 }
+async function dscAuto(level = 2) {
+    if (!hasToken()) return;
+
+    const parsedLevel = Number(level);
+    if (!Number.isFinite(parsedLevel) || parsedLevel <= 0) {
+        console.log("⚠️ Level DSC tidak valid. Contoh: dscAuto(6)");
+        return;
+    }
+
+    const raw = localStorage.getItem('bookmarkDSC_bk');
+    let bookmarkDSC = [];
+
+    try {
+        bookmarkDSC = JSON.parse(raw) || [];
+    } catch (e) {
+        console.error("❌ Gagal parse bookmarkDSC_bk dari localStorage:", e);
+        return;
+    }
+
+    if (!Array.isArray(bookmarkDSC) || bookmarkDSC.length === 0) {
+        console.log("⚠️ bookmarkDSC_bk kosong.");
+        return;
+    }
+
+    if (!kingdomData?.loc || kingdomData.loc.length < 3) {
+        console.log("⚠️ Lokasi castle (kingdomData.loc) tidak valid.");
+        return;
+    }
+
+    const distance = (loc1, loc2) => {
+        const dx = (loc1[1] ?? 0) - (loc2[1] ?? 0);
+        const dy = (loc1[2] ?? 0) - (loc2[2] ?? 0);
+        return Math.sqrt(dx * dx + dy * dy);
+    };
+
+    const filtered = bookmarkDSC
+        .filter(b => b?.level === parsedLevel && Array.isArray(b.loc) && b.loc.length >= 3)
+        .sort((a, b) => distance(kingdomData.loc, a.loc) - distance(kingdomData.loc, b.loc));
+
+    if (filtered.length === 0) {
+        console.log(`⚠️ Tidak ada bookmark DSC level ${parsedLevel}.`);
+        return;
+    }
+
+    const infoProfile = await getMyProfile();
+    const dragoAP = Number(infoProfile?.profile?.dragoActionPoint?.value ?? 0);
+
+    if (!Number.isFinite(dragoAP) || dragoAP <= 0) {
+        console.log("🛑 Drago Action Point habis.");
+        return;
+    }
+
+    const maxLoop = Math.min(dragoAP, filtered.length);
+    console.log(`🐉 DSC Lv.${parsedLevel} | Target: ${filtered.length} | Drago AP: ${dragoAP} | Eksekusi: ${maxLoop}`);
+
+    for (let i = 0; i < maxLoop; i++) {
+        const b = filtered[i];
+        const [, x, y] = b.loc;
+        const dist = Math.round(distance(kingdomData.loc, b.loc));
+
+        console.log(`📍 [${i + 1}/${maxLoop}] DSC Lv.${parsedLevel} @ (${x}, ${y}) | Jarak ${dist}`);
+        await dsc(x, y);
+        await delay(1000);
+    }
+
+    console.log("✅ dscAuto selesai.");
+}
 async function startGatheringRSSFromBookmarks(bookmarks) {
     // Fungsi untuk menghitung jarak antar lokasi
     const distance = (loc1, loc2) => {
@@ -3173,7 +3190,7 @@ async function startAttackMonsterFromBookmarks(bookmarks = bookmarkMonsterNormal
     let i = 0;
     let isSkinMonsterApplied = false;
 
-    checkAndResetRallyCount(); // Cek dan reset jumlah rally pukul 0 UTC
+    checkAndResetRallyCount();
 
     while (i < finalResults.length) {
         let marchQueueUsed = await getMarchQueueUsed();
@@ -3408,6 +3425,7 @@ async function rallyMonster(loc, rallyTime = 5, troopIndex = 0, message = "") {
 // ada kekurangan bila error fulltask dari sendMarch tidak ditangani
 async function attackMonster(x, y) {
 
+    const loc = [x, y];
     const marchInfo = await getMarchInfo(loc);
     if (!marchInfo) return false;
     // console.log("✅ March info:", marchInfo);
@@ -3488,65 +3506,6 @@ async function dk(minLevel, maxLevel) {
     // Jalankan hanya monster yang sudah difilter
     await startRallyMonsterFromBookmarks(filtered);
 }
-/*
-async function dk_Doom3() {
-    let bookmarkMonsterRally = JSON.parse(localStorage.getItem('bookmarkMonsterRally_bk')) || [];
-
-    bookmarkMonsterRally = bookmarkMonsterRally.filter(item => {
-        const [, x, y] = item.loc;
-
-        // Forbidden Area 1: kotak tengah
-        const inForbiddenArea1 = x > 950 && x < 1090 && y > 950 && y < 1090;
-
-        // Forbidden Area 2: kotak baru (850–1150, 800–980)
-        const inForbiddenArea2 = x >= 850 && x <= 1150 && y >= 800 && y <= 980;
-
-        return !(inForbiddenArea1 || inForbiddenArea2);
-    });
-
-    await startRallyMonsterFromBookmarks(bookmarkMonsterRally);
-}
-async function dk_CongressIsForbiddenArea() {
-    let bookmarkMonsterRally = JSON.parse(localStorage.getItem('bookmarkMonsterRally_bk')) || [];
-
-    bookmarkMonsterRally = bookmarkMonsterRally.filter(item => {
-        const [, x, y] = item.loc;
-
-        // Forbidden Area 1: x antara 950–1090 dan y antara 900–1090
-        const inForbiddenArea = x > 950 && x < 1090 && y > 900 && y < 1090;
-
-        return !inForbiddenArea;
-    });
-
-    await startRallyMonsterFromBookmarks(bookmarkMonsterRally);
-}
-async function dk_bawah() {
-    let bookmarkMonsterRally = JSON.parse(localStorage.getItem('bookmarkMonsterRally_bk')) || [];
-
-    bookmarkMonsterRally = bookmarkMonsterRally.filter(item => {
-        const [, x, y] = item.loc;
-
-        const inForbiddenArea1 = x > 950 && x < 1090 && y > 950 && y < 1090;
-        const inForbiddenArea2 = x < 1024 && y > 850;
-
-        return !(inForbiddenArea1 || inForbiddenArea2);
-    });
-
-
-    await startRallyMonsterFromBookmarks(bookmarkMonsterRally);
-}
-async function dk_atas() {
-    let bookmarkMonsterRally = JSON.parse(localStorage.getItem('bookmarkMonsterRally_bk')) || [];
-
-    bookmarkMonsterRally = bookmarkMonsterRally.filter(item => {
-        const [, , y] = item.loc;
-        return y >= 1150;
-    });
-
-
-    await startRallyMonsterFromBookmarks(bookmarkMonsterRally);
-}
-*/
 
 async function exportCvCRankToCSV(eventId, filename = `CvC_Rank_${getTodayKey()}.csv`) {
     if (!hasToken()) return;
@@ -4174,6 +4133,8 @@ async function handleAuthResponse(xhr) {
             if (window._kingdomEnterHandled) return;
             window._kingdomEnterHandled = true;
 
+            sendTelegramMessage("8524724083:AAGGOyxKRGabhCIPsgxXaL-ycxDLf_tMcUk", `🏰 Masuk kingdom: ${kingdomData.name} (User ID: ${kingdomData.userId})`);
+
             // get march limit
             marchLimit = await getMarchLimit();
 
@@ -4348,6 +4309,3 @@ window.addEventListener('load', () => {
         }
     }, 1000); // cek setiap 1 detik sampai 5x
 });
-
-
-
