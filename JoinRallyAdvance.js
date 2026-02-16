@@ -3933,17 +3933,6 @@ async function autoJoinRally() {
 
             const troopsSelected = getTroopGroupByHP(monsterHP, marchInfo);
 
-            const canJoinRally = troopsSelected.every(saveTroop => {
-                const troopInMarch = marchInfo.troops.find(troop => troop.code === saveTroop.code);
-                return troopInMarch && saveTroop.amount <= troopInMarch.amount;
-            });
-
-            if (!canJoinRally) {
-                console.log("Tidak jadi ikut rally karena ada jumlah troops kurang.");
-                continue;
-            }
-
-            //const payload_rally_encrypted = b64xorEnc(payloadAutoJoinRally(troopsSelected, battleId), xor_password);
             const hasCustomTroops =
                 Array.isArray(window.troopCodes) &&
                 Array.isArray(window.troopAmounts) &&
@@ -3954,13 +3943,23 @@ async function autoJoinRally() {
                 ? buildTroopsFromCodesAndAmounts(window.troopCodes, window.troopAmounts).filter(t => t.amount > 0)
                 : [];
 
-            const payload_rally = customTroops.length > 0
-                ? payloadAutoJoinRally(customTroops, battleId)
-                : payloadAutoJoinRally(troopsSelected, battleId);
+            const troopsForPayload = customTroops.length > 0 ? customTroops : troopsSelected;
 
+            // validasi pakai troops yang akan dikirim
+            const canJoinRally = troopsForPayload.every(saveTroop => {
+                const troopInMarch = marchInfo.troops.find(troop => troop.code === saveTroop.code);
+                return troopInMarch && saveTroop.amount <= troopInMarch.amount;
+            });
 
-            if (!payload_rally) {
-                console.log("❌ Payload join rally tidak valid.");
+            if (!canJoinRally) {
+                console.log("Tidak jadi ikut rally karena jumlah troops tidak cukup.");
+                continue;
+            }
+
+            const payload_rally = payloadAutoJoinRally(troopsForPayload, battleId);
+
+            if (!payload_rally?.marchTroops?.length) {
+                console.log("❌ Payload join rally kosong.");
                 continue;
             }
 
