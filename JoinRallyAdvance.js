@@ -2097,19 +2097,19 @@ async function scheduleAutoOpenFreeChest() {
     const treasureHouse = kingdomData.buildings.find(b => b.position === 4);
     const treasureHouseLevel = treasureHouse?.level ?? 0;
 
-    // const dailyChestMap = {
-    //     26: 10, 27: 10, 28: 10, 29: 10,
-    //     30: 12, 31: 13, 32: 14, 33: 15,
-    //     34: 16, 35: 20
-    // };
-    // const dailyFreeChestLimit = dailyChestMap[treasureHouseLevel] ?? 0;
+    const dailyChestMap = {
+        26: 10, 27: 10, 28: 10, 29: 10,
+        30: 12, 31: 13, 32: 14, 33: 15,
+        34: 16, 35: 20
+    };
+    const dailyFreeChestLimit = dailyChestMap[treasureHouseLevel] ?? 0;
 
-    const infoProfile = await getMyProfile();
-    if (!infoProfile) {
-        console.log("❌ Gagal mengambil info profile untuk free chest.");
-        return;
-    }
-    const dailyFreeChestLimit = infoProfile?.profile?.freeChest?.silver?.num ?? 0;
+    // const infoProfile = await getMyProfile();
+    // if (!infoProfile) {
+    //     console.log("❌ Gagal mengambil info profile untuk free chest.");
+    //     return;
+    // }
+    // const currentSilver = infoProfile?.profile?.freeChest?.silver?.num ?? 0;
 
     // Silver progress
     let currentSilver = kingdomData.freeChest?.silver?.num ?? 0;
