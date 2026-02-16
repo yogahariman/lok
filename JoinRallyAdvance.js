@@ -732,37 +732,58 @@ function getZoneIds(minX, maxX, minY, maxY) {
     return Array.from(zoneIds);
 }
 
-function createJoinRallyPayload(codes, amounts, rallyMoId) {
+// function createJoinRallyPayload(codes, amounts, rallyMoId) {
+//     if (!Array.isArray(codes) || !Array.isArray(amounts) || codes.length !== amounts.length) {
+//         console.error("❌ Input 'codes' dan 'amounts' harus array dengan panjang yang sama.");
+//         return null;
+//     }
+
+//     const marchTroops = codes.map((code, index) => ({
+//         code: code,
+//         level: 0,
+//         select: 0,
+//         amount: amounts[index],
+//         dead: 0,
+//         wounded: 0,
+//         hp: 0,
+//         attack: 0,
+//         defense: 0,
+//         seq: 0
+//     }));
+
+//     return {
+//         marchTroops,
+//         rallyMoId
+//     };
+// }
+
+// function payloadAutoJoinRally(troops, rallyMoId) {
+//     const marchTroops = troops.map(({ code, amount }) => ({
+//         code,
+//         level: 0,
+//         select: 0,
+//         amount,
+//         dead: 0,
+//         wounded: 0,
+//         hp: 0,
+//         attack: 0,
+//         defense: 0,
+//         seq: 0
+//     }));
+
+//     return { marchTroops, rallyMoId };
+// }
+
+function buildTroopsFromCodesAndAmounts(codes = [], amounts = []) {
     if (!Array.isArray(codes) || !Array.isArray(amounts) || codes.length !== amounts.length) {
-        console.error("❌ Input 'codes' dan 'amounts' harus array dengan panjang yang sama.");
-        return null;
+        return [];
     }
 
-    const marchTroops = codes.map((code, index) => ({
-        code: code,
-        level: 0,
-        select: 0,
-        amount: amounts[index],
-        dead: 0,
-        wounded: 0,
-        hp: 0,
-        attack: 0,
-        defense: 0,
-        seq: 0
-    }));
-
-    return {
-        marchTroops,
-        rallyMoId
-    };
-}
-
-function payloadAutoJoinRally(troops, rallyMoId) {
-    const marchTroops = troops.map(({ code, amount }) => ({
+    return codes.map((code, i) => ({
         code,
         level: 0,
         select: 0,
-        amount,
+        amount: amounts[i] ?? 0,
         dead: 0,
         wounded: 0,
         hp: 0,
@@ -770,6 +791,30 @@ function payloadAutoJoinRally(troops, rallyMoId) {
         defense: 0,
         seq: 0
     }));
+}
+
+function payloadAutoJoinRally(troops, rallyMoId) {
+    const allowedCodes = new Set([
+        TROOP_CODE_IRON_CAVALRY,
+        TROOP_CODE_DRAGON,
+        TROOP_CODE_MARAUDER,
+        TROOP_CODE_VALKYRIE
+    ]);
+
+    const marchTroops = troops
+        .filter(t => allowedCodes.has(t.code))
+        .map(({ code, amount }) => ({
+            code,
+            level: 0,
+            select: 0,
+            amount,
+            dead: 0,
+            wounded: 0,
+            hp: 0,
+            attack: 0,
+            defense: 0,
+            seq: 0
+        }));
 
     return { marchTroops, rallyMoId };
 }
@@ -3899,10 +3944,20 @@ async function autoJoinRally() {
             }
 
             //const payload_rally_encrypted = b64xorEnc(payloadAutoJoinRally(troopsSelected, battleId), xor_password);
-            const hasCustomTroops = Array.isArray(window.troopCodes) && Array.isArray(window.troopAmounts);
-            const payload_rally = hasCustomTroops
-                ? createJoinRallyPayload(window.troopCodes, window.troopAmounts, battleId)
+            const hasCustomTroops =
+                Array.isArray(window.troopCodes) &&
+                Array.isArray(window.troopAmounts) &&
+                window.troopCodes.length === window.troopAmounts.length &&
+                window.troopCodes.length > 0;
+
+            const customTroops = hasCustomTroops
+                ? buildTroopsFromCodesAndAmounts(window.troopCodes, window.troopAmounts).filter(t => t.amount > 0)
+                : [];
+
+            const payload_rally = customTroops.length > 0
+                ? payloadAutoJoinRally(customTroops, battleId)
                 : payloadAutoJoinRally(troopsSelected, battleId);
+
 
             if (!payload_rally) {
                 console.log("❌ Payload join rally tidak valid.");
