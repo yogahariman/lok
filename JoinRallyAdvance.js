@@ -975,6 +975,12 @@ async function getMyProfile() {
     });
 }
 
+async function updateKingdomLoc() {
+    const infoProfile = await getMyProfile();
+    if (!infoProfile?.profile?.loc || !kingdomData) return;
+    kingdomData.loc = infoProfile.profile.loc;
+}
+
 async function getTroopsProfile() {
     if (!hasToken()) return null;
 
@@ -2648,7 +2654,7 @@ async function scheduleSkillActivate(codes = [10001]) {
 }
 
 
-function getSortedUniqueBookmarks(bookmarks = bookmarkResults) {
+async function getSortedUniqueBookmarks(bookmarks = bookmarkResults) {
     if (!kingdomData?.loc || kingdomData.loc.length !== 3) {
         console.log("❗ Lokasi kingdom tidak valid.");
         return [];
@@ -2680,7 +2686,7 @@ function getSortedUniqueBookmarks(bookmarks = bookmarkResults) {
 
     return unique;
 }
-function getSortedUniqueBookmarksRSS(bookmarks = bookmarkResults) {
+async function getSortedUniqueBookmarksRSS(bookmarks = bookmarkResults) {
     if (!kingdomData?.loc || kingdomData.loc.length !== 3) {
         console.log("❗ Lokasi kingdom tidak valid.");
         return [];
@@ -2928,6 +2934,7 @@ async function ce(x, y) {
     await sendMarch([x, y], MARCH_TYPE_CASTLE, 3);
 }
 async function rss(minLevel, maxLevel) {
+    await updateKingdomLoc();
     const bookmarkRSSRaw = localStorage.getItem('bookmarkRSS_bk');
     let bookmarkRSS = [];
 
@@ -3039,6 +3046,8 @@ async function dsc(x, y) {
 async function dscAuto(level = 2) {
     if (!hasToken()) return;
 
+    await updateKingdomLoc();
+
     const parsedLevel = Number(level);
     if (!Number.isFinite(parsedLevel) || parsedLevel <= 0) {
         console.log("⚠️ Level DSC tidak valid. Contoh: dscAuto(6)");
@@ -3113,7 +3122,7 @@ async function startGatheringRSSFromBookmarks(bookmarks) {
     };
 
     // Pastikan hasil sudah unik dan tersortir
-    const res = getSortedUniqueBookmarksRSS(bookmarks) || [];
+    const res = await getSortedUniqueBookmarksRSS(bookmarks) || [];
 
     if (!Array.isArray(res) || res.length === 0) {
         console.log("⚠️ Tidak ada RSS.");
@@ -3180,7 +3189,7 @@ async function startAttackMonsterFromBookmarks(bookmarks = bookmarkMonsterNormal
         return Math.sqrt(dx * dx + dy * dy);
     };
 
-    const finalResults = getSortedUniqueBookmarks(bookmarks);
+    const finalResults = await getSortedUniqueBookmarks(bookmarks);
 
     if (finalResults.length === 0) {
         console.log("⚠️ Tidak ada monster yang bisa diserang.");
@@ -3237,7 +3246,7 @@ async function startAttackMonsterFromBookmarks(bookmarks = bookmarkMonsterNormal
 
     console.log("✅ Semua Monsters dari bookmark selesai.");
 }
-async function startRallyMonsterFromBookmarks(bookmarks = bookmarkMonsterRally) {
+async function startRallyMonsterFromBookmarks(bookmarks = bookmarkMonsterRally) {    
     // =====================
     // Konstanta
     // =====================
@@ -3257,7 +3266,7 @@ async function startRallyMonsterFromBookmarks(bookmarks = bookmarkMonsterRally) 
     // =====================
     // Ambil bookmark valid
     // =====================
-    const finalResults = getSortedUniqueBookmarks(bookmarks);
+    const finalResults = await getSortedUniqueBookmarks(bookmarks);
     if (!finalResults.length) {
         console.log("⚠️ Tidak ada monster yang bisa dirally.");
         return;
@@ -3475,6 +3484,7 @@ async function attackMonster(x, y) {
     }
 }
 async function goblin() {
+    await updateKingdomLoc();
     let bookmarkMonsterNormal = JSON.parse(localStorage.getItem('bookmarkMonsterNormal_bk')) || [];
     await startAttackMonsterFromBookmarks(bookmarkMonsterNormal);
 }
@@ -3482,6 +3492,9 @@ async function goblin() {
 // dk(5);      // level >= 5
 // dk(4, 6);   // level 4 sampai 6
 async function dk(minLevel, maxLevel) {
+
+    await updateKingdomLoc();
+
     // Ambil data dari localStorage
     let bookmarkMonsterRally = JSON.parse(localStorage.getItem('bookmarkMonsterRally_bk')) || [];
 
