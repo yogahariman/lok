@@ -3446,7 +3446,7 @@ async function startRallyMonsterFromBookmarks(bookmarks = bookmarkMonsterRally) 
                 isSkinMonsterApplied = false;
             }
 
-            console.log(`⏳ Queue penuh (${marchQueueUsed}/${marchLimit}), tunggu 15 detik...`);
+            console.log(`⏳ Queue penuh (${marchQueueUsed}/${marchLimit}), tunggu 30 detik...`);
             await delay(30000);
             continue; // retry target yang sama
         }
@@ -3480,7 +3480,7 @@ async function startRallyMonsterFromBookmarks(bookmarks = bookmarkMonsterRally) 
             }
 
             console.log(`⏳ Retryable error (${result.errCode}) @ (${x}, ${y}) [${currentRetry}/${MAX_RETRY_PER_TARGET}]...`);
-            await delay(15000);
+            await delay(20000);
             continue; // retry target yang sama (tanpa index++)
         }
 
