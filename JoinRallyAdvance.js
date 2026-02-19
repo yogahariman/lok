@@ -84,6 +84,7 @@ const OBJECT_CODE_SPARTOI = 20700506
 const ERROR_CODE_FULL_TASK = "full_task";
 const ERROR_CODE_OCCUPIED = "occupied";
 const ERROR_CODE_UNKNOWN = "unknown_error";
+const ERROR_CODE_TROOP_NOT_ENOUGH = "troop_not_enough";
 
 // Skin Codes
 const SKIN_CODE_COOLDOWN_REDUCTION = 10726001;      // skin skill cooldown reduction
@@ -1400,29 +1401,26 @@ async function setTreasurePage(currentPage) {
 }
 
 async function getMarchInfo(locOrToLoc, battleId = null) {
+    const errorResponse = (code, message) => ({
+        result: false,
+        err: { type: "VALIDATION", code, ...(message ? { message } : {}) }
+    });
 
     if (!Array.isArray(locOrToLoc)) {
-        console.log("❌ loc / toLoc wajib array");
-        return null;
+        return errorResponse("INVALID_LOC_TYPE", "loc / toLoc wajib array");
     }
 
     if (!kingdomData?.fieldObjectId || !Array.isArray(kingdomData?.loc) || kingdomData.loc.length < 3) {
-        console.log("❌ Data kingdom (fieldObjectId/loc) belum valid.");
-        return null;
+        return errorResponse("INVALID_KINGDOM_DATA", "Data kingdom (fieldObjectId/loc) belum valid");
     }
 
     let toLoc;
-
-    // panjang 3 => sudah toLoc [serverId, x, y]
     if (locOrToLoc.length === 3) {
         toLoc = locOrToLoc;
-    }
-    // panjang 2 => loc [x, y], tambahkan serverId dari kingdom
-    else if (locOrToLoc.length === 2) {
+    } else if (locOrToLoc.length === 2) {
         toLoc = [kingdomData.loc[0], ...locOrToLoc];
     } else {
-        console.log("❌ Format loc / toLoc tidak valid:", locOrToLoc);
-        return null;
+        return errorResponse("INVALID_LOC_FORMAT", `Format loc / toLoc tidak valid: ${JSON.stringify(locOrToLoc)}`);
     }
 
     const payload = {
@@ -1431,18 +1429,11 @@ async function getMarchInfo(locOrToLoc, battleId = null) {
         ...(battleId ? { rallyMoId: battleId } : {})
     };
 
-    const res = await sendRequest({
+    return await sendRequest({
         url: API_BASE_URL + "field/march/info",
         token,
         body: payload
     });
-
-    if (!res?.result) {
-        console.log(`❌ getMarchInfo gagal (code: ${res?.err?.code ?? "UNKNOWN"})`);
-        return null;
-    }
-
-    return res;
 }
 
 function getTroopGroupByHP(monsterHP, marchInfo) {
@@ -3044,8 +3035,11 @@ async function sendMarch(loc, marchType, troopIndex, dragoId) {
 
         // Ambil march info
         const marchInfo = await getMarchInfo(loc);
-        if (!marchInfo) {
-            return { success: false, errCode: "no_march_info" };
+        if (!marchInfo?.result) {
+            return {
+                success: false,
+                errCode: marchInfo?.err?.code || "no_march_info"
+            };
         }
 
         if (marchInfo?.fo?.occupied === true) {
@@ -3413,63 +3407,54 @@ async function startAttackMonsterFromBookmarks(bookmarks = bookmarkMonsterNormal
 
     console.log("✅ Semua Monsters dari bookmark selesai.");
 }
-async function startRallyMonsterFromBookmarks(bookmarks = bookmarkMonsterRally) {    
-    // =====================
-    // Konstanta
-    // =====================
+
+async function startRallyMonsterFromBookmarks(bookmarks = bookmarkMonsterRally) {
     const RALLY_TIME = 5;
     const TROOP_INDEX = 0;
     const MESSAGE = "";
 
-    // =====================
-    // Helper
-    // =====================
+    const MAX_RETRY_PER_TARGET = 3;
+    const retryCountByLoc = new Map(); // key: "x,y"
+    const RETRYABLE_CODES = new Set([
+        ERROR_CODE_FULL_TASK,
+        ERROR_CODE_TROOP_NOT_ENOUGH
+    ]);
+
     const calcDistance = (loc1, loc2) => {
         const dx = loc1[1] - loc2[1];
         const dy = loc1[2] - loc2[2];
         return Math.sqrt(dx * dx + dy * dy);
     };
 
-    // =====================
-    // Ambil bookmark valid
-    // =====================
     const finalResults = await getSortedUniqueBookmarks(bookmarks);
     if (!finalResults.length) {
         console.log("⚠️ Tidak ada monster yang bisa dirally.");
         return;
     }
 
-    // =====================
-    // Init state
-    // =====================
     let index = 0;
     let isSkinMonsterApplied = false;
 
-    checkAndResetRallyCount(); // reset rally count jam 00:00 UTC
+    checkAndResetRallyCount();
 
-    // =====================
-    // Loop rally
-    // =====================
     while (index < finalResults.length) {
         const marchQueueUsed = await getMarchQueueUsed();
 
-        // Queue penuh → tunggu
         if (marchQueueUsed >= marchLimit) {
             if (isSkinMonsterApplied) {
                 await changeSkin(); // kembali ke skin default
                 isSkinMonsterApplied = false;
             }
 
-            console.log(`⏳ Queue penuh (${marchQueueUsed}/${marchLimit}), tunggu 1 menit...`);
-            await delay(60_000);
-            continue;
+            console.log(`⏳ Queue penuh (${marchQueueUsed}/${marchLimit}), tunggu 15 detik...`);
+            await delay(30000);
+            continue; // retry target yang sama
         }
 
-        // Pastikan skin rally aktif
         if (!isSkinMonsterApplied) {
             await changeSkin(SKIN_CODE_REDUCE_AP);
             isSkinMonsterApplied = true;
-            await delay(2_000);
+            await delay(2000);
         }
 
         const bookmark = finalResults[index];
@@ -3477,30 +3462,50 @@ async function startRallyMonsterFromBookmarks(bookmarks = bookmarkMonsterRally) 
         const levelText = bookmark.level ? ` Lv.${bookmark.level}` : "";
         const dist = Math.round(calcDistance(kingdomData.loc, bookmark.loc));
 
-        const success = await rallyMonster(
-            [x, y],
-            RALLY_TIME,
-            TROOP_INDEX,
-            MESSAGE
-        );
+        const locKey = `${x},${y}`;
 
-        index++;
+        const result = await rallyMonster([x, y], RALLY_TIME, TROOP_INDEX, MESSAGE);
 
-        if (success) {
-            incrementRallyCount();
+        // retryable -> ulang target sama (tanpa index++)
+        if (!result?.success && RETRYABLE_CODES.has(result?.errCode)) {
+            const currentRetry = (retryCountByLoc.get(locKey) ?? 0) + 1;
+            retryCountByLoc.set(locKey, currentRetry);
 
-            console.log(
-                `🎯 [Rally#${getRallyCount()} | Sisa ${finalResults.length - index}] ` +
-                `${bookmark.name}${levelText} @ (${x}, ${y}) | 📏 ${dist}`
-            );
+            if (currentRetry >= MAX_RETRY_PER_TARGET) {
+                console.log(`❌ Retry ${currentRetry}x habis (${result.errCode}) @ (${x}, ${y}) -> skip`);
+                retryCountByLoc.delete(locKey);
+                index++; // skip target ini
+                await delay(3000);
+                continue;
+            }
+
+            console.log(`⏳ Retryable error (${result.errCode}) @ (${x}, ${y}) [${currentRetry}/${MAX_RETRY_PER_TARGET}]...`);
+            await delay(15000);
+            continue; // retry target yang sama (tanpa index++)
         }
 
-        await delay(5_000);
+        // non-retryable -> skip ke target berikutnya
+        if (!result?.success) {
+            console.log(`❌ Rally gagal @ (${x}, ${y}) code=${result?.errCode ?? "UNKNOWN"} -> skip`);
+            retryCountByLoc.delete(locKey);
+            index++;
+            await delay(3000);
+            continue;
+        }
+
+        // sukses
+        retryCountByLoc.delete(locKey);
+        incrementRallyCount();
+        index++;
+
+        console.log(
+            `🎯 [Rally#${getRallyCount()} | Sisa ${finalResults.length - index}] ` +
+            `${bookmark.name}${levelText} @ (${x}, ${y}) | 📏 ${dist}`
+        );
+
+        await delay(5000);
     }
 
-    // =====================
-    // Cleanup
-    // =====================
     if (isSkinMonsterApplied) {
         await changeSkin();
     }
@@ -3510,49 +3515,27 @@ async function startRallyMonsterFromBookmarks(bookmarks = bookmarkMonsterRally) 
 
 async function rallyMonster(loc, rallyTime = 5, troopIndex = 0, message = "") {
     try {
-        // =====================
-        // 1. Cek march queue
-        // =====================
         const marchQueueUsed = await getMarchQueueUsed();
         if (marchQueueUsed >= marchLimit) {
-            console.log(`⛔ March queue penuh (${marchQueueUsed}/${marchLimit}), batal set rally.`);
-            return false;
+            return { success: false, errCode: ERROR_CODE_FULL_TASK };
         }
 
-        // =====================
-        // 2. Ambil march info
-        // =====================
         const marchInfo = await getMarchInfo(loc);
-        if (!marchInfo) {
-            console.log("❌ Gagal getMarchInfo.");
-            return false;
+        if (!marchInfo?.result) {
+            return { success: false, errCode: marchInfo?.err?.code ?? "NO_MARCH_INFO" };
         }
 
-        // =====================
-        // 3. Validasi march type
-        // =====================
         if (marchInfo.marchType !== MARCH_TYPE_MONSTER) {
             const marchTypeName = getMarchTypeName(marchInfo.marchType);
             console.log(`⛔ MarchType bukan untuk rally/attack monster (${marchTypeName}).`);
-            return false;
+            return { success: false, errCode: "INVALID_MARCH_TYPE" };
         }
 
-        // =====================
-        // 4. Ambil troops pada tab ke-{troopIndex}
-        // =====================
         const troopsSelected = marchInfo?.saveTroops?.[troopIndex];
-        if (!Array.isArray(troopsSelected)) {
-            console.log("⛔ Troops preset invalid.");
-            return false;
-        }
-        if (!troopsSelected) {
-            console.log(`⚠️ Troops index ke-${troopIndex} tidak ditemukan.`);
-            return false;
+        if (!Array.isArray(troopsSelected) || troopsSelected.length === 0) {
+            return { success: false, errCode: "TROOP_NOT_FOUND" };
         }
 
-        // =====================
-        // 5. Cek ketersediaan troops
-        // =====================
         const marchTroops = marchInfo?.troops || [];
         const canSendMarch = troopsSelected.every(preset => {
             const available = marchTroops.find(t => t.code === preset.code);
@@ -3560,13 +3543,9 @@ async function rallyMonster(loc, rallyTime = 5, troopIndex = 0, message = "") {
         });
 
         if (!canSendMarch) {
-            console.log("⛔ Gagal karena jumlah troops kurang.");
-            return false;
+            return { success: false, errCode: ERROR_CODE_TROOP_NOT_ENOUGH };
         }
 
-        // =====================
-        // 6. Payload rally
-        // =====================
         const toLoc = [kingdomData.loc[0], ...loc];
         const payload = {
             marchType: marchInfo.marchType,
@@ -3576,12 +3555,9 @@ async function rallyMonster(loc, rallyTime = 5, troopIndex = 0, message = "") {
             message
         };
 
-        // =====================
-        // 7. Kirim request
-        // =====================
         await useActionPoint();
         await delay(1000);
-
+        
         const response = await sendRequest({
             url: API_BASE_URL + "field/rally/start",
             token,
@@ -3589,26 +3565,24 @@ async function rallyMonster(loc, rallyTime = 5, troopIndex = 0, message = "") {
             body: payload
         });
 
-        // server reject
         if (!response?.result) {
-            console.log(`⛔ Server menolak start rally. code=${response?.err?.code ?? "UNKNOWN"}`);
-            return false;
+            return { success: false, errCode: response?.err?.code ?? ERROR_CODE_UNKNOWN };
         }
 
-        return true;
-
+        return { success: true, errCode: null };
     } catch (err) {
         console.error("❌ Gagal set rally:", err);
-        return false;
+        return { success: false, errCode: "EXCEPTION" };
     }
 }
+
 // ada kekurangan bila error fulltask dari sendMarch tidak ditangani
 async function attackMonster(x, y) {
 
     const loc = [x, y];
     const marchInfo = await getMarchInfo(loc);
-    if (!marchInfo) {
-        console.log("❌ getMarchInfo gagal.");
+    if (!marchInfo?.result) {
+        console.log(`❌ getMarchInfo gagal. code=${marchInfo?.err?.code ?? "UNKNOWN"}`);
         return false;
     }
     // console.log("✅ March info:", marchInfo);
@@ -4040,7 +4014,10 @@ async function autoJoinRally() {
             const fromLoc = battleInfo?.battle?.fromLoc;
             if (!Array.isArray(fromLoc)) continue;
             const marchInfo = await getMarchInfo(fromLoc, battleId);
-            if (!marchInfo) continue;
+            if (!marchInfo.result) {
+                console.log(`❌ Gagal getMarchInfo. code=${marchInfo?.err?.code ?? "UNKNOWN"}`);
+                continue;
+            }
             if (!isMessageAllowed(battleInfo?.battle?.message)) continue;
             //console.log("✅ March rally info:", marchInfo);            
             await delayRandom();
