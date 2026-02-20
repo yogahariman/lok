@@ -2271,32 +2271,6 @@ async function scheduleResourceHarvest() {
 async function scheduleAutoOpenFreeChest() {
     if (!hasToken()) return;
 
-    function getTodayKeyLocal() {
-        const d = new Date();
-        const yyyy = d.getFullYear();
-        const mm = String(d.getMonth() + 1).padStart(2, "0");
-        const dd = String(d.getDate()).padStart(2, "0");
-        return `${yyyy}-${mm}-${dd}`;
-    }
-
-    function getChestClaimStatus() {
-        const today = getTodayKeyLocal();
-        const raw = localStorage.getItem("lok_freechest_claim_daily");
-        const data = raw ? JSON.parse(raw) : {};
-
-        if (!data[today]) {
-            data[today] = { gold: false, platinum: false };
-        }
-
-        return { today, data };
-    }
-
-    function setChestClaimedToday(typeKey) {
-        const { today, data } = getChestClaimStatus();
-        data[today][typeKey] = true;
-        localStorage.setItem("lok_freechest_claim_daily", JSON.stringify(data));
-    }
-
     // Ambil level Treasure House (untuk info log)
     const treasureHouse = kingdomData.buildings.find(b => b.position === 4);
     const treasureHouseLevel = treasureHouse?.level ?? 0;
@@ -2328,14 +2302,11 @@ async function scheduleAutoOpenFreeChest() {
 
     console.log("🚀 Auto open Free Chest dimulai...");
 
-    // reset tiap hari
-    const { data, today } = getChestClaimStatus();
-
+    // Coba GOLD/PLATINUM hanya 1x selama fungsi ini berjalan
     const extraChests = [
-        { type: CHEST_TYPE_GOLD, key: "gold", active: !data[today].gold },
-        { type: CHEST_TYPE_PLATINUM, key: "platinum", active: !data[today].platinum }
+        { type: CHEST_TYPE_GOLD, key: "gold", active: true, tried: false },
+        { type: CHEST_TYPE_PLATINUM, key: "platinum", active: true, tried: false }
     ];
-
 
     // MAIN LOOP (hanya berhenti karena silver)
     while (true) {
@@ -2365,21 +2336,21 @@ async function scheduleAutoOpenFreeChest() {
             // GOLD & PLATINUM — ikut klaim
             // --------------------------------
             for (const chest of extraChests) {
-                if (!chest.active) continue;
+                if (!chest.active || chest.tried) continue;
+
+                chest.tried = true; // pastikan hanya dicoba sekali per run
 
                 const res = await claimChestFree(chest.type);
 
                 if (!res?.result) {
-                    console.log(`⚠️ ${chest.key} gagal/limit (code=${res?.err?.code ?? "UNKNOWN"}) -> nonaktif.`);
+                    console.log(`⚠️ ${chest.key} gagal/limit (code=${res?.err?.code ?? "UNKNOWN"})`);
                     chest.active = false;
                 } else {
-                    console.log(`✨ ${chest.key} dibuka (1x harian).`);
-                    setChestClaimedToday(chest.key); // tandai sudah claim hari ini
-                    chest.active = false;            // stop claim lagi hari ini
+                    console.log(`✨ ${chest.key} dibuka (sekali).`);
+                    chest.active = false;
                     await delay(5 * 1000);
                 }
             }
-
             // (silver tetap lanjut walau gold/plat habis)
 
         } catch (err) {
