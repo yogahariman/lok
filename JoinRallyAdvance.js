@@ -85,6 +85,7 @@ const ERROR_CODE_FULL_TASK = "full_task";
 const ERROR_CODE_OCCUPIED = "occupied";
 const ERROR_CODE_UNKNOWN = "unknown_error";
 const ERROR_CODE_TROOP_NOT_ENOUGH = "troop_not_enough";
+const ERROR_CODE_NO_FIELD_OBJECT = "no_fieldobject";
 
 // Skin Codes
 const SKIN_CODE_COOLDOWN_REDUCTION = 10726001;      // skin skill cooldown reduction
@@ -1867,10 +1868,9 @@ async function claimVIP() {
         return false;
     }
 
-    const canClaim = !!vipInfo?.vip?.isReward;
-    if (!canClaim) {
-        console.log("ℹ️ VIP reward belum tersedia.");
-        return true;
+    if (vipInfo.vip?.isClaimed) {
+        console.log("✅ VIP reward sudah diklaim.");
+        return false;
     }
 
     const claimRes = await sendRequest({
@@ -1884,7 +1884,7 @@ async function claimVIP() {
         return false;
     }
 
-    console.log("✅ VIP reward berhasil di-claim.");
+    console.log("🎁 VIP reward berhasil di-claim.");
     return true;
 }
 
@@ -1896,11 +1896,9 @@ async function claimDSAVIP() {
         console.log(`❌ Gagal mengambil DSA VIP info. code=${dsaVipInfo?.err?.code ?? "UNKNOWN"}`);
         return false;
     }
-
-    const canClaim = !!dsaVipInfo?.dsavip?.isReward;
-    if (!canClaim) {
-        console.log("ℹ️ DSA VIP reward belum tersedia.");
-        return true;
+    if (dsaVipInfo.dsaVip?.isClaimed) {
+        console.log("✅ DSA VIP reward sudah diklaim.");
+        return;
     }
 
     const claimRes = await sendRequest({
@@ -1914,7 +1912,7 @@ async function claimDSAVIP() {
         return false;
     }
 
-    console.log("✅ DSA VIP reward berhasil di-claim.");
+    console.log("🎁 DSA VIP reward berhasil di-claim.");
     return true;
 }
 
@@ -2273,6 +2271,32 @@ async function scheduleResourceHarvest() {
 async function scheduleAutoOpenFreeChest() {
     if (!hasToken()) return;
 
+    function getTodayKeyLocal() {
+        const d = new Date();
+        const yyyy = d.getFullYear();
+        const mm = String(d.getMonth() + 1).padStart(2, "0");
+        const dd = String(d.getDate()).padStart(2, "0");
+        return `${yyyy}-${mm}-${dd}`;
+    }
+
+    function getChestClaimStatus() {
+        const today = getTodayKeyLocal();
+        const raw = localStorage.getItem("lok_freechest_claim_daily");
+        const data = raw ? JSON.parse(raw) : {};
+
+        if (!data[today]) {
+            data[today] = { gold: false, platinum: false };
+        }
+
+        return { today, data };
+    }
+
+    function setChestClaimedToday(typeKey) {
+        const { today, data } = getChestClaimStatus();
+        data[today][typeKey] = true;
+        localStorage.setItem("lok_freechest_claim_daily", JSON.stringify(data));
+    }
+
     // Ambil level Treasure House (untuk info log)
     const treasureHouse = kingdomData.buildings.find(b => b.position === 4);
     const treasureHouseLevel = treasureHouse?.level ?? 0;
@@ -2304,11 +2328,14 @@ async function scheduleAutoOpenFreeChest() {
 
     console.log("🚀 Auto open Free Chest dimulai...");
 
-    // Mapping chest lain yang mengikuti silver loop
+    // reset tiap hari
+    const { data, today } = getChestClaimStatus();
+
     const extraChests = [
-        { type: CHEST_TYPE_GOLD, key: "gold", active: false },
-        { type: CHEST_TYPE_PLATINUM, key: "platinum", active: false }
+        { type: CHEST_TYPE_GOLD, key: "gold", active: !data[today].gold },
+        { type: CHEST_TYPE_PLATINUM, key: "platinum", active: !data[today].platinum }
     ];
+
 
     // MAIN LOOP (hanya berhenti karena silver)
     while (true) {
@@ -2343,14 +2370,15 @@ async function scheduleAutoOpenFreeChest() {
                 const res = await claimChestFree(chest.type);
 
                 if (!res?.result) {
-                    console.log(`⚠️ ${chest.key} sudah habis / gagal claim (code=${res?.err?.code ?? "UNKNOWN"}) → nonaktif.`);
+                    console.log(`⚠️ ${chest.key} gagal/limit (code=${res?.err?.code ?? "UNKNOWN"}) -> nonaktif.`);
                     chest.active = false;
                 } else {
-                    console.log(`✨ ${chest.key} dibuka.`);
+                    console.log(`✨ ${chest.key} dibuka (1x harian).`);
+                    setChestClaimedToday(chest.key); // tandai sudah claim hari ini
+                    chest.active = false;            // stop claim lagi hari ini
                     await delay(5 * 1000);
                 }
             }
-
 
             // (silver tetap lanjut walau gold/plat habis)
 
@@ -3038,7 +3066,7 @@ async function sendMarch(loc, marchType, troopIndex, dragoId) {
         if (!marchInfo?.result) {
             return {
                 success: false,
-                errCode: marchInfo?.err?.code || "no_march_info"
+                errCode: marchInfo?.err?.code || ERROR_CODE_NO_FIELD_OBJECT
             };
         }
 
@@ -3144,18 +3172,18 @@ async function support(x, y) {
         console.log("Drago ID terpilih:", dragoId);
 
     } catch (err) {
-        console.error("Gagal mengambil daftar drago:", err);
+        console.log("Gagal mengambil daftar drago:", err);
     }
 
     if (dragoId) {
         const result = await sendMarch([x, y], MARCH_TYPE_SUPPORT, 3, dragoId);
         if (!result.success) {
-            console.error(`❌ Gagal kirim march ke (${x}, ${y})`);
+            console.log(`❌ Gagal kirim march ke (${x}, ${y})`);
         }
     } else {
         const result = await sendMarch([x, y], MARCH_TYPE_SUPPORT, 3);
         if (!result.success) {
-            console.error(`❌ Gagal kirim march ke (${x}, ${y})`);
+            console.log(`❌ Gagal kirim march ke (${x}, ${y})`);
         }
     }
 }
@@ -3191,7 +3219,7 @@ async function dsc(x, y) {
         const result = await sendMarch([x, y], MARCH_TYPE_GATHER, 3, dragoId);
 
         if (!result.success) {
-            console.error(`❌ Gagal kirim march ke (${x}, ${y})`);
+            console.log(`❌ Gagal kirim march ke (${x}, ${y})`);
         }
 
     } else {
@@ -3522,7 +3550,7 @@ async function rallyMonster(loc, rallyTime = 5, troopIndex = 0, message = "") {
 
         const marchInfo = await getMarchInfo(loc);
         if (!marchInfo?.result) {
-            return { success: false, errCode: marchInfo?.err?.code ?? "NO_MARCH_INFO" };
+            return { success: false, errCode: marchInfo?.err?.code ?? ERROR_CODE_NO_FIELD_OBJECT };
         }
 
         if (marchInfo.marchType !== MARCH_TYPE_MONSTER) {
@@ -3582,7 +3610,7 @@ async function attackMonster(x, y) {
     const loc = [x, y];
     const marchInfo = await getMarchInfo(loc);
     if (!marchInfo?.result) {
-        console.log(`❌ getMarchInfo gagal. code=${marchInfo?.err?.code ?? "UNKNOWN"}`);
+        console.log(`❌ getMarchInfo gagal. code=${marchInfo?.err?.code ?? ERROR_CODE_NO_FIELD_OBJECT}`);
         return false;
     }
     // console.log("✅ March info:", marchInfo);
@@ -4015,7 +4043,7 @@ async function autoJoinRally() {
             if (!Array.isArray(fromLoc)) continue;
             const marchInfo = await getMarchInfo(fromLoc, battleId);
             if (!marchInfo.result) {
-                console.log(`❌ Gagal getMarchInfo. code=${marchInfo?.err?.code ?? "UNKNOWN"}`);
+                console.log(`❌ Gagal getMarchInfo. code=${marchInfo?.err?.code ?? ERROR_CODE_NO_FIELD_OBJECT}`);
                 continue;
             }
             if (!isMessageAllowed(battleInfo?.battle?.message)) continue;
