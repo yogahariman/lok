@@ -1874,7 +1874,7 @@ async function claimVIP() {
     }
 
     const claimRes = await sendRequest({
-        url: API_BASE_URL + "vip/claim",
+        url: API_BASE_URL + "kingdom/vip/claim",
         token,
         body: {}
     });
@@ -1902,7 +1902,7 @@ async function claimDSAVIP() {
     }
 
     const claimRes = await sendRequest({
-        url: API_BASE_URL + "dsavip/claim",
+        url: API_BASE_URL + "kingdom/dsavip/claim",
         token,
         body: {}
     });
