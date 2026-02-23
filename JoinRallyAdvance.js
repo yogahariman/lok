@@ -1534,34 +1534,17 @@ async function useActionPoint() {
             return false;
         }
 
-        let codeAP = null;
-        let nAp = null;
-
         const ap10 = Number(getAmountItemList(itemList, ITEM_CODE_ACTION_POINTS_10) ?? 0);
         const ap20 = Number(getAmountItemList(itemList, ITEM_CODE_ACTION_POINTS_20) ?? 0);
         const ap50 = Number(getAmountItemList(itemList, ITEM_CODE_ACTION_POINTS_50) ?? 0);
         const ap100 = Number(getAmountItemList(itemList, ITEM_CODE_ACTION_POINTS_100) ?? 0);
         
-        if (ap10 > 10) {
-            codeAP = ITEM_CODE_ACTION_POINTS_10;
-            nAp = 10;
-        } else if (ap20 > 5) {
-            codeAP = ITEM_CODE_ACTION_POINTS_20;
-            nAp = 5;
-        } else if (ap50 > 2) {
-            codeAP = ITEM_CODE_ACTION_POINTS_50;
-            nAp = 2;
-        } else if (ap100 > 1) {
-            codeAP = ITEM_CODE_ACTION_POINTS_100;
-            nAp = 1;
-        }
-
         if (ap10 >= 20) {
             await useItem(ITEM_CODE_ACTION_POINTS_10, 20);
         } else if (ap20 >= 10) {
             await useItem(ITEM_CODE_ACTION_POINTS_20, 10);
-        } else if (ap50 >= 5) {
-            await useItem(ITEM_CODE_ACTION_POINTS_50, 5);
+        } else if (ap50 >= 4) {
+            await useItem(ITEM_CODE_ACTION_POINTS_50, 4);
         } else if (ap100 >= 2) {
             await useItem(ITEM_CODE_ACTION_POINTS_100, 2);
         }
@@ -1581,10 +1564,6 @@ async function useActionPoint() {
                 await useItem(ITEM_CODE_CHEST_PLATINUM, 1);
                 await delay(1000);
             }
-        }
-
-        if (codeAP && nAp) {
-            await useItem(codeAP, nAp);
         }
     }
 }
