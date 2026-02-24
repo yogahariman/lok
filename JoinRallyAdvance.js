@@ -1539,14 +1539,14 @@ async function useActionPoint() {
         const ap50 = Number(getAmountItemList(itemList, ITEM_CODE_ACTION_POINTS_50) ?? 0);
         const ap100 = Number(getAmountItemList(itemList, ITEM_CODE_ACTION_POINTS_100) ?? 0);
         
-        if (ap10 >= 20) {
-            await useItem(ITEM_CODE_ACTION_POINTS_10, 20);
-        } else if (ap20 >= 10) {
-            await useItem(ITEM_CODE_ACTION_POINTS_20, 10);
-        } else if (ap50 >= 4) {
-            await useItem(ITEM_CODE_ACTION_POINTS_50, 4);
-        } else if (ap100 >= 2) {
-            await useItem(ITEM_CODE_ACTION_POINTS_100, 2);
+        if (ap10 >= 10) {
+            await useItem(ITEM_CODE_ACTION_POINTS_10, 10);
+        } else if (ap20 >= 5) {
+            await useItem(ITEM_CODE_ACTION_POINTS_20, 5);
+        } else if (ap50 >= 2) {
+            await useItem(ITEM_CODE_ACTION_POINTS_50, 2);
+        } else if (ap100 >= 1) {
+            await useItem(ITEM_CODE_ACTION_POINTS_100, 1);
         }
 
         const chestSilver = Number(getAmountItemList(itemList, ITEM_CODE_CHEST_SILVER) ?? 0);
