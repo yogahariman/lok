@@ -2158,10 +2158,10 @@ async function scheduleAutoDonate() {
             }
 
 
-            if (response.todayRP >= 10000) {
-                console.log("✅ Sudah mencapai batas harian RP: " + response.todayRP);
-                break;
-            }
+            // if (response.todayRP >= 10000) {
+            //     console.log("✅ Sudah mencapai batas harian RP: " + response.todayRP);
+            //     break;
+            // }
 
             if (response.numDonation <= 0) {
                 console.log("⚠️ Tidak ada sisa donasi.");
