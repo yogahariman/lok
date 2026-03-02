@@ -3424,8 +3424,8 @@ async function startRallyMonsterFromBookmarks(bookmarks = bookmarkMonsterRally) 
                 isSkinMonsterApplied = false;
             }
 
-            console.log(`⏳ Queue penuh (${marchQueueUsed}/${marchLimit}), tunggu 30 detik...`);
-            await delay(30000);
+            console.log(`⏳ Queue penuh (${marchQueueUsed}/${marchLimit}), tunggu 60 detik...`);
+            await delay(60000);
             continue; // retry target yang sama
         }
 
@@ -3458,7 +3458,7 @@ async function startRallyMonsterFromBookmarks(bookmarks = bookmarkMonsterRally) 
             }
 
             console.log(`⏳ Retryable error (${result.errCode}) @ (${x}, ${y}) [${currentRetry}/${MAX_RETRY_PER_TARGET}]...`);
-            await delay(20000);
+            await delay(60000);
             continue; // retry target yang sama (tanpa index++)
         }
 
@@ -3839,14 +3839,14 @@ async function sendTelegramMessage(token, message) {
 
 // Step 3: Function to fetch and join rally
 async function autoJoinRally() {
-    if (!hasToken()) return;
+    if (!hasToken()) return { result: false, reason: "NO_TOKEN" };
 
     try {
         await delayRandom();
         const rallyList = await getRallyList();
         if (!rallyList?.result) {
             console.log(`⚠️ Gagal mendapatkan daftar rally. code=${rallyList?.err?.code ?? "UNKNOWN"}`);
-            return;
+            return { result: false, reason: "RALLY_LIST_ERROR", errCode: rallyList?.err?.code ?? "UNKNOWN" };
         }
 
         //console.log("📥 Rally list response:", rallyList);
@@ -3856,7 +3856,7 @@ async function autoJoinRally() {
 
         if (!rallyListJson.result || !Array.isArray(rallyListJson.battles) || rallyListJson.battles.length === 0) {
             //console.log("⚠️ Rally list tidak valid atau kosong.");
-            return;
+            return { result: true, reason: "RALLY_LIST_EMPTY" };
         }
 
         // array rallies diurutkan berdasarkan code dan level
@@ -3867,7 +3867,7 @@ async function autoJoinRally() {
         // ⛔ Jika SEMUA targetMonster null → stop di sini
         if (rallies.length === 0) {
             console.log("⚠️ Semua rally targetMonster = null");
-            return; // atau return false / null sesuai fungsi kamu
+            return { result: true, reason: "UNJOINED_EMPTY" };
         }
 
         rallies.sort((a, b) => {
@@ -3903,7 +3903,7 @@ async function autoJoinRally() {
 
         if (unjoinedRallies.length === 0) {
             //console.log("✅ Semua rally sudah diikuti.");
-            return;
+            return { result: true, reason: "UNJOINED_EMPTY" };
         }
 
         if (rallies.length === unjoinedRallies.length) {
@@ -3918,7 +3918,7 @@ async function autoJoinRally() {
             const rallyCount = getRallyCount();
 
             if (rallyCount > 220) {
-                return; // hentikan eksekusi
+                return { result: true, reason: "RALLY_DAILY_LIMIT" }; // hentikan eksekusi
             }
         }
 
@@ -3933,7 +3933,7 @@ async function autoJoinRally() {
             marchQueueUsed = await getMarchQueueUsed();
             if (marchQueueUsed >= marchLimit) {
                 console.log(`⛔ Masih penuh (${marchQueueUsed}/${marchLimit}), batal join rally.`);
-                return;
+                return { result: false, reason: "QUEUE_FULL", errCode: ERROR_CODE_FULL_TASK };
             }
 
             //console.log("✅ Slot march tersedia setelah menunggu, lanjut join rally...");
@@ -3992,7 +3992,7 @@ async function autoJoinRally() {
             const fromLoc = battleInfo?.battle?.fromLoc;
             if (!Array.isArray(fromLoc)) continue;
             const marchInfo = await getMarchInfo(fromLoc, battleId);
-            if (!marchInfo.result) {
+            if (!marchInfo?.result) {
                 console.log(`❌ Gagal getMarchInfo. code=${marchInfo?.err?.code ?? ERROR_CODE_NO_FIELD_OBJECT}`);
                 continue;
             }
@@ -4050,12 +4050,25 @@ async function autoJoinRally() {
             // console.log("battleId : ", battleId);
             // console.log("payload_rally_encrypted : ", payload_rally_encrypted);
 
-            const joinRallyResponse = await sendRequest({
+            let joinRallyResponse = await sendRequest({
                 url: API_BASE_URL + "field/rally/join",
                 token: token,
                 body: payload_rally
             });
             // console.log("📥 Join rally response:", joinRallyResponse);
+
+            if (!joinRallyResponse?.result) {
+                if (joinRallyResponse?.err?.code === ERROR_CODE_FULL_TASK) {
+                    console.log("⏳ Queue penuh saat join rally, tunggu 30 detik lalu coba lagi...");
+                    await delay(30 * 1000);
+
+                    joinRallyResponse = await sendRequest({
+                        url: API_BASE_URL + "field/rally/join",
+                        token: token,
+                        body: payload_rally
+                    });
+                }
+            }
 
             if (!joinRallyResponse?.result) {
                 console.log(`❌ Gagal join rally. code=${joinRallyResponse?.err?.code ?? "UNKNOWN"}`);
@@ -4074,8 +4087,10 @@ async function autoJoinRally() {
             await delayRandom();
         }
         await changeSkin();
+        return { result: true, reason: "JOIN_PROCESSED" };
     } catch (err) {
         console.error("❌ Error saat auto join:", err);
+        return { result: false, reason: "AUTOJOIN_EXCEPTION", errCode: err?.message ?? "UNKNOWN" };
     }
 }
 
@@ -4112,7 +4127,12 @@ async function monitorWebSocket() {
             await delay(5e3);
             try {
                 //console.log('[⏳] Memproses rally dari antrean...');
-                await autoJoinRally(); // Fungsi utama join rally
+                const autoJoinResult = await autoJoinRally(); // Fungsi utama join rally
+                if (autoJoinResult?.reason === "RALLY_LIST_EMPTY" || autoJoinResult?.reason === "UNJOINED_EMPTY") {
+                    console.log("[ℹ️] Tidak ada rally aktif, queue dikosongkan.");
+                    rallyQueue.length = 0;
+                    break;
+                }
             } catch (err) {
                 console.error('❌ Gagal auto join rally:', err);
             }
